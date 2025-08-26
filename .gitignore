@@ -1,0 +1,37 @@
+# Node modules
+node_modules/
+
+# Next.js build output
+.next/
+out/
+dist/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Local files / system files
+.DS_Store
+Thumbs.db
+
+# Editor files
+.vscode/
+.idea/
+
+# Optional: Mac/Linux swap or temp files
+*.swp
+*.swo
+*.sublime-workspace
+*.sublime-project
+
+# Optional: coverage reports (if using testing)
+coverage/
