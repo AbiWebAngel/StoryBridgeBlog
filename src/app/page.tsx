@@ -109,17 +109,21 @@ const bookImages = [
 
   return (
     <main>
-      <h1 className="w-full max-w-sm mt-6 ml-20 mr-20">
+    <h1 className="w-full mt-6 px-4 sm:px-6">
+      <div className="mx-auto md:mx-0 md:ml-20 md:mr-20 flex justify-center md:justify-start">
+        <div className="w-full max-w-[400px]"> {/* keep original width ~526px */}
           <Image
             src="/assets/headings/MissionStatement.png"
             alt="Mission Statement"
-            width={526}
+            width={400}
             height={180}
-          className="w-full h-auto"
-        />
-      </h1>
+            className="w-full h-auto"
+          />
+        </div>
+      </div>
+    </h1>
 
-      <p className="mt-8 mb-4 ml-20 mr-20">
+      <p className="mt-8 mb-4 px-4 sm:px-6 md:px-20 text-center md:text-left">
         StoryBridge is a youth-led initiative bringing young writers and readers together through storytelling,
         literacy projects and community connection.
       </p>
@@ -127,28 +131,32 @@ const bookImages = [
         {/* Image Slider */}
         <ImageSlider images={bookImages} />  
 
-      <h1 className="mt-8 ml-20 mr-20">
-        <Image
-          src="/assets/headings/WhoWeAre.png"
-          alt="Who We Are"
-          width={250}
-          height={180}
-          quality={100}
-        />
+      <h1 className="w-full mt-6 px-4 sm:px-6">
+        <div className="mx-auto md:mx-0 md:ml-20 md:mr-20 flex justify-center md:justify-start">
+          <div className="w-64 max-w-[250px]"> {/* keep the original heading size */}
+            <Image
+              src="/assets/headings/WhoWeAre.png"
+              alt="Who We Are"
+              width={250}
+              height={180}
+              quality={100}
+              className="w-full h-auto"
+            />
+          </div>
+        </div>
       </h1>
 
-      <p className="mt-8 ml-20 mr-20">
+      <p className="mt-8 mb-4 px-4 sm:px-6 md:px-20 text-center md:text-left">
         Founded on the belief that stories can build bridges between people and communities,
         StoryBridge provides writers, especially teens, with resources to help them glow into
         their full potential!
       </p>
 
       {/* Paragraph Columns */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-6 mt-8 ml-20 mr-20">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-6 mt-8 px-4 sm:px-6 md:px-20">
       {/* Column 1 */}
-      <div className="flex flex-col items-start">
-      
-       <div className="w-64 max-w-xs">
+      <div className="flex flex-col items-center md:items-start">
+        <div className="w-64 max-w-[260px]">
           <Image
             src="/assets/headings/WhatWeDo.png"
             alt="What We Do"
@@ -158,37 +166,36 @@ const bookImages = [
           />
         </div>
 
-
-        <p className="mt-4 text-sm sm:text-base leading-relaxed">
+        <p className="mt-4 text-sm sm:text-base leading-relaxed text-center md:text-left">
           We offer beta-reading services for novelists, a mentorship program for those just starting out, 
           and weekly competitions based on writing prompts to keep the creativity flowing.
         </p>
 
-        <Image
-          src="/assets/images/PeopleAreDoingOnline.png"
-          alt="People Are Doing Online"
-          width={400}
-          height={350}
-          quality={100}
-          className="w-full h-auto transform scale-70"
-          
-        />
+        <div className="w-full max-w-xs md:max-w-sm lg:max-w-md mt-4">
+          <Image
+            src="/assets/images/PeopleAreDoingOnline.png"
+            alt="People Are Doing Online"
+            width={400}
+            height={350}
+            quality={100}
+            className="w-full h-auto"
+          />
+        </div>
       </div>
 
       {/* Column 2 */}
-      <div className="flex flex-col items-start">
+      <div className="flex flex-col items-center md:items-start">
+        <div className="w-128 max-w-[320px]">
+          <Image
+            src="/assets/headings/WhyItMatters.png"
+            alt="Why It Matters"
+            width={320}
+            height={200}
+            className="w-full h-auto"
+          />
+        </div>
 
-       <div className="w-128 max-w-xs">
-        <Image
-          src="/assets/headings/WhyItMatters.png"
-          alt="Why It Matters"
-          width={320}
-          height={200}
-          className="w-full h-auto"
-        />
-      </div>
-
-        <p className="mt-4 text-sm sm:text-base leading-relaxed">
+        <p className="mt-4 text-sm sm:text-base leading-relaxed text-center md:text-left">
           Young writers are often told to wait until they “grow up” before their words can make a difference. 
           At StoryBridge, we believe the opposite: every young person already has something worth saying, and writing is one of the most powerful ways to say it.
           StoryBridge matters because it gives teen writers a place to be heard, to share, and to connect. Writing isn’t just a skill — it’s a way of understanding the world, building empathy, and turning ideas into action.
@@ -196,6 +203,8 @@ const bookImages = [
         </p>
       </div>
     </div>
+
+
 
 
       {/* Newsletter Form */}
@@ -215,7 +224,7 @@ const bookImages = [
           type="submit"
           form="newsletter-form"
           className="bg-transparent transition hover:scale-110 hover:brightness-110 
-                    absolute top-[-5px] right-[-100px] sm:top-[-10px] sm:right-4 md:top-[-20px] md:right-[-50px] 
+                    absolute top-[3px] right-[-15px] sm:top-[-10px] sm:right-10px md:top-[-20px] md:right-[-50px] 
                     lg:top-[-35px] lg:right-[-160px] z-10"
         >
           <Image
@@ -223,7 +232,7 @@ const bookImages = [
             alt="Send"
             width={300}
             height={200}
-            className="w-50 h-20 sm:w-60 sm:h-20 md:w-64 md:h-24 lg:w-64 lg:h-32"
+            className="w-35 h-21 sm:w-60 sm:h-20 md:w-64 md:h-24 lg:w-64 lg:h-31"
           />
         </button>
       </h1>
