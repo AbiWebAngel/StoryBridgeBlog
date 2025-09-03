@@ -110,12 +110,12 @@ const bookImages = [
   return (
     <main>
     <h1 className="w-full mt-6 px-4 sm:px-6">
-      <div className="mx-auto md:mx-0 md:ml-20 md:mr-20 flex justify-center md:justify-start">
-        <div className="w-full max-w-[400px]"> {/* keep original width ~526px */}
+      <div className="mx-auto md:mx-0 md:ml-[3.5rem] md:mr-20 flex justify-center md:justify-start">
+        <div className="w-full max-w-[550px]"> {/* keep original width ~526px */}
           <Image
             src="/assets/headings/MissionStatement.png"
             alt="Mission Statement"
-            width={400}
+            width={550}
             height={180}
             className="w-full h-auto"
           />
@@ -131,13 +131,13 @@ const bookImages = [
         {/* Image Slider */}
         <ImageSlider images={bookImages} />  
 
-      <h1 className="w-full mt-6 px-4 sm:px-6">
-        <div className="mx-auto md:mx-0 md:ml-20 md:mr-20 flex justify-center md:justify-start">
-          <div className="w-64 max-w-[250px]"> {/* keep the original heading size */}
+      <h1 className="w-full mt-12 px-4 sm:px-6">
+        <div className="mx-auto md:mx-0 md:ml-[3.5rem] md:mr-20 flex justify-center md:justify-start">
+          <div className="w-full max-w-[350px]"> 
             <Image
               src="/assets/headings/WhoWeAre.png"
               alt="Who We Are"
-              width={250}
+              width={350}
               height={180}
               quality={100}
               className="w-full h-auto"
@@ -156,11 +156,11 @@ const bookImages = [
       <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-6 mt-8 px-4 sm:px-6 md:px-20">
       {/* Column 1 */}
       <div className="flex flex-col items-center md:items-start">
-        <div className="w-64 max-w-[260px]">
+        <div className="w-full max-w-[360px]">
           <Image
             src="/assets/headings/WhatWeDo.png"
             alt="What We Do"
-            width={260}
+            width={360}
             height={200}
             className="w-full h-auto"
           />
@@ -185,11 +185,11 @@ const bookImages = [
 
       {/* Column 2 */}
       <div className="flex flex-col items-center md:items-start">
-        <div className="w-128 max-w-[320px]">
+        <div className="w-full max-w-[450px]">
           <Image
             src="/assets/headings/WhyItMatters.png"
             alt="Why It Matters"
-            width={320}
+            width={450}
             height={200}
             className="w-full h-auto"
           />
