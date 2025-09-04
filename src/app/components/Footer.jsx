@@ -1,14 +1,13 @@
-// src/components/Footer.tsx
 const Footer = () => {
     return (
-        <footer className="bg-brand-dark text-white py-4 px-6 flex justify-between items-center fixed bottom-0 left-0 w-full">
+        <footer className="bg-brand-dark text-white py-4 px-6 flex flex-col md:flex-row items-center md:justify-between gap-2 md:gap-0 w-full">
             {/* Left side */}
-            <div className="text-[30px] font-bold tracking-wide" style={{ fontFamily: 'Cinzel, serif' }}>
+            <div className="text-[24px] md:text-[30px] font-bold tracking-wide" style={{ fontFamily: 'Cinzel, serif' }}>
                 StoryBridge
             </div>
 
             {/* Right side */}
-            <div className="text-sm text-[16px] font-bold" style={{ fontFamily: 'inter, serif' }}>
+            <div className="text-[14px] md:text-[16px] font-bold text-center md:text-right" style={{ fontFamily: 'Inter, serif' }}>
                 Contact us:{" "}
                 <a
                     href="mailto:storybridgeteens@gmail.com"
