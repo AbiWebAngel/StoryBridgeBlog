@@ -1,7 +1,7 @@
 "use client";
 
 import "keen-slider/keen-slider.min.css";
-import { useKeenSlider, KeenSliderInstance } from "keen-slider/react";
+import { useKeenSlider} from "keen-slider/react";
 import Image from "next/image";
 import { useState, useEffect } from "react";
 

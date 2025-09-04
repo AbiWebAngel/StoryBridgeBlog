@@ -11,7 +11,7 @@ export default function BlogPostPage() {
   return (
     <div>
       <h1>Blog Post: {postSlug.replace("-", " ")}</h1>
-      <p>Content for "{postSlug}" will go here.</p>
+       <p>Content for &quot;{postSlug}&quot; will go here.</p>
     </div>
   );
 }
