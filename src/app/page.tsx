@@ -1,4 +1,5 @@
 "use client";
+
 import Image from "next/image";
 import React from "react";
 import ImageSlider from "./components/ImageSlider";
@@ -109,6 +110,7 @@ const bookImages = [
 
   return (
     <main>
+
     <h1 className="w-full mt-6 px-4 sm:px-6">
       <div className="mx-auto md:mx-0 md:ml-[3.5rem] md:mr-20 flex justify-center md:justify-start">
         <div className="w-full max-w-[550px]"> {/* keep original width ~526px */}
