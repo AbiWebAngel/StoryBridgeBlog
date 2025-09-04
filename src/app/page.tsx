@@ -284,6 +284,7 @@ const bookImages = [
                 {serverMessage}
               </p>
             )}
+            
           </div>
         </div>
       </form>
