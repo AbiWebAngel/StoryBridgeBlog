@@ -3,12 +3,9 @@ import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 
-const row1 = [
+const links = [
     { href: "/beta-reading", label: "Beta reading" },
     { href: "/team", label: "Team" },
-];
-
-const row2 = [
     { href: "/mentorship", label: "Mentorship" },
     { href: "/blog", label: "Blog" },
     { href: "/workshops", label: "Workshops" },
@@ -18,8 +15,8 @@ const Navbar = () => {
     const [menuOpen, setMenuOpen] = useState(false);
 
     return (
-        <nav className="relative flex items-center bg-light shadow-lg w-full ">
-            {/* Logo section */}
+        <nav className="relative flex items-center bg-light shadow-lg w-full">
+            {/* Logo */}
             <div className="bg-brand-dark flex items-center justify-center w-20 h-16 md:w-60 md:h-30">
                 <Image
                     src="/logo.png"
@@ -31,28 +28,10 @@ const Navbar = () => {
                 />
             </div>
 
-            {/* Hamburger for mobile */}
-            <div className="md:hidden flex items-center ml-auto">
-                <button
-                    onClick={() => setMenuOpen(!menuOpen)}
-                    className="focus:outline-none"
-                    aria-label="Toggle menu"
-                >
-                    <svg width="32" height="32" viewBox="0 0 24 24">
-                        <path
-                            d="M4 6h16M4 12h16M4 18h16"
-                            stroke="white"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                        />
-                    </svg>
-                </button>
-            </div>
-
             {/* Desktop menu */}
-            <div className="hidden md:flex flex-1 items-center justify-around ml-6">
-                <ul className="flex flex-wrap justify-around gap-16 text-white font-serif text-lg font-bold tracking-wide">
-                    {[...row1, ...row2].map((link) => (
+            <div className="hidden md:flex flex-1 items-center justify-between ml-6">
+                <ul className="flex gap-12 text-white font-serif text-lg font-bold tracking-wide">
+                    {links.map((link) => (
                         <li key={link.href}>
                             <Link href={link.href} className="hover:underline">
                                 {link.label.toUpperCase()}
@@ -60,33 +39,57 @@ const Navbar = () => {
                         </li>
                     ))}
                 </ul>
+            </div>
 
-                {/* Profile icon */}
-                <div className="flex ml-2">
+            {/* Right side controls (always visible) */}
+            <div className="flex items-center ml-auto mr-4 gap-4">
+                {/* Mobile hamburger */}
+                <div className="md:hidden">
+                    <button
+                        onClick={() => setMenuOpen(!menuOpen)}
+                        className="focus:outline-none"
+                        aria-label="Toggle menu"
+                    >
+                        <svg width="32" height="32" viewBox="0 0 24 24">
+                            <path
+                                d="M4 6h16M4 12h16M4 18h16"
+                                stroke="white"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                            />
+                        </svg>
+                    </button>
+                </div>
+
+                {/* Profile icon (always visible) */}
+                <Link href="/profile">
                     <Image
                         src="/profile.svg"
                         alt="Profile"
-                        width={48}
-                        height={36}
-                        className="object-contain w-10 h-8 md:w-22 md:h-15"
+                        width={40}
+                        height={40}
+                        className="object-contain w-10 h-10"
                     />
-                </div>
+                </Link>
             </div>
 
             {/* Mobile menu */}
             {menuOpen && (
-                <ul className="absolute top-16 left-0 w-full bg-brand-dark flex flex-col items-center text-white font-serif text-lg font-bold tracking-wide space-y-4 py-6 md:hidden z-50">
-                    {[...row1, ...row2].map((link) => (
-                        <Link
-                            key={link.href}
-                            href={link.href}
-                            className="hover:underline"
-                            onClick={() => setMenuOpen(false)}
-                        >
-                            {link.label.toUpperCase()}
-                        </Link>
-                    ))}
-                </ul>
+                <div className="absolute top-16 left-0 w-full bg-brand-dark flex flex-col items-center text-white font-serif text-lg font-bold tracking-wide space-y-4 py-6 md:hidden z-50">
+                    <ul className="flex flex-col items-center space-y-4">
+                        {links.map((link) => (
+                            <li key={link.href}>
+                                <Link
+                                    href={link.href}
+                                    className="hover:underline"
+                                    onClick={() => setMenuOpen(false)}
+                                >
+                                    {link.label.toUpperCase()}
+                                </Link>
+                            </li>
+                        ))}
+                    </ul>
+                </div>
             )}
         </nav>
     );

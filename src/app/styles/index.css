@@ -7,3 +7,6 @@
     --color-creamy: #DED5C8;
 }
 
+.clip-wave {
+    clip-path: ellipse(50% 5% at 90% 50%);
+}
