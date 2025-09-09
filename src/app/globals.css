@@ -6,12 +6,36 @@
   --font-heading: var(--font-cinzel);
   --font-body: var(--font-jacques-francois);
   --font-inter: var(--font-inter);
+  --color-brand-dark: #805C2C;
 }
 
 .font-inter {
   font-family: var(--font-inter), sans-serif;
 }
 
+.navbar {
+  background-color: var(--color-brand-dark);
+  color: white;
+}
+
+.navbar-mobile-menu {
+  background-color: var(--color-brand-dark);
+  font-family: 'Cinzel', serif;
+}
+
+.navbar-link {
+  font-family: 'Cinzel', serif;
+}
+
+.footer-brand-dark {
+  background-color: var(--color-brand-dark); /* same brand color as Navbar */
+  color: white;
+  font-family: 'Cinzel', serif; /* default font for brand text */
+}
+
+.footer-contact {
+  font-family: 'Inter', serif;
+}
 
 body {
   background: var(--background);
@@ -30,6 +54,7 @@ p {
 }
 
 
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -41,6 +66,7 @@ p {
   column-gap: 4px;   /* <- tighten horizontally */
   row-gap: 10px;     /* keep vertical spacing */
 }
+
 
 
 
