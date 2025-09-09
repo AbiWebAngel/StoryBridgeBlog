@@ -1,0 +1,12 @@
+@import "tailwindcss";
+
+@theme {
+    --color-brand: #000000;        /* default brand */
+    --color-light: #805D2C;
+    --color-brand-dark: #403727;
+    --color-creamy: #DED5C8;
+}
+
+.clip-wave {
+    clip-path: ellipse(50% 5% at 90% 50%);
+}

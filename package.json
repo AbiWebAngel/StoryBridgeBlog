@@ -9,13 +9,15 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@fontsource/cinzel": "^5.2.6",
+    "@fontsource/unifrakturcook": "^5.2.6",
     "next": "15.5.0",
     "react": "19.1.0",
     "react-dom": "19.1.0"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
-    "@tailwindcss/postcss": "^4",
+    "@tailwindcss/postcss": "^4.1.12",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
