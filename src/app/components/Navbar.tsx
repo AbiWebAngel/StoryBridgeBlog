@@ -5,6 +5,7 @@ import Link from "next/link";
 
 const links = [
     { href: "/beta-reading", label: "Beta reading" },
+    { href: "/about", label: "About" },
     { href: "/team", label: "Team" },
     { href: "/mentorship", label: "Mentorship" },
     { href: "/blog", label: "Blog" },
@@ -19,6 +20,7 @@ const Navbar = () => {
     <nav className="relative flex items-center justify-between w-full shadow-lg navbar">
   {/* Logo */}
   <div className="relative flex items-center justify-start w-full h-12 md:w-48 md:h-20">
+    <Link href="/" className="relative flex items-center justify-start w-full h-12 md:w-48 md:h-20">
     <Image
       src="/logo.png"
       alt="Story Bridge Logo"
@@ -26,6 +28,7 @@ const Navbar = () => {
       className="object-contain object-left"
       priority
     />
+    </Link>
   </div>
 
 
