@@ -80,7 +80,7 @@ const Navbar = () => {
     {/* Profile */}
     <Link href="/profile">
      <Image
-      src="/profile.svg"
+      src="/assets/icons/Profile.svg"
       alt="Profile"
       width={40}
       height={40}
