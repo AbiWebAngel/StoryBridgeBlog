@@ -24,18 +24,20 @@ interface TextSectionProps {
 
 export default function TextSection({ heading, text, image }: TextSectionProps) {
   return (
-    <div className="flex flex-col items-center md:items-start">
+    <div className="w-full mt-6 mb-6 px-4 sm:px-6 md:px-20">
       {/* Heading */}
-      <SectionHeading {...heading} insideColumn/>
+      <SectionHeading {...heading} insideColumn />
 
       {/* Paragraph */}
-      <p className="mt-4 text-sm sm:text-base leading-relaxed text-center md:text-left">
+      <p className="mt-4 text-sm sm:text-base leading-relaxed text-center lg:text-left">
         {text}
       </p>
 
+
+
       {/* Optional Supporting Image */}
       {image && (
-        <div className="w-full max-w-xs md:max-w-sm lg:max-w-md mt-4">
+        <div className="w-full max-w-xs md:max-w-sm lg:max-w-md mt-4 mx-auto lg:mx-0">
           <Image
             src={image.src}
             alt={image.alt}
@@ -49,3 +51,4 @@ export default function TextSection({ heading, text, image }: TextSectionProps) 
     </div>
   );
 }
+

@@ -19,13 +19,7 @@ export default function SectionHeading({
 }: SectionHeadingProps) {
   return (
     <h1 className={`w-full mt-6 ${insideColumn ? "" : "px-4 sm:px-6 md:px-20"}`}>
-      <div
-        className={`flex w-full ${
-          insideColumn
-            ? "justify-start" // left-align inside columns
-            : "justify-start" // top-level headings align with page padding
-        }`}
-      >
+      <div className="flex w-full justify-center lg:justify-start">
         <div style={{ maxWidth }}>
           <Image
             src={src}

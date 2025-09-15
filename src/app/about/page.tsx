@@ -20,37 +20,37 @@ export default function AboutPage() {
     return (
       <main>
       {/* Mission Statement */}
-      <SectionHeading
-        src="/assets/headings/MissionStatement.png"
-        alt="Mission Statement"
-        width={550}
-        height={180}
-        maxWidth="550px"
+      <TextSection
+        heading={{
+          src: "/assets/headings/MissionStatement.png",
+          alt: "Mission Statement",
+          width: 550,
+          height: 180,
+          maxWidth: "550px",
+        }}
+        text="StoryBridge is a youth-led initiative bringing young writers and readers together through storytelling, literacy projects and community connection."
       />
-       <p className="mt-8 mb-4 px-4 sm:px-6 md:px-20 text-center md:text-left">
-       StoryBridge is a youth-led initiative bringing young writers and readers together through storytelling, literacy projects and community connection.
-      </p>
-      
+
         <ImageSlider images={bookImages} />
 
       <div className="mt-12">
         {/* Who We Are */}
-        <SectionHeading
-          src="/assets/headings/WhoWeAre.png"
-          alt="Who We Are"
-          width={330}
-          height={180}
-          maxWidth="330px"
+       <TextSection
+          heading={{
+            src: "/assets/headings/WhoWeAre.png",
+            alt: "Who We Are",
+            width: 330,
+            height: 180,
+            maxWidth: "330px",
+          }}
+          text="Founded on the belief that stories can build bridges between people and communities,
+           StoryBridge provides writers, especially teens, with resources to help them grow into their full potential!"
         />
+
       </div>
 
-      <p className="mt-8 mb-4 px-4 sm:px-6 md:px-20 text-center md:text-left">
-        Founded on the belief that stories can build bridges between people and communities, StoryBridge provides writers,
-         especially teens, with resources to help them grow into their full potential!
-      </p>
-
       {/* Columns */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-6 mt-8 px-4 sm:px-6 md:px-20">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-6 mt-8 ">
         <TextSection
           heading={{
             src: "/assets/headings/WhatWeDo.png",
