@@ -4,12 +4,12 @@ import Image from "next/image";
 import Link from "next/link";
 
 const links = [
-    { href: "/beta-reading", label: "Beta reading" },
-    { href: "/about", label: "About" },
+   { href: "/about", label: "About" },
     { href: "/team", label: "Team" },
+    { href: "/beta-reading", label: "Beta reading" },
     { href: "/mentorship", label: "Mentorship" },
-    { href: "/blog", label: "Blog" },
     { href: "/workshops", label: "Workshops" },
+    { href: "/blog", label: "Blog" },
 ];
 
 
