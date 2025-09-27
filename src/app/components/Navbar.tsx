@@ -27,16 +27,12 @@ const links = [
 
 const Navbar = () => {
   const [menuOpen, setMenuOpen] = useState(false);
-  const [openDropdown, setOpenDropdown] = useState<number | null>(null);
 
   return (
-    <nav className="relative flex items-center justify-between w-full shadow-lg navbar">
+    <nav className="relative flex items-center justify-between w-full shadow-lg navbar bg-black h-14 md:h-16">
       {/* Logo */}
-      <div className="relative flex items-center justify-start w-full h-12 md:w-48 md:h-20">
-        <Link
-          href="/"
-          className="relative flex items-center justify-start w-full h-12 md:w-48 md:h-20"
-        >
+      <div className="relative flex items-center justify-start w-full h-full md:w-48">
+        <Link href="/" className="relative flex items-center justify-start w-full h-full">
           <Image
             src="/logo.png"
             alt="Story Bridge Logo"
@@ -47,85 +43,57 @@ const Navbar = () => {
         </Link>
       </div>
 
-     {/* Desktop menu */}
-<div className="hidden lg:flex flex-1 items-center justify-center min-w-0 overflow-visible">
-  <ul className="flex gap-10 xl:gap-12 text-white text-base xl:text-lg font-bold tracking-wide truncate overflow-visible">
-    {links.map((link, i) => (
-<li
-  key={i}
-  className="relative group"
-  onMouseEnter={() => {
-    const dropdown = document.getElementById(`dropdown-${i}`);
-    console.log(`Hovering on menu ${i}:`, dropdown);
-
-    if (dropdown) {
-      const rect = dropdown.getBoundingClientRect();
-      console.log("Dropdown bounding rect:", rect);
-
-      // Parent info
-      let parent = dropdown.parentElement;
-      while (parent) {
-        const styles = getComputedStyle(parent);
-        console.log(
-          "Parent element:",
-          parent.tagName,
-          "overflow:",
-          styles.overflow,
-          "position:",
-          styles.position,
-          "z-index:",
-          styles.zIndex
-        );
-        parent = parent.parentElement;
-      }
-    }
-  }}
->
-  {link.children ? (
-    <>
-      <button className="flex items-center gap-1 navbar-link">
-        {link.label.toUpperCase()}
-        <svg
-          className="w-4 h-4 text-white"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          viewBox="0 0 24 24"
-        >
-          <path d="M6 9l6 6 6-6" strokeLinecap="round" />
-        </svg>
-      </button>
-
-      <ul
-        id={`dropdown-${i}`}
-        className="absolute left-0 mt-2 w-40 bg-white text-black rounded-lg shadow-lg py-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50"
-      >
-        {link.children.map((child) => (
-          <li key={child.href}>
-            <Link
-              href={child.href}
-              className="block px-4 py-2 hover:bg-gray-200"
+      {/* Desktop menu */}
+      <div className="hidden lg:flex flex-1 items-center justify-center min-w-0 overflow-visible">
+        <ul className="flex gap-6 xl:gap-8 text-white text-base xl:text-lg font-bold tracking-wide truncate overflow-visible">
+          {links.map((link, i) => (
+            <li
+              key={i}
+              className="relative group before:absolute before:content-[''] before:top-full before:left-0 before:w-full before:h-6"
             >
-              {child.label}
-            </Link>
-          </li>
-        ))}
-      </ul>
-    </>
-  ) : (
-    <Link href={link.href} className="navbar-link">
-      {link.label.toUpperCase()}
-    </Link>
-  )}
-</li>
+              {link.children ? (
+                <>
+                  <button className="flex items-center gap-1 navbar-link">
+                    {link.label.toUpperCase()}
+                    <svg
+                      className="w-4 h-4 text-white transition-transform duration-200 group-hover:rotate-180"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      viewBox="0 0 24 24"
+                    >
+                      <path d="M6 9l6 6 6-6" strokeLinecap="round" />
+                    </svg>
+                  </button>
 
-
-    ))}
-  </ul>
-</div>
+                  <ul
+                    className="absolute left-1/2 -translate-x-1/2 mt-6 w-40 bg-[#805C2C] text-white rounded-lg shadow-lg py-2
+                               opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 pointer-events-auto"
+                  >
+                    {link.children.map((child, index) => (
+                      <li key={child.href} className={index === 0 ? "" : "border-t border-white"}>
+                        <Link
+                          href={child.href}
+                          className="block px-4 py-2 hover:bg-[#A07845] navbar-link"
+                        >
+                          {child.label}
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                </>
+              ) : (
+                <Link href={link.href} className="navbar-link">
+                  {link.label.toUpperCase()}
+                </Link>
+              )}
+            </li>
+          ))}
+        </ul>
+      </div>
 
       {/* Right controls */}
-      <div className="flex items-center gap-4 mr-4">
+      <div className="flex items-center gap-3 mr-4">
         {/* Hamburger */}
         <div className="lg:hidden h-full flex items-center">
           <button
@@ -134,7 +102,7 @@ const Navbar = () => {
             aria-label="Toggle menu"
           >
             {menuOpen ? (
-              <svg width="32" height="32" viewBox="0 0 24 24">
+              <svg width="28" height="28" viewBox="0 0 24 24">
                 <path
                   d="M6 6l12 12M6 18L18 6"
                   stroke="white"
@@ -143,7 +111,7 @@ const Navbar = () => {
                 />
               </svg>
             ) : (
-              <svg width="32" height="32" viewBox="0 0 24 24">
+              <svg width="28" height="28" viewBox="0 0 24 24">
                 <path
                   d="M4 6h16M4 12h16M4 18h16"
                   stroke="white"
@@ -155,43 +123,56 @@ const Navbar = () => {
           </button>
         </div>
 
-        {/* Profile / Log In dropdown */}
-        <div className="relative group hidden lg:flex items-center">
-          <Image
-            src="/assets/icons/Profile.svg"
-            alt="Profile"
-            width={48}
-            height={48}
-            className="w-12 h-12 object-contain flex-shrink-0 cursor-pointer"
-          />
-          <ul className="absolute right-0 mt-2 w-32 bg-white text-black rounded-lg shadow-lg py-2 hidden group-hover:block z-50">
-            <li>
-              <Link href="/login" className="block px-4 py-2 hover:bg-gray-200">
-                Log In
-              </Link>
-            </li>
-            <li>
-              <Link href="/signup" className="block px-4 py-2 hover:bg-gray-200">
-                Sign Up
-              </Link>
+        {/* Profile */}
+        <div className="hidden lg:flex items-center">
+          <ul className="flex gap-3">
+            <li className="relative group before:absolute before:content-[''] before:top-full before:left-0 before:w-full before:h-6">
+              <Image
+                src="/assets/icons/Profile.svg"
+                alt="Profile"
+                width={40}
+                height={40}
+                className="w-10 h-10 object-contain flex-shrink-0 cursor-pointer"
+              />
+              <ul
+                className="absolute right-0 mt-6 w-32 bg-[#805C2C] text-white rounded-lg shadow-lg py-2
+                           opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50
+                           text-base font-bold tracking-wide pointer-events-auto"
+              >
+                <li>
+                  <Link
+                    href="/login"
+                    className="block px-4 py-2 hover:bg-[#A07845]"
+                  >
+                    Log In
+                  </Link>
+                </li>
+                <li className="border-t border-white">
+                  <Link
+                    href="/signup"
+                    className="block px-4 py-2 hover:bg-[#A07845]"
+                  >
+                    Sign Up
+                  </Link>
+                </li>
+              </ul>
             </li>
           </ul>
         </div>
-
       </div>
 
       {/* Mobile menu */}
       {menuOpen && (
-        <div className="absolute top-16 left-0 w-full flex flex-col items-center text-white font-bold space-y-4 py-6 lg:hidden navbar-mobile-menu bg-black">
-          <ul className="flex flex-col items-center space-y-4">
+        <div className="absolute top-14 left-0 w-full flex flex-col items-center text-white font-bold space-y-3 py-4 lg:hidden navbar-mobile-menu bg-black overflow-visible z-[9999]">
+          <ul className="flex flex-col items-center space-y-3 w-full">
             {links.map((link, i) => (
-              <li key={i} className="text-center">
+              <li key={i} className="text-center w-full">
                 {link.children ? (
-                  <details>
+                  <details className="relative w-full group">
                     <summary className="cursor-pointer flex items-center gap-1 justify-center">
                       {link.label.toUpperCase()}
                       <svg
-                        className="w-4 h-4 text-white"
+                        className="w-4 h-4 text-white transition-transform duration-200 group-open:rotate-180"
                         fill="none"
                         stroke="currentColor"
                         strokeWidth="2"
@@ -200,12 +181,12 @@ const Navbar = () => {
                         <path d="M6 9l6 6 6-6" strokeLinecap="round" />
                       </svg>
                     </summary>
-                    <ul className="mt-2 space-y-2">
+                    <ul className="mt-1 space-y-1 w-full">
                       {link.children.map((child) => (
-                        <li key={child.href}>
+                        <li key={child.href} className="w-full">
                           <Link
                             href={child.href}
-                            className="block hover:underline"
+                            className="block px-4 py-2 hover:bg-[#A07845] w-full text-center"
                             onClick={() => setMenuOpen(false)}
                           >
                             {child.label}
@@ -217,7 +198,7 @@ const Navbar = () => {
                 ) : (
                   <Link
                     href={link.href}
-                    className="hover:underline"
+                    className="block px-4 py-2 hover:bg-[#A07845] w-full text-center"
                     onClick={() => setMenuOpen(false)}
                   >
                     {link.label.toUpperCase()}
@@ -225,20 +206,19 @@ const Navbar = () => {
                 )}
               </li>
             ))}
-            {/* Mobile Log In / Sign Up */}
-            <li>
+            <li className="w-full">
               <Link
                 href="/login"
-                className="hover:underline"
+                className="block px-4 py-2 hover:bg-[#A07845] w-full text-center"
                 onClick={() => setMenuOpen(false)}
               >
                 Log In
               </Link>
             </li>
-            <li>
+            <li className="w-full">
               <Link
                 href="/signup"
-                className="hover:underline"
+                className="block px-4 py-2 hover:bg-[#A07845] w-full text-center"
                 onClick={() => setMenuOpen(false)}
               >
                 Sign Up
