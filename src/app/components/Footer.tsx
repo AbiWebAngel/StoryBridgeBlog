@@ -2,7 +2,7 @@ const Footer = () => {
   return (
     <footer className="footer-brand-dark py-4 px-6 flex flex-col md:flex-row items-center md:justify-between gap-2 md:gap-0 w-full">
       {/* Left side */}
-      <div className="text-[24px] md:text-[30px] font-bold tracking-wide">
+      <div className="text-[24px] md:text-[24px] font-bold tracking-wide">
         StoryBridge
       </div>
 

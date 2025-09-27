@@ -6,7 +6,8 @@
   --font-heading: var(--font-cinzel);
   --font-body: var(--font-jacques-francois);
   --font-inter: var(--font-inter);
-  --color-brand-dark: #805C2C;
+  --color-brand-light: #805C2C;
+  --color-brand-dark: #403727;
 }
 
 .font-inter {
@@ -14,12 +15,12 @@
 }
 
 .navbar {
-  background-color: var(--color-brand-dark);
+  background-color: var(--color-brand-light);
   color: white;
 }
 
 .navbar-mobile-menu {
-  background-color: var(--color-brand-dark);
+  background-color: var(--color-brand-light);
   font-family: 'Cinzel', serif;
 }
 
@@ -28,7 +29,7 @@
 }
 
 .footer-brand-dark {
-  background-color: var(--color-brand-dark); /* same brand color as Navbar */
+  background-color: var(--color-brand-dark); 
   color: white;
   font-family: 'Cinzel', serif; /* default font for brand text */
 }
