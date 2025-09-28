@@ -83,7 +83,7 @@ export default function NewsletterForm() {
       {/* Heading */}
       <h1 className="relative">
         <Image
-          src="/assets/headings/ReadOurNewsletter.png"
+          src="/assets/headings/about/ReadOurNewsletter.png"
           alt="Read Our Newsletter"
           width={350}
           height={230}

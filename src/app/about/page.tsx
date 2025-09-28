@@ -12,10 +12,10 @@ import Testimonials from "../components/about/Testimonials";
 export default function AboutPage() {
   
   const bookImages = [
-    "/assets/images/book1.png",
-    "/assets/images/book2.png",
-    "/assets/images/book3.png",
-    "/assets/images/book4.png",
+    "/assets/images/about/book1.png",
+    "/assets/images/about/book2.png",
+    "/assets/images/about/book3.png",
+    "/assets/images/about/book4.png",
   ];
 
   const testimonials = [
