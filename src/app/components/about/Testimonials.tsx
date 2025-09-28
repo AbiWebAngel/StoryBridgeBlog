@@ -3,6 +3,7 @@
 import "keen-slider/keen-slider.min.css";
 import { useKeenSlider } from "keen-slider/react";
 import Image from "next/image";
+import { useState, useEffect } from "react";
 
 interface Testimonial {
   text: string;
@@ -11,9 +12,17 @@ interface Testimonial {
 
 interface TestimonialCarouselProps {
   testimonials: Testimonial[];
+  autoPlay?: boolean;
+  interval?: number;
 }
 
-export default function Testimonials({ testimonials }: TestimonialCarouselProps) {
+export default function Testimonials({
+  testimonials,
+  autoPlay = true,
+  interval = 5000,
+}: TestimonialCarouselProps) {
+  const [isPaused, setIsPaused] = useState(false);
+
   const [sliderRef, slider] = useKeenSlider<HTMLDivElement>({
     loop: true,
     slides: { perView: 3, spacing: 12 },
@@ -21,10 +30,31 @@ export default function Testimonials({ testimonials }: TestimonialCarouselProps)
       "(max-width: 1024px)": { slides: { perView: 2, spacing: 8 } },
       "(max-width: 768px)": { slides: { perView: 1, spacing: 6 } },
     },
+    created(s) {
+      s.on("dragStarted", () => setIsPaused(true));
+      s.on("dragEnded", () => setIsPaused(false));
+    },
   });
 
-  const handlePrev = () => slider.current?.prev();
-  const handleNext = () => slider.current?.next();
+  // Auto-scroll
+  useEffect(() => {
+    if (!autoPlay) return;
+    const timer = setInterval(() => {
+      if (!isPaused) slider.current?.next();
+    }, interval);
+
+    return () => clearInterval(timer);
+  }, [slider, interval, autoPlay, isPaused]);
+
+  const handlePrev = () => {
+    slider.current?.prev();
+    setIsPaused(true);
+  };
+
+  const handleNext = () => {
+    slider.current?.next();
+    setIsPaused(true);
+  };
 
   return (
     <div className="relative p-8 bg-[#D1BDA1] overflow-hidden">
@@ -63,13 +93,11 @@ export default function Testimonials({ testimonials }: TestimonialCarouselProps)
                 borderRadius: 16,
                 padding: "16px",
                 boxSizing: "border-box",
-                position: "relative", // important for absolute positioning
+                position: "relative",
               }}
             >
-              {/* Text on top */}
               <p className="text-lg font-serif text-center">{t.text}</p>
 
-              {/* Image fixed at the bottom */}
               <div
                 style={{
                   width: 125,
@@ -77,9 +105,9 @@ export default function Testimonials({ testimonials }: TestimonialCarouselProps)
                   borderRadius: 100,
                   overflow: "hidden",
                   position: "absolute",
-                  bottom: 40, // distance from bottom of card
+                  bottom: 40,
                   left: "50%",
-                  transform: "translateX(-50%)", // center horizontally
+                  transform: "translateX(-50%)",
                   backgroundColor: "#fff",
                 }}
               >
