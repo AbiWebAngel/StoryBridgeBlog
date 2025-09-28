@@ -4,8 +4,14 @@ import Image from "next/image";
 import React from "react";
 import ImageSlider from "./components/ImageSlider";
 import {useState, FormEvent } from 'react';
+import NewsletterForm from "./components/NewsletterForm";
 
 
 export default function HomePage() {
-return <h1>Home Page Here</h1>;
+return (
+    <main>
+     {/* Newsletter */}
+      <NewsletterForm />
+    </main>
+)
 }

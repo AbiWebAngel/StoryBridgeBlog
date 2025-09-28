@@ -1,12 +1,13 @@
 "use client";
 
-import Image from "next/image";
+
 import React from "react";
 import SectionHeading from "../components/SectionHeading";
 import TextSection from "../components/TextSection";
-import NewsletterForm from "../components/NewsletterForm";
 import ImageSlider from "../components/ImageSlider";
-import {useState, FormEvent } from 'react';
+import Testimonials from "../components/about/Testimonials";
+
+
 
 export default function AboutPage() {
   
@@ -16,17 +17,44 @@ export default function AboutPage() {
     "/assets/images/book3.png",
     "/assets/images/book4.png",
   ];
-  
+
+  const testimonials = [
+    {
+      text: "This blog is my daily dose of inspiration—always fresh, clear, and insightful.",
+      image: "/assets/images/about/test1.jpg",
+    },
+    {
+      text: "I’ve learned more here in weeks than months of browsing random sites. Brilliant!",
+      image: "/assets/images/about/test2.jpg",
+    },
+    {
+      text: "Engaging, well-written, and reliable—this blog keeps me coming back every week.",
+      image: "/assets/images/about/test3.jpg",
+    },
+     {
+      text: "This blog is my daily dose of inspiration—always fresh, clear, and insightful.",
+      image: "/assets/images/about/test4.jpg",
+    },
+    {
+      text: "I’ve learned more here in weeks than months of browsing random sites. Brilliant!",
+      image: "/assets/images/about/test5.jpg",
+    },
+    {
+      text: "Engaging, well-written, and reliable—this blog keeps me coming back every week.",
+      image: "/assets/images/about/test6.jpg",
+    },
+  ];
+
     return (
       <main>
       {/* Mission Statement */}
       <TextSection
         heading={{
-          src: "/assets/headings/MissionStatement.png",
+          src: "/assets/headings/about/MissionStatement.png",
           alt: "Mission Statement",
-          width: 350,
+          width: 360,
           height: 180,
-          maxWidth: "350px",
+          maxWidth: "360px",
         }}
         text="StoryBridge is a youth-led initiative bringing young writers and readers together through storytelling, literacy projects and community connection."
       />
@@ -37,7 +65,7 @@ export default function AboutPage() {
         {/* Who We Are */}
        <TextSection
           heading={{
-            src: "/assets/headings/WhoWeAre.png",
+            src: "/assets/headings/about/WhoWeAre.png",
             alt: "Who We Are",
             width: 230,
             height: 180,
@@ -53,7 +81,7 @@ export default function AboutPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-6 mt-8 ">
         <TextSection
           heading={{
-            src: "/assets/headings/WhatWeDo.png",
+            src: "/assets/headings/about/WhatWeDo.png",
             alt: "What We Do",
             width: 240,
             height: 200,
@@ -62,7 +90,7 @@ export default function AboutPage() {
           text="We offer beta-reading services for novelists, a mentorship program for those just starting out,
            and weekly competitions based on writing prompts to keep the creativity flowing."
           image={{
-            src: "/assets/images/PeopleAreDoingOnline.png",
+            src: "/assets/images/about/PeopleAreDoingOnline.png",
             alt: "People Are Doing Online",
             width: 400,
             height: 350,
@@ -71,7 +99,7 @@ export default function AboutPage() {
 
         <TextSection
           heading={{
-            src: "/assets/headings/WhyItMatters.png",
+            src: "/assets/headings/about/WhyItMatters.png",
             alt: "Why It Matters",
             width: 290,
             height: 200,
@@ -85,8 +113,17 @@ export default function AboutPage() {
         />
       </div>
 
-      {/* Newsletter */}
-      <NewsletterForm />
+      {/* Testimonial */}
+     <div className="mb-12">
+        <SectionHeading
+          src="/assets/headings/about/Testimonials.png"
+          alt="Testimonials Heading"
+          width={200}
+          height={50}
+          center={true}
+      />
+      </div>
+      <Testimonials testimonials={testimonials} />
     </main>
   );
 }
