@@ -19,10 +19,8 @@ const links = [
     ],
   },
   { href: "/workshops", label: "Workshops" },
-  {
-    label: "Resources",
-    children: [{ href: "/blog", label: "Blog" }],
-  },
+  { href: "/resources", label: "Resources" },
+  { href: "/blog", label: "Blog" },
 ];
 
 const Navbar = () => {
@@ -83,8 +81,13 @@ const Navbar = () => {
                   </ul>
                 </>
               ) : (
-                <Link href={link.href} className="navbar-link">
-                  {link.label.toUpperCase()}
+                <Link
+                  href={link.href}
+                  className="navbar-link relative group pb-1"
+                >
+                  <span className="relative after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-white after:transition-all after:duration-300 group-hover:after:w-full">
+                    {link.label.toUpperCase()}
+                  </span>
                 </Link>
               )}
             </li>
@@ -123,42 +126,43 @@ const Navbar = () => {
           </button>
         </div>
 
-        {/* Profile */}
-        <div className="hidden lg:flex items-center">
-          <ul className="flex gap-3">
-            <li className="relative group before:absolute before:content-[''] before:top-full before:left-0 before:w-full before:h-6">
-              <Image
-                src="/assets/icons/Profile.svg"
-                alt="Profile"
-                width={40}
-                height={40}
-                className="w-10 h-10 object-contain flex-shrink-0 cursor-pointer"
-              />
-              <ul
-                className="absolute right-0 mt-6 w-32 bg-[#805C2C] text-white rounded-lg shadow-lg py-2
-                           opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50
-                           text-base font-bold tracking-wide pointer-events-auto"
+    {/* Profile */}
+    <div className="hidden lg:flex items-center">
+      <ul className="flex gap-3">
+        <li className="relative group">
+          {/* Clickable area wrapper */}
+          <div className="relative cursor-pointer p-2 -m-2 flex items-center justify-center">
+            <Image
+              src="/assets/icons/Profile.svg"
+              alt="Profile"
+              width={40}
+              height={40}
+              className="w-10 h-10 object-contain"
+            />
+          </div>
+
+          {/* Dropdown */}
+          <ul
+            className="absolute right-0 mt-4 w-44 bg-[#805C2C] text-white rounded-lg shadow-lg py-2
+                      opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50
+                      text-base font-bold tracking-wide pointer-events-auto"
+          >
+            <li>
+              <Link
+                href="/login"
+                className="block px-4 py-2 hover:bg-[#A07845]"
               >
-                <li>
-                  <Link
-                    href="/login"
-                    className="block px-4 py-2 hover:bg-[#A07845]"
-                  >
-                    Log In
-                  </Link>
-                </li>
-                <li className="border-t border-white">
-                  <Link
-                    href="/signup"
-                    className="block px-4 py-2 hover:bg-[#A07845]"
-                  >
-                    Sign Up
-                  </Link>
-                </li>
-              </ul>
+                Log In / Sign Up
+              </Link>
             </li>
           </ul>
-        </div>
+        </li>
+      </ul>
+    </div>
+
+
+
+
       </div>
 
       {/* Mobile menu */}

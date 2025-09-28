@@ -61,12 +61,13 @@ export default function ImageSlider({
       <div ref={sliderRef} className="keen-slider">
         {images.map((src, i) => (
           <div key={i} className="keen-slider__slide flex justify-center">
-            <div
-               className="w-72 h-52 sm:w-80 sm:h-56 rounded-4xl overflow-hidden shadow-lg relative cursor-pointer transform transition-transform duration-300 hover:scale-105"
+           <div
+              className="w-64 h-48 sm:w-72 sm:h-52 rounded-4xl overflow-hidden shadow-lg relative cursor-pointer transform transition-transform duration-300 hover:scale-105"
               onClick={() => setCurrentImage(src)}
             >
               <Image src={src} alt={`Slide ${i}`} fill className="object-cover" />
             </div>
+
           </div>
         ))}
       </div>

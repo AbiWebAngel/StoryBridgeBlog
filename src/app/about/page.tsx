@@ -24,9 +24,9 @@ export default function AboutPage() {
         heading={{
           src: "/assets/headings/MissionStatement.png",
           alt: "Mission Statement",
-          width: 450,
+          width: 350,
           height: 180,
-          maxWidth: "450px",
+          maxWidth: "350px",
         }}
         text="StoryBridge is a youth-led initiative bringing young writers and readers together through storytelling, literacy projects and community connection."
       />
@@ -39,9 +39,9 @@ export default function AboutPage() {
           heading={{
             src: "/assets/headings/WhoWeAre.png",
             alt: "Who We Are",
-            width: 290,
+            width: 230,
             height: 180,
-            maxWidth: "290px",
+            maxWidth: "230px",
           }}
           text="Founded on the belief that stories can build bridges between people and communities,
            StoryBridge provides writers, especially teens, with resources to help them grow into their full potential!"
@@ -55,9 +55,9 @@ export default function AboutPage() {
           heading={{
             src: "/assets/headings/WhatWeDo.png",
             alt: "What We Do",
-            width: 300,
+            width: 240,
             height: 200,
-            maxWidth: "300px",
+            maxWidth: "240px",
           }}
           text="We offer beta-reading services for novelists, a mentorship program for those just starting out,
            and weekly competitions based on writing prompts to keep the creativity flowing."
@@ -73,9 +73,9 @@ export default function AboutPage() {
           heading={{
             src: "/assets/headings/WhyItMatters.png",
             alt: "Why It Matters",
-            width: 370,
+            width: 290,
             height: 200,
-            maxWidth: "370px",
+            maxWidth: "290px",
           }}
           text="Young writers are often told to wait until they “grow up” before their words can make a difference. 
           At StoryBridge, we believe the opposite: every young person already has something worth saying, and writing is one of the most powerful ways to say it.

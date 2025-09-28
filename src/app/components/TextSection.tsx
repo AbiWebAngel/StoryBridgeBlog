@@ -29,11 +29,9 @@ export default function TextSection({ heading, text, image }: TextSectionProps) 
       <SectionHeading {...heading} insideColumn />
 
       {/* Paragraph */}
-      <p className="mt-4 text-sm sm:text-base leading-relaxed text-center lg:text-left">
+      <p className="mt-4 leading-relaxed text-center lg:text-left">
         {text}
       </p>
-
-
 
       {/* Optional Supporting Image */}
       {image && (
@@ -51,4 +49,3 @@ export default function TextSection({ heading, text, image }: TextSectionProps) 
     </div>
   );
 }
-
