@@ -45,7 +45,7 @@ const Navbar = () => {
 
       {/* Desktop menu */}
       <div className="hidden lg:flex flex-1 items-center justify-center min-w-0 overflow-visible">
-        <ul className="flex gap-6 xl:gap-8 text-white text-base xl:text-lg font-bold tracking-wide truncate overflow-visible">
+        <ul className="flex gap-6 xl:gap-8 text-white text-sm xl:text-base font-bold tracking-wide truncate overflow-visible">
           {links.map((link, i) => (
             <li
               key={i}
