@@ -94,14 +94,14 @@ export default function NewsletterForm() {
         <button
           type="submit"
           form="newsletter-form"
-          className="absolute top-[3px] right-[-15px] sm:top-[-10px] sm:right-10 md:top-[-20px] md:right-[-50px] lg:top-[-35px] lg:right-[-160px] z-10 bg-transparent transition hover:scale-110 hover:brightness-110"
+          className="absolute top-[0px] right-[-15px] sm:top-[-5px] sm:right-10 md:top-[-14px] md:right-[-20px] lg:top-[-32px] lg:right-[-160px] z-10 bg-transparent transition hover:scale-110 hover:brightness-110"
         >
           <Image
             src="/assets/icons/Send.svg"
             alt="Send"
             width={300}
             height={200}
-            className="w-35 h-21 sm:w-60 sm:h-20 md:w-64 md:h-24 lg:w-64 lg:h-31"
+            className="w-40 h-21 sm:w-52 sm:h-20 md:w-52 md:h-24 lg:w-60 lg:h-31"
           />
         </button>
       </h1>

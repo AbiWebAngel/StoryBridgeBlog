@@ -21,40 +21,39 @@ export default function SearchComponent() {
   ];
 
  return (
-<div className="mt-12 mb-12 px-6 relative"> {/* Outer wrapper controls margin */}
+<div className="mt-12 mb-12 relative">
 
   {/* Search Box positioned above the section */}
-  <div className="relative w-80 md:w-96 mx-auto z-10">
-    <div className="absolute top-[-25] right-[-160] md:right-[-4rem] lg:right-[-6rem] w-full md:w-96">
-      <div className="relative">
-        {/* Icon */}
-        <div className="absolute left-6 top-1/2 -translate-y-1/2 pointer-events-none z-10">
-          <Image
-            src="/assets/images/home/search.png"
-            alt="Search"
-            width={25}
-            height={25}
-          />
-        </div>
-
-        {/* Input */}
-       <input
-  type="text"
-  placeholder="Start typing to search"
-  value={searchText}
-  onChange={(e) => setSearchText(e.target.value)}
-  className="w-full rounded-l-full rounded-r-none border-4 border-l-[#694D28] border-y-[#694D28] border-r-0
-             bg-[#C6B49C] py-3 pl-16 pr-10 text-[#403727] font-bold placeholder-[#403727]
-             outline-none focus:ring-2 focus:ring-[#805D2D]/40 transition"
-/>
-
-
-
-        {/* Permanent underline */}
-        <div className="absolute left-16 right-2 bottom-3 h-[2px] bg-[#403727] pointer-events-none rounded" />
+  <div className="absolute top-[-22px] right-0 w-80 md:w-96 z-10">
+    <div className="relative">
+      {/* Icon */}
+      <div className="absolute left-8 top-1/2 -translate-y-1/2 pointer-events-none z-10">
+        <Image
+          src="/assets/images/home/search.png"
+          alt="Search"
+          width={25}
+          height={25}
+        />
       </div>
+
+      {/* Input */}
+      <input
+        type="text"
+        placeholder="Start typing to search"
+        value={searchText}
+        onChange={(e) => setSearchText(e.target.value)}
+        className="w-full rounded-l-full rounded-r-none border-4 border-l-[#694D28] border-y-[#694D28] border-r-0
+                   bg-[#C6B49C] py-3 pl-16 pr-10 text-[#403727] font-bold placeholder-[#403727]
+                   outline-none focus:ring-2 focus:ring-[#805D2D]/40 transition"
+      />
+
+      {/* Permanent underline */}
+      <div className="absolute left-16 right-2 bottom-3 h-[2px] bg-[#403727] pointer-events-none rounded" />
     </div>
   </div>
+
+
+
 
   {/* Section with border */}
   <section className="font-inter w-full bg-[#DDD2C3] py-12 relative overflow-hidden border-y-4 border-[#805D2D]">
