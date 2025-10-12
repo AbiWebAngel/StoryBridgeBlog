@@ -29,7 +29,7 @@ export default function TextSection({ heading, text, image }: TextSectionProps) 
       <SectionHeading {...heading} insideColumn />
 
       {/* Paragraph */}
-      <p className="mt-4 leading-relaxed text-center lg:text-left">
+      <p className="mt-4 text-center lg:text-left leading-[2.2]">
         {text}
       </p>
 

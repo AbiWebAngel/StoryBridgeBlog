@@ -85,7 +85,7 @@ export default function NewsletterForm() {
         <Image
           src="/assets/headings/about/ReadOurNewsletter.png"
           alt="Read Our Newsletter"
-          width={350}
+          width={320}
           height={230}
           quality={100}
         />

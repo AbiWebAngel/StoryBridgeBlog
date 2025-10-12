@@ -21,7 +21,7 @@ export default function SearchComponent() {
   ];
 
  return (
-<div className="mt-12 mb-12 relative">
+<div className="mt-12 mb-16 relative">
 
   {/* Search Box positioned above the section */}
   <div className="absolute top-[-22px] right-0 w-80 md:w-96 z-10">
@@ -58,7 +58,7 @@ export default function SearchComponent() {
   {/* Section with border */}
   <section className="font-inter w-full bg-[#DDD2C3] py-8 relative overflow-hidden border-y-4 border-[#805D2D]">
     {/* Search by Labels */}
-    <div className="flex flex-col items-center space-y-4">
+    <div className="flex flex-col items-center py-4 space-y-4">
       <h2 className="font-inter text-lg font-bold text-[#805D2D]">
         Search by labels:
       </h2>
