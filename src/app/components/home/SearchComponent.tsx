@@ -56,10 +56,10 @@ export default function SearchComponent() {
 
 
   {/* Section with border */}
-  <section className="font-inter w-full bg-[#DDD2C3] py-12 relative overflow-hidden border-y-4 border-[#805D2D]">
+  <section className="font-inter w-full bg-[#DDD2C3] py-8 relative overflow-hidden border-y-4 border-[#805D2D]">
     {/* Search by Labels */}
-    <div className="flex flex-col items-center space-y-4 mt-20">
-      <h2 className="font-inter text-lg font-bold text-[#866436]">
+    <div className="flex flex-col items-center space-y-4">
+      <h2 className="font-inter text-lg font-bold text-[#805D2D]">
         Search by labels:
       </h2>
 
@@ -68,7 +68,7 @@ export default function SearchComponent() {
           <span
             key={index}
             className="cursor-pointer px-5 py-2 rounded-full border-2 border-[#805D2D] bg-[#EDE5D8]
-                       text-[#3E2B12] font-medium transition-transform duration-300
+                       text-[#805D2D] font-medium transition-transform duration-300
                        hover:scale-110 select-none"
           >
             {label}
