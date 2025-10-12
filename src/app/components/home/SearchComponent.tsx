@@ -42,13 +42,13 @@ export default function SearchComponent() {
         placeholder="Start typing to search"
         value={searchText}
         onChange={(e) => setSearchText(e.target.value)}
-        className="w-full rounded-l-full rounded-r-none border-4 border-l-[#694D28] border-y-[#694D28] border-r-0
-                   bg-[#C6B49C] py-3 pl-16 pr-10 text-[#403727] font-bold placeholder-[#403727]
+        className="font-inter w-full rounded-l-full rounded-r-none border-4 border-l-[#694D28] border-y-[#694D28] border-r-0
+                   bg-[#C6B49C] pt-3 pb-[0.6rem] pl-16 pr-10 text-[#403727] font-bold placeholder-[#403727]
                    outline-none focus:ring-2 focus:ring-[#805D2D]/40 transition"
       />
 
       {/* Permanent underline */}
-      <div className="absolute left-16 right-2 bottom-3 h-[2px] bg-[#403727] pointer-events-none rounded" />
+      <div className="absolute left-16 right-2 bottom-3 h-[1px] bg-[#403727] pointer-events-none rounded" />
     </div>
   </div>
 

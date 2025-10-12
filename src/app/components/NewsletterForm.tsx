@@ -115,7 +115,7 @@ export default function NewsletterForm() {
       >
         <div className="w-full">
           <div
-            className={`rounded-full border-5 shadow-md bg-transparent px-4 py-3 transition ${
+            className={`rounded-full border-5 shadow-md bg-[#C6B49C] px-4 py-3 transition ${
               touched
                 ? isValid
                   ? "border-green-500"
@@ -130,7 +130,7 @@ export default function NewsletterForm() {
               onBlur={() => setTouched(true)}
               placeholder="myexampleemail@gmail.com"
               required
-              className="w-full focus:outline-none bg-transparent text-[#202020] placeholder-[#4F4C48] border-b border-[#817C73] mt-2 font-inter text-sm sm:text-base"
+              className="w-full focus:outline-none  text-[#403727] font-bold placeholder-[#403727] border-b-2 border-[#403727] mt-2 font-inter text-sm sm:text-base"
             />
           </div>
 
