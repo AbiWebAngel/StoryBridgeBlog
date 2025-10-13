@@ -39,7 +39,7 @@ return (
       <JoinOurPrograms />
 
        {/* Message From Director */}
-      <div className="mb-8 mt-16">
+      <div className="mb-10 mt-16">
           <SectionHeading
             src="/assets/headings/home/MessageFromDirector.png"
             alt="Message From Director Heading"
