@@ -105,7 +105,7 @@ export default function LatestBlogs() {
   );
 
   return (
-    <div className="w-full flex flex-col items-center space-y-8">
+    <div className="w-full flex flex-col items-center space-y-12">
       {currentItems.map((item) => (
         <div
           key={item.id}

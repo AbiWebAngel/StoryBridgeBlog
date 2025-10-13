@@ -6,6 +6,7 @@ import NewsletterForm from "./components/NewsletterForm";
 import SectionHeading from "./components/SectionHeading";
 import LatestBlogs from "./components/home/LatestBlogs";
 import JoinOurPrograms from "./components/home/JoinOurPrograms";
+import MessageFromDirector from "./components/home/MessageFromDirector";
 
 export default function HomePage() {
 return (
@@ -36,6 +37,18 @@ return (
           />
       </div>
       <JoinOurPrograms />
+
+       {/* Message From Director */}
+      <div className="mb-8 mt-16">
+          <SectionHeading
+            src="/assets/headings/home/MessageFromDirector.png"
+            alt="Message From Director Heading"
+            width={400}
+            height={50}
+            center={true}
+          />
+      </div>
+      <MessageFromDirector />
 
       {/* Newsletter */}
       <NewsletterForm />
