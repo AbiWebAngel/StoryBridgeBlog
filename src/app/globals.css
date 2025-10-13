@@ -50,7 +50,9 @@ h1, h2, h3, h4, h5, h6 {
   font-weight: 700;
 }
 
-
+p {
+  font-size: 18px; /* mobile default, smaller than 20px */
+}
 
 /* Small screens (≥640px) */
 @media (min-width: 640px) {
