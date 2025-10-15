@@ -6,8 +6,8 @@ interface SectionHeadingProps {
   width: number;
   height: number;
   maxWidth?: string;
-  insideColumn?: boolean; // optional, for headings inside columns
-  center?: boolean;       // optional, center heading horizontally
+  responsiveCenter?: boolean; // previously "center"
+  centerAll?: boolean;        // always center
 }
 
 export default function SectionHeading({
@@ -16,12 +16,18 @@ export default function SectionHeading({
   width,
   height,
   maxWidth,
-  insideColumn = false,
-  center = false,
+  responsiveCenter = false,
+  centerAll = false,
 }: SectionHeadingProps) {
+  const justifyClass = centerAll
+    ? "justify-center"                     // always center
+    : responsiveCenter
+    ? "justify-center lg:justify-start"    // responsive center
+    : "justify-start";                      // always left
+
   return (
-    <h1 className={`w-full mt-6 ${insideColumn ? "" : "px-4 sm:px-6 md:px-20"}`}>
-      <div className={`flex w-full ${center ? "justify-center" : "justify-start"}`}>
+    <h1 className="w-full mt-6">
+      <div className={`flex w-full ${justifyClass}`}>
         <div style={{ maxWidth }}>
           <Image
             src={src}

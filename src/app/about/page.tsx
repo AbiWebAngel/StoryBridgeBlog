@@ -78,7 +78,7 @@ export default function AboutPage() {
       </div>
 
       {/* Columns */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-6 mt-8 ">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 lg:gap-x-4 gap-y-6 mt-8">
         <TextSection
           heading={{
             src: "/assets/headings/about/WhatWeDo.png",
@@ -120,7 +120,7 @@ export default function AboutPage() {
           alt="Testimonials Heading"
           width={200}
           height={50}
-          center={true}
+          centerAll={true}
       />
       </div>
       <Testimonials testimonials={testimonials} />

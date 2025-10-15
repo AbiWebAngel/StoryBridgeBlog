@@ -20,13 +20,25 @@ interface TextSectionProps {
   heading: HeadingProps;
   text: string;
   image?: ImageProps;
+  responsiveCenter?: boolean; // new prop
+  centerAll?: boolean;        // new prop
 }
 
-export default function TextSection({ heading, text, image }: TextSectionProps) {
+export default function TextSection({
+  heading,
+  text,
+  image,
+  responsiveCenter = true, // default: center on small screens
+  centerAll = false,       // default: do not force center
+}: TextSectionProps) {
   return (
     <div className="w-full mt-6 mb-6 px-4 sm:px-6 md:px-20">
       {/* Heading */}
-      <SectionHeading {...heading} insideColumn />
+      <SectionHeading
+        {...heading}
+        responsiveCenter={responsiveCenter}
+        centerAll={centerAll}
+      />
 
       {/* Paragraph */}
       <p className="mt-4 text-center lg:text-left leading-[2.2]">
