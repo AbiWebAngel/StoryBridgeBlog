@@ -21,7 +21,7 @@ return (
             alt="Blog Posts Heading"
             width={500}
             height={50}
-            center={true}
+            responsiveCenter={true}
           />
       </div>
       <LatestBlogs />
@@ -33,7 +33,7 @@ return (
             alt="Join Our Programs Heading"
             width={300}
             height={50}
-            center={true}
+            responsiveCenter={true}
           />
       </div>
       <JoinOurPrograms />
@@ -45,7 +45,7 @@ return (
             alt="Message From Director Heading"
             width={400}
             height={50}
-            center={true}
+            responsiveCenter={true}
           />
       </div>
       <MessageFromDirector />
