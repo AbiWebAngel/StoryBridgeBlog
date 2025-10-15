@@ -23,18 +23,20 @@ export default function Testimonials({
 }: TestimonialCarouselProps) {
   const [isPaused, setIsPaused] = useState(false);
 
-  const [sliderRef, slider] = useKeenSlider<HTMLDivElement>({
-    loop: true,
-    slides: { perView: 3, spacing: 12 },
-    breakpoints: {
-      "(max-width: 1024px)": { slides: { perView: 2, spacing: 8 } },
-      "(max-width: 768px)": { slides: { perView: 1, spacing: 6 } },
-    },
-    created(s) {
-      s.on("dragStarted", () => setIsPaused(true));
-      s.on("dragEnded", () => setIsPaused(false));
-    },
-  });
+ const [sliderRef, slider] = useKeenSlider<HTMLDivElement>({
+  loop: true,
+  slides: { perView: 3, spacing: 6 }, // default desktop view
+  breakpoints: {
+    "(min-width: 1600px)": { slides: { perView: 4, spacing: 6 } }, // very wide screens
+    "(max-width: 1024px)": { slides: { perView: 2, spacing: 8 } },  // tablet
+    "(max-width: 768px)": { slides: { perView: 1, spacing: 6 } },   // mobile
+  },
+  created(s) {
+    s.on("dragStarted", () => setIsPaused(true));
+    s.on("dragEnded", () => setIsPaused(false));
+  },
+});
+
 
   // Auto-scroll
   useEffect(() => {
@@ -88,7 +90,7 @@ export default function Testimonials({
             className="flex flex-col items-center"
             style={{
               width: 325,
-              height: 400,
+              height: 370,
               backgroundColor: "#EDE5D8",
               borderRadius: 16,
               padding: "16px",
@@ -107,13 +109,13 @@ export default function Testimonials({
                 borderRadius: 100,
                 overflow: "hidden",
                 position: "absolute",
-                bottom: 40,
+                bottom: 60,
                 left: "50%",
                 transform: "translateX(-50%)",
                 backgroundColor: "#fff",
               }}
             >
-              <Image src={t.image} alt={`Testimonial ${i}`} fill className="object-cover" />
+              <Image src={t.image} alt={`Testimonial ${i}`} fill className="object-cover"/>
             </div>
           </div>
         </div>
