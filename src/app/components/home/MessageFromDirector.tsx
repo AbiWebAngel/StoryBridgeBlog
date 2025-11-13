@@ -48,7 +48,7 @@ export default function MessageFromDirector() {
         aria-label="Get To Know The Rest Of The Team"
         className="
           absolute top-full right-2 transform -translate-y-6
-          w-[500px] max-w-[90%] h-[105px] bg-[#E3DDCF] 
+          w-[500px] max-w-[90%] h-[105px] bg-[#F2ECE3] 
           flex items-center justify-center cursor-pointer overflow-hidden
           shadow-[0_8px_12px_rgba(0,0,0,0.25)] z-10
           transition-transform transition-shadow duration-300

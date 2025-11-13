@@ -123,7 +123,7 @@ export default function LatestBlogs() {
       {currentItems.map((item) => (
         <div
           key={item.id}
-          className="flex flex-col w-full sm:w-[90%] md:w-[95%] lg:max-w-[1096px] mx-auto rounded-[30px] bg-[#EDE5D8] text-[#413320] overflow-hidden shadow-xl h-full"
+          className="flex flex-col w-full sm:w-[90%] md:w-[95%] lg:max-w-[1096px] mx-auto rounded-[30px] bg-[#F2ECE3] text-[#413320] overflow-hidden shadow-xl h-full"
         >
           {/* Heading + Heart */}
           <div className="flex justify-between items-start gap-4 pt-4 pb-2 px-4 sm:px-6 md:px-8">
@@ -157,7 +157,7 @@ export default function LatestBlogs() {
             <div className="flex flex-col justify-between lg:flex-[1_1_70%] space-y-3 h-full px-2 sm:px-4 md:px-6">
               <div className="overflow-hidden max-h-[230px] sm:max-h-[260px] lg:max-h-[300px] relative flex-1">
                 <div className="line-clamp-none">{item.content}</div>
-                <div className="absolute bottom-0 left-0 w-full h-12 bg-gradient-to-t from-[#EDE5D8] to-transparent pointer-events-none"></div>
+                <div className="absolute bottom-0 left-0 w-full h-12 bg-gradient-to-t from-[#F2ECE3] to-transparent pointer-events-none"></div>
               </div>
               <div className="text-right mt-4">
                 <a
@@ -182,7 +182,7 @@ export default function LatestBlogs() {
             className={`px-3 py-1 rounded ${
               currentPage === page
                 ? "bg-[#413320] text-white"
-                : "bg-[#EDE5D8] hover:bg-[#D8CBBF]"
+                : "bg-[#F2ECE3] hover:bg-[#D8CBBF]"
             } transition`}
           >
             {page}

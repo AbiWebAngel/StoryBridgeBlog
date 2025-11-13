@@ -67,7 +67,7 @@ export default function SearchComponent() {
         {labels.map((label, index) => (
           <span
             key={index}
-            className="cursor-pointer px-5 py-2 rounded-full border-2 border-[#805D2D] bg-[#EDE5D8]
+            className="cursor-pointer px-5 py-2 rounded-full border-2 border-[#805D2D] bg-[#F2ECE3]
                        text-[#805D2D] font-medium transition-transform duration-300
                        hover:scale-110 select-none"
           >
