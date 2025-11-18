@@ -35,21 +35,21 @@ export const blogData: BlogPost[] = [
         </p>
         
         <div className="space-y-4">
-          <p>1. "You do not have to be fire to burn. You only need to be awake." – Unknown</p>
-          <p>2. "Discipline is choosing between what you want now and what you want most." – Attributed to Abraham Lincoln, and Psychotherapist Augusta F. Kantra.</p>
-          <p>3. "Success is not final, failure is not fatal; it's the courage to continue that counts." – Winston Churchill</p>
-          <p>4. "Everyone has a story, a writer is the only one brave enough to tell it." – Abigail Reed</p>
-          <p>5. "The scariest moment is always just before you start." – Stephen King</p>
-          <p>6. "You can always edit a bad page. You can't edit a blank page." – Jodi Picoult</p>
-          <p>7. "Start writing, no matter what. The water does not flow until the faucet is turned on." – Louis L'Amour</p>
-          <p>8. "Get it down. Take chances. It may be bad, but it's the only way you can do anything really good." – William Faulkner</p>
-          <p>9. "The first draft is just you telling yourself the story." – Terry Pratchett</p>
-          <p>10. "You fail only if you stop writing." – Ray Bradbury</p>
-          <p>11. "A professional writer is an amateur who didn't quit." – Richard Bach</p>
-          <p>12. "Don't tell me the moon is shining; show me the glint of light on broken glass." – Anton Chekhov</p>
-          <p>13. "Write what should not be forgotten." – Isabel Allende</p>
-          <p>14. "The role of a writer is not to say what we all can say, but what we are unable to say." – Anaïs Nin</p>
-          <p>15. "One day I will find the right words, and they will be simple." – Jack Kerouac</p>
+          <p>1. &quot;You do not have to be fire to burn. You only need to be awake.&quot; – Unknown</p>
+          <p>2. &quot;Discipline is choosing between what you want now and what you want most.&quot; – Attributed to Abraham Lincoln, and Psychotherapist Augusta F. Kantra.</p>
+          <p>3. &quot;Success is not final, failure is not fatal; it&apos;s the courage to continue that counts.&quot; – Winston Churchill</p>
+          <p>4. &quot;Everyone has a story, a writer is the only one brave enough to tell it.&quot; – Abigail Reed</p>
+          <p>5. &quot;The scariest moment is always just before you start.&quot; – Stephen King</p>
+          <p>6. &quot;You can always edit a bad page. You can&apos;t edit a blank page.&quot; – Jodi Picoult</p>
+          <p>7. &quot;Start writing, no matter what. The water does not flow until the faucet is turned on.&quot; – Louis L&apos;Amour</p>
+          <p>8. &quot;Get it down. Take chances. It may be bad, but it&apos;s the only way you can do anything really good.&quot; – William Faulkner</p>
+          <p>9. &quot;The first draft is just you telling yourself the story.&quot; – Terry Pratchett</p>
+          <p>10. &quot;You fail only if you stop writing.&quot; – Ray Bradbury</p>
+          <p>11. &quot;A professional writer is an amateur who didn&apos;t quit.&quot; – Richard Bach</p>
+          <p>12. &quot;Don&apos;t tell me the moon is shining; show me the glint of light on broken glass.&quot; – Anton Chekhov</p>
+          <p>13. &quot;Write what should not be forgotten.&quot; – Isabel Allende</p>
+          <p>14. &quot;The role of a writer is not to say what we all can say, but what we are unable to say.&quot; – Anaïs Nin</p>
+          <p>15. &quot;One day I will find the right words, and they will be simple.&quot; – Jack Kerouac</p>
         </div>
       </div>
     ),
@@ -80,15 +80,15 @@ export const blogData: BlogPost[] = [
       <div className="space-y-6 text-[16px] sm:text-[17px] lg:text-[18px] font-inter leading-relaxed">
         <div>
           <strong>Preface:</strong>
-          <p>Before I get into this week's content, the StoryBridge team wants to congratulate you all for being here!</p>
-          <p>Why? Because it's no easy task to trust others with your creativity or be tactful and truthful in your reviews.</p>
-          <p>Yet you've decided to try, and that's half the battle. Which is why I've decided to make a simple, step-by-step guide on getting the most of your beta-reader/writer pairing. The analogy I'll be using is inspired by our namesake, hence: "Building bridges."</p>
+          <p>{`Before I get into this week's content, the StoryBridge team wants to congratulate you all for being here!`}</p>
+          <p>{`Why? Because it's no easy task to trust others with your creativity or be tactful and truthful in your reviews.`}</p>
+          <p>{`Yet you've decided to try, and that's half the battle. Which is why I've decided to make a simple, step-by-step guide on getting the most of your beta-reader/writer pairing. The analogy I'll be using is inspired by our namesake, hence: &quot;Building bridges.&quot;`}</p>
         </div>
 
         <div className="space-y-4">
           <strong>Step 1: Know your foundation</strong>
-          <p>"The whole point of a beta reader is to get into the nitty-gritty subjects—deeper than just 'what did you like and what didn't you like?' You're looking for feedback on character development, plot holes, pacing, and overall coherence.</p>
-          <p>As a writer, be clear about what you want feedback on. Are you concerned about your protagonist's likability? The pacing in the middle chapters? The clarity of your world-building?</p>
+          <p>&quot;The whole point of a beta reader is to get into the nitty-gritty subjects—deeper than just &apos;what did you like and what didn&apos;t you like?&apos; You&apos;re looking for feedback on character development, plot holes, pacing, and overall coherence.</p>
+          <p>As a writer, be clear about what you want feedback on. Are you concerned about your protagonist&apos;s likability? The pacing in the middle chapters? The clarity of your world-building?</p>
         </div>
 
         <div className="space-y-4">
@@ -103,12 +103,12 @@ export const blogData: BlogPost[] = [
 
         <div className="space-y-4">
           <strong>Step 4: Maintain the structure</strong>
-          <p>Regular check-ins can prevent misunderstandings and keep the process moving forward. A quick "how's it going?" message can work wonders.</p>
+          <p>Regular check-ins can prevent misunderstandings and keep the process moving forward. A quick &quot;how&apos;s it going?&quot; message can work wonders.</p>
         </div>
 
         <div className="space-y-4">
           <strong>Step 5: Cross the bridge together</strong>
-          <p>The best beta relationships become collaborative partnerships where both parties grow. You're not just critiquing a manuscript—you're helping build a better story.</p>
+          <p>The best beta relationships become collaborative partnerships where both parties grow. You&apos;re not just critiquing a manuscript—you&apos;re helping build a better story.</p>
         </div>
       </div>
     ),
@@ -143,29 +143,29 @@ export const blogData: BlogPost[] = [
           {`This week, we sit down with `}
           <span style={{ color: "#CF822A", fontWeight: 600 }}>Lena Harper</span>
           {`, an indie author who has made waves with her debut novel, `}
-          <em>{`"The Silence Between Notes."`}</em>
+          <em>&quot;The Silence Between Notes.&quot;</em>
         </p>
         
         <p>{`We talked about how she discovered her writing voice amidst the endless online advice, critique circles, and self-doubt.`}</p>
         
         <p>
-          <strong>{`"Voice isn't something you find—it's something you allow,"`}</strong>
+          <strong>&quot;Voice isn&apos;t something you find—it&apos;s something you allow,&quot;</strong>
           {` she said. `}
-          {`"The more you imitate others, the quieter yours becomes."`}
+          {`&quot;The more you imitate others, the quieter yours becomes.&quot;`}
         </p>
         
         <p>
           {`Her advice to emerging writers? `}
-          <em>{`"Stop trying to sound like a writer. Start trying to sound like you."`}</em>
+          <em>&quot;Stop trying to sound like a writer. Start trying to sound like you.&quot;</em>
         </p>
 
-        <p>Lena's journey to finding her voice wasn't easy. She spent years trying to emulate her favorite authors before realizing that her unique perspective was her greatest strength.</p>
+        <p>Lena&apos;s journey to finding her voice wasn&apos;t easy. She spent years trying to emulate her favorite authors before realizing that her unique perspective was her greatest strength.</p>
 
-        <p>"I kept getting feedback that my writing was 'too emotional' or 'too detailed,'" she recalls. "Then I realized—that's me. That's how I experience the world. Once I embraced that, the words started flowing naturally."</p>
+        <p>&quot;I kept getting feedback that my writing was &apos;too emotional&apos; or &apos;too detailed,&apos;&quot; she recalls. &quot;Then I realized—that&apos;s me. That&apos;s how I experience the world. Once I embraced that, the words started flowing naturally.&quot;</p>
 
-        <p>When asked about dealing with criticism, Lena had this to say: "Not every piece of advice is right for your story. Learn to distinguish between feedback that improves your work and feedback that tries to change your voice."</p>
+        <p>When asked about dealing with criticism, Lena had this to say: &quot;Not every piece of advice is right for your story. Learn to distinguish between feedback that improves your work and feedback that tries to change your voice.&quot;</p>
 
-        <p>Her final thoughts? "Your voice is already there. Stop looking for it in writing manuals and start listening to the stories only you can tell."</p>
+        <p>Her final thoughts? &quot;Your voice is already there. Stop looking for it in writing manuals and start listening to the stories only you can tell.&quot;</p>
       </div>
     ),
     date: "2024-01-29",
@@ -196,23 +196,23 @@ export const blogData: BlogPost[] = [
     ),
     fullContent: (
       <div className="space-y-6 text-[16px] sm:text-[17px] lg:text-[18px] font-inter leading-relaxed">
-        <p>{`Stuck staring at a blinking cursor? Don't panic—every writer has been there.`}</p>
+        <p>{`Stuck staring at a blinking cursor? Don&apos;t panic—every writer has been there.`}</p>
         
-        <p>{`Let's talk about some practical ways to break through that wall.`}</p>
+        <p>{`Let&apos;s talk about some practical ways to break through that wall.`}</p>
 
         <div className="space-y-4">
           <p>
-            <strong>{`1. Move, don't mope:`}</strong>
+            <strong>1. Move, don&apos;t mope:</strong>
             {` Take a walk, stretch, or clean your workspace. Your brain resets when your body moves.`}
           </p>
           
           <p>
-            <strong>{`2. Write terribly—on purpose:`}</strong>
-            {` Lower the stakes. A bad page can be edited; a blank one can't.`}
+            <strong>2. Write terribly—on purpose:</strong>
+            {` Lower the stakes. A bad page can be edited; a blank one can&apos;t.`}
           </p>
           
           <p>
-            <strong>{`3. Feed your creative well:`}</strong>
+            <strong>3. Feed your creative well:</strong>
             {` Read something outside your genre or listen to a podcast that inspires curiosity.`}
           </p>
           
@@ -237,7 +237,7 @@ export const blogData: BlogPost[] = [
           </p>
         </div>
 
-        <p>{`Remember, the goal isn't perfection—it's momentum. Writing is a muscle, and even small reps count.`}</p>
+        <p>{`Remember, the goal isn&apos;t perfection—it&apos;s momentum. Writing is a muscle, and even small reps count.`}</p>
 
         <p>Creative blocks are temporary. Trust that your creativity will return, and in the meantime, be kind to yourself. The words will come when you create space for them.</p>
       </div>
