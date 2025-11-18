@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
-import Navbar from "./components/Navbar";
-import Footer from "./components/Footer";
+import Navbar from "../components/Navbar";
+import Footer from "../components/Footer";
 import "./globals.css";
 import {Cinzel, Inter, Jacques_Francois} from "next/font/google";
 

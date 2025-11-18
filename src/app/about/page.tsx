@@ -2,10 +2,10 @@
 
 
 import React from "react";
-import SectionHeading from "../components/SectionHeading";
-import TextSection from "../components/TextSection";
-import ImageSlider from "../components/ImageSlider";
-import Testimonials from "../components/about/Testimonials";
+import SectionHeading from "../../components/SectionHeading";
+import TextSection from "../../components/TextSection";
+import ImageSlider from "../../components/ImageSlider";
+import Testimonials from "../../components/about/Testimonials";
 
 
 

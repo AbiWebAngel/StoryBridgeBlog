@@ -1,5 +1,5 @@
-import SectionHeading from "../components/SectionHeading";
-import OurTeam from "../components/team/OurTeam";
+import SectionHeading from "../../components/SectionHeading";
+import OurTeam from "../../components/team/OurTeam";
 
 
 export default function TeamPage() {
