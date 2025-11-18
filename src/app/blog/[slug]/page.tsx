@@ -13,7 +13,7 @@ export default function BlogPostPage() {
 
   if (!slug) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-white">
+      <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <h1 className="text-2xl font-bold text-[#413320]">Post not found</h1>
           <button 
@@ -31,7 +31,7 @@ export default function BlogPostPage() {
 
   if (!post) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#ECE1CF]">
+      <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <h1 className="text-2xl font-bold text-[#413320]">Post not found</h1>
           <p className="text-[#413320] mt-2">The blog post &quot;{slug}&quot; does not exist.</p>
@@ -48,7 +48,7 @@ export default function BlogPostPage() {
 
   return (
     <div className="min-h-screen bg-[#ECE1CF] py-4">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Back button */}
         <button 
           onClick={() => router.back()}
@@ -58,14 +58,14 @@ export default function BlogPostPage() {
         </button>
 
           {/* Article Card */}
-          <div className="bg-[#F2ECE3] rounded-[30px] text-[#413320] overflow-hidden shadow-xl p-6 sm:p-8">
+          <div className="bg-[#F2ECE3] rounded-[30px] text-[#413320] shadow-xl p-6 sm:p-8">
           {/* Article Header */}
-          <h1 className="font-cinzel text-3xl sm:text-4xl lg:text-5xl font-bold text-[#413320] mb-4">
+          <h1 className="font-cinzel text-[22px] sm:text-[26px] lg:text-[30px] font-bold min-w-0 break-words text-[#413320] text-center mb-4">
             {post.title}
           </h1>
           
           {/* Article Meta */}
-          <div className="flex items-center gap-4 text-[#413320] font-inter mb-6">
+          <div className="flex items-center gap-4 text-[#413320] font-inter mb-6 justify-center">
             <span className="font-semibold">{post.author}</span>
             <span>•</span>
             <span>{new Date(post.date).toLocaleDateString('en-US', {
@@ -87,7 +87,7 @@ export default function BlogPostPage() {
           </div>
 
           {/* Article Content */}
-          <article className="max-w-none font-inter text-[#413320] bg-white">
+          <article className="max-w-none font-inter text-[#413320]">
             {post.fullContent}
           </article>
         </div>
