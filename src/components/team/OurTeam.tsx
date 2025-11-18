@@ -7,7 +7,7 @@ const teamData = [
     id: 1,
     name: "ABIGAIL",
     role: "Writer",
-    description: "As a writer, I enjoy crafting meaningful content that blends creativity with clarity. Whether it’s articles, stories, or blog posts, I aim to capture ideas in a way that connects with readers and keeps them engaged. ",
+    description: "As a writer, I enjoy crafting meaningful content that blends creativity with clarity. Whether it's articles, stories, or blog posts, I aim to capture ideas in a way that connects with readers and keeps them engaged.",
     image: "/assets/images/team/abigail.jpg"
   },
   {
@@ -42,7 +42,7 @@ const teamData = [
     id: 6,
     name: "Nyxelle",
     role: "Blogger, Beta reader",
-    description: "A teen who’s obsessed with reading, always has a pen nearby, and probably thinks in stories more than actual thoughts. Writing is my favorite way to make sense of the world, and books are my go-to escape. I love learning weird facts, listening to sad music on repeat, and staying up way too late with a  ",
+    description: "A teen who's obsessed with reading, always has a pen nearby, and probably thinks in stories more than actual thoughts. Writing is my favorite way to make sense of the world, and books are my go-to escape. I love learning weird facts, listening to sad music on repeat, and staying up way too late with a good story. Quiet but curious, creative but chill — just figuring things out one page at a time.",
     image: "/assets/images/team/frank.jpg"
   },
   {
@@ -76,8 +76,9 @@ export default function OurTeam() {
             </div>
 
             {/* Text Section - 3/4 of card with straight right side */}
-            <div className="w-3/4 bg-[#EDE5D8] p-6 sm:p-8 flex flex-col justify-center">
-              <div className="space-y-3 sm:space-y-4">
+            <div className="w-3/4 bg-[#EDE5D8] p-6 sm:p-8 flex flex-col">
+              {/* Name and Role - Fixed at top */}
+              <div className="space-y-3 sm:space-y-4 mb-4">
                 {/* Name */}
                 <h3 className="font-cinzel font-bold text-[28px] sm:text-[30px] text-[#000000] uppercase">
                   {member.name}
@@ -87,9 +88,11 @@ export default function OurTeam() {
                 <p className="font-jacques-francois text-[22px] sm:text-[24px] text-[#403F3C]">
                   {member.role}
                 </p>
-                
-                {/* Description */}
-                <p className="font-jacques-francois text-[16px] sm:text-[18px] text-[#403727] leading-relaxed">
+              </div>
+              
+              {/* Scrollable Description */}
+              <div className="flex-1 overflow-y-auto pr-2">
+                <p className="font-jacques-francois text-[16px] sm:text-[18px] text-[#403727] leading-[2.2]">
                   {member.description}
                 </p>
               </div>
