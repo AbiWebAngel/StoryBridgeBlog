@@ -91,7 +91,7 @@ export default function OurTeam() {
               </div>
               
               {/* Scrollable Description */}
-              <div className="flex-1 overflow-y-auto pr-2">
+              <div className="flex-1 overflow-y-auto pr-2 scrollable-description">
                 <p className="font-jacques-francois text-[16px] sm:text-[18px] text-[#403727] leading-[2.2]">
                   {member.description}
                 </p>

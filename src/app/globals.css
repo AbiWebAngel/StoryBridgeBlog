@@ -98,5 +98,22 @@ p {
 }
 
 
+/* Custom scrollbar for team cards */
+.scrollable-description::-webkit-scrollbar {
+  width: 6px;
+}
 
+.scrollable-description::-webkit-scrollbar-track {
+  background: #EDE5D8;
+  border-radius: 3px;
+}
+
+.scrollable-description::-webkit-scrollbar-thumb {
+  background: #D1BDA1;
+  border-radius: 3px;
+}
+
+.scrollable-description::-webkit-scrollbar-thumb:hover {
+  background: #8B7355;
+}
 
