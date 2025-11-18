@@ -77,14 +77,15 @@ export const blogData: BlogPost[] = [
       </div>
     ),
     fullContent: (
-      <div className="space-y-6 text-[16px] sm:text-[17px] lg:text-[18px] font-inter leading-relaxed">
+        <div className="space-y-6 text-[16px] sm:text-[17px] lg:text-[18px] font-inter leading-relaxed">
         <div>
           <strong>Preface:</strong>
-          <p>{`Before I get into this week's content, the StoryBridge team wants to congratulate you all for being here!`}</p>
-          <p>{`Why? Because it's no easy task to trust others with your creativity or be tactful and truthful in your reviews.`}</p>
-          <p>{`Yet you've decided to try, and that's half the battle. Which is why I've decided to make a simple, step-by-step guide on getting the most of your beta-reader/writer pairing. The analogy I'll be using is inspired by our namesake, hence: &quot;Building bridges.&quot;`}</p>
+          <p>Before I get into this week&apos;s content, the StoryBridge team wants to congratulate you all for being here!</p>
+          <p>Why? Because it&apos;s no easy task to trust others with your creativity or be tactful and truthful in your reviews.</p>
+          <p>
+            Yet you&apos;ve decided to try, and that&apos;s half the battle. Which is why I&apos;ve decided to make a simple, step-by-step guide on getting the most of your beta-reader/writer pairing. The analogy I&apos;ll be using is inspired by our namesake, hence: &ldquo;Building bridges.&rdquo;
+          </p>
         </div>
-
         <div className="space-y-4">
           <strong>Step 1: Know your foundation</strong>
           <p>&quot;The whole point of a beta reader is to get into the nitty-gritty subjects—deeper than just &apos;what did you like and what didn&apos;t you like?&apos; You&apos;re looking for feedback on character development, plot holes, pacing, and overall coherence.</p>
@@ -138,35 +139,35 @@ export const blogData: BlogPost[] = [
       </div>
     ),
     fullContent: (
-      <div className="space-y-6 text-[16px] sm:text-[17px] lg:text-[18px] font-inter leading-relaxed">
-        <p>
-          {`This week, we sit down with `}
-          <span style={{ color: "#CF822A", fontWeight: 600 }}>Lena Harper</span>
-          {`, an indie author who has made waves with her debut novel, `}
-          <em>&quot;The Silence Between Notes.&quot;</em>
-        </p>
-        
-        <p>{`We talked about how she discovered her writing voice amidst the endless online advice, critique circles, and self-doubt.`}</p>
-        
-        <p>
-          <strong>&quot;Voice isn&apos;t something you find—it&apos;s something you allow,&quot;</strong>
-          {` she said. `}
-          {`&quot;The more you imitate others, the quieter yours becomes.&quot;`}
-        </p>
-        
-        <p>
-          {`Her advice to emerging writers? `}
-          <em>&quot;Stop trying to sound like a writer. Start trying to sound like you.&quot;</em>
-        </p>
+     <div className="space-y-6 text-[16px] sm:text-[17px] lg:text-[18px] font-inter leading-relaxed">
+      <p>
+        This week, we sit down with{" "}
+        <span style={{ color: "#CF822A", fontWeight: 600 }}>Lena Harper</span>
+        , an indie author who has made waves with her debut novel,{" "}
+        <em>&quot;The Silence Between Notes.&quot;</em>
+      </p>
+      
+      <p>We talked about how she discovered her writing voice amidst the endless online advice, critique circles, and self-doubt.</p>
+      
+      <p>
+        <strong>&quot;Voice isn&apos;t something you find—it&apos;s something you allow,&quot;</strong>
+        {" she said. "}
+        &quot;The more you imitate others, the quieter yours becomes.&quot;
+      </p>
+      
+      <p>
+        Her advice to emerging writers?{" "}
+        <em>&quot;Stop trying to sound like a writer. Start trying to sound like you.&quot;</em>
+      </p>
 
-        <p>Lena&apos;s journey to finding her voice wasn&apos;t easy. She spent years trying to emulate her favorite authors before realizing that her unique perspective was her greatest strength.</p>
+      <p>Lena&apos;s journey to finding her voice wasn&apos;t easy. She spent years trying to emulate her favorite authors before realizing that her unique perspective was her greatest strength.</p>
 
-        <p>&quot;I kept getting feedback that my writing was &apos;too emotional&apos; or &apos;too detailed,&apos;&quot; she recalls. &quot;Then I realized—that&apos;s me. That&apos;s how I experience the world. Once I embraced that, the words started flowing naturally.&quot;</p>
+      <p>&quot;I kept getting feedback that my writing was &apos;too emotional&apos; or &apos;too detailed,&apos;&quot; she recalls. &quot;Then I realized—that&apos;s me. That&apos;s how I experience the world. Once I embraced that, the words started flowing naturally.&quot;</p>
 
-        <p>When asked about dealing with criticism, Lena had this to say: &quot;Not every piece of advice is right for your story. Learn to distinguish between feedback that improves your work and feedback that tries to change your voice.&quot;</p>
+      <p>When asked about dealing with criticism, Lena had this to say: &quot;Not every piece of advice is right for your story. Learn to distinguish between feedback that improves your work and feedback that tries to change your voice.&quot;</p>
 
-        <p>Her final thoughts? &quot;Your voice is already there. Stop looking for it in writing manuals and start listening to the stories only you can tell.&quot;</p>
-      </div>
+      <p>Her final thoughts? &quot;Your voice is already there. Stop looking for it in writing manuals and start listening to the stories only you can tell.&quot;</p>
+    </div>
     ),
     date: "2024-01-29",
     author: "Mike Chen"
@@ -195,52 +196,52 @@ export const blogData: BlogPost[] = [
       </div>
     ),
     fullContent: (
-      <div className="space-y-6 text-[16px] sm:text-[17px] lg:text-[18px] font-inter leading-relaxed">
-        <p>{`Stuck staring at a blinking cursor? Don&apos;t panic—every writer has been there.`}</p>
+     <div className="space-y-6 text-[16px] sm:text-[17px] lg:text-[18px] font-inter leading-relaxed">
+      <p>Stuck staring at a blinking cursor? Don&apos;t panic—every writer has been there.</p>
+      
+      <p>Let&apos;s talk about some practical ways to break through that wall.</p>
+
+      <div className="space-y-4">
+        <p>
+          <strong>1. Move, don&apos;t mope:</strong>
+          {` Take a walk, stretch, or clean your workspace. Your brain resets when your body moves.`}
+        </p>
         
-        <p>{`Let&apos;s talk about some practical ways to break through that wall.`}</p>
-
-        <div className="space-y-4">
-          <p>
-            <strong>1. Move, don&apos;t mope:</strong>
-            {` Take a walk, stretch, or clean your workspace. Your brain resets when your body moves.`}
-          </p>
-          
-          <p>
-            <strong>2. Write terribly—on purpose:</strong>
-            {` Lower the stakes. A bad page can be edited; a blank one can&apos;t.`}
-          </p>
-          
-          <p>
-            <strong>3. Feed your creative well:</strong>
-            {` Read something outside your genre or listen to a podcast that inspires curiosity.`}
-          </p>
-          
-          <p>
-            <strong>4. Change your environment:</strong>
-            {` Sometimes a different location—a coffee shop, library, or even a different room—can shake loose new ideas.`}
-          </p>
-          
-          <p>
-            <strong>5. Use writing prompts:</strong>
-            {` Set a timer for 10 minutes and write about anything that comes to mind. The goal is to get words flowing, not to produce perfect prose.`}
-          </p>
-          
-          <p>
-            <strong>6. Talk it out:</strong>
-            {` Explain your block to a friend or record a voice memo to yourself. Often, speaking about the problem helps you see the solution.`}
-          </p>
-          
-          <p>
-            <strong>7. Lower your daily goal:</strong>
-            {` Instead of aiming for 1,000 words, try for 100. Small wins build momentum.`}
-          </p>
-        </div>
-
-        <p>{`Remember, the goal isn&apos;t perfection—it&apos;s momentum. Writing is a muscle, and even small reps count.`}</p>
-
-        <p>Creative blocks are temporary. Trust that your creativity will return, and in the meantime, be kind to yourself. The words will come when you create space for them.</p>
+        <p>
+          <strong>2. Write terribly—on purpose:</strong>
+          {` Lower the stakes. A bad page can be edited; a blank one can&apos;t.`}
+        </p>
+        
+        <p>
+          <strong>3. Feed your creative well:</strong>
+          {` Read something outside your genre or listen to a podcast that inspires curiosity.`}
+        </p>
+        
+        <p>
+          <strong>4. Change your environment:</strong>
+          {` Sometimes a different location—a coffee shop, library, or even a different room—can shake loose new ideas.`}
+        </p>
+        
+        <p>
+          <strong>5. Use writing prompts:</strong>
+          {` Set a timer for 10 minutes and write about anything that comes to mind. The goal is to get words flowing, not to produce perfect prose.`}
+        </p>
+        
+        <p>
+          <strong>6. Talk it out:</strong>
+          {` Explain your block to a friend or record a voice memo to yourself. Often, speaking about the problem helps you see the solution.`}
+        </p>
+        
+        <p>
+          <strong>7. Lower your daily goal:</strong>
+          {` Instead of aiming for 1,000 words, try for 100. Small wins build momentum.`}
+        </p>
       </div>
+
+      <p>Remember, the goal isn&apos;t perfection—it&apos;s momentum. Writing is a muscle, and even small reps count.</p>
+
+      <p>Creative blocks are temporary. Trust that your creativity will return, and in the meantime, be kind to yourself. The words will come when you create space for them.</p>
+    </div>
     ),
     date: "2024-02-05",
     author: "Alex Rivera"

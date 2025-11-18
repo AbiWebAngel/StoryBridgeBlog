@@ -52,7 +52,7 @@ export default function BlogPostPage() {
         {/* Back button */}
         <button 
           onClick={() => router.back()}
-          className="mb-6 flex items-center text-[#CF822A] hover:text-[#B36F24] transition font-inter font-bold"
+          className="mb-6 flex items-center text-[#CF822A] hover:text-[#B36F24] hover:underline transition font-inter font-bold"
         >
           ← Back to articles
         </button>
