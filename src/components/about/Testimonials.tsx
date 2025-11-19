@@ -23,20 +23,19 @@ export default function Testimonials({
 }: TestimonialCarouselProps) {
   const [isPaused, setIsPaused] = useState(false);
 
- const [sliderRef, slider] = useKeenSlider<HTMLDivElement>({
-  loop: true,
-  slides: { perView: 3, spacing: 6 }, // default desktop view
-  breakpoints: {
-    "(min-width: 1600px)": { slides: { perView: 4, spacing: 6 } }, // very wide screens
-    "(max-width: 1024px)": { slides: { perView: 2, spacing: 8 } },  // tablet
-    "(max-width: 768px)": { slides: { perView: 1, spacing: 6 } },   // mobile
-  },
-  created(s) {
-    s.on("dragStarted", () => setIsPaused(true));
-    s.on("dragEnded", () => setIsPaused(false));
-  },
-});
-
+  const [sliderRef, slider] = useKeenSlider<HTMLDivElement>({
+    loop: true,
+    slides: { perView: 3, spacing: 6 }, // default desktop view
+    breakpoints: {
+      "(min-width: 1600px)": { slides: { perView: 4, spacing: 6 } }, // very wide screens
+      "(max-width: 1024px)": { slides: { perView: 2, spacing: 8 } },  // tablet
+      "(max-width: 768px)": { slides: { perView: 1, spacing: 6 } },   // mobile
+    },
+    created(s) {
+      s.on("dragStarted", () => setIsPaused(true));
+      s.on("dragEnded", () => setIsPaused(false));
+    },
+  });
 
   // Auto-scroll
   useEffect(() => {
@@ -58,70 +57,83 @@ export default function Testimonials({
     setIsPaused(true);
   };
 
+  // Pause on hover handlers
+  const handleMouseEnter = () => {
+    setIsPaused(true);
+  };
+
+  const handleMouseLeave = () => {
+    setIsPaused(false);
+  };
+
   return (
-  <div className="relative p-8 bg-[#D1BDA1] overflow-hidden">
-    {/* Left Arrow */}
-    <button
-      onClick={handlePrev}
-      className="absolute top-1/2 left-0 -translate-y-1/2 z-10 p-6 
-                 transition-transform duration-300 ease-out
-                 hover:scale-125 hover:shadow-[0_0_20px_rgba(255,255,255,0.8)]
-                 origin-left"
-    >
-      <Image src="/assets/icons/about/left.svg" alt="Previous" width={24} height={24} />
-    </button>
+    <div className="relative bg-[#D1BDA1] overflow-hidden">
+      {/* Left Arrow */}
+      <button
+        onClick={handlePrev}
+        className="absolute top-1/2 left-0 -translate-y-1/2 z-10 p-6 
+                   transition-transform duration-300 ease-out
+                   hover:scale-125 hover:shadow-[0_0_20px_rgba(255,255,255,0.8)]
+                   origin-left"
+      >
+        <Image src="/assets/icons/about/left.svg" alt="Previous" width={24} height={24} />
+      </button>
 
-    {/* Right Arrow */}
-    <button
-      onClick={handleNext}
-      className="absolute top-1/2 right-0 -translate-y-1/2 z-10 p-6 
-                 transition-transform duration-300 ease-out
-                 hover:scale-125 hover:shadow-[0_0_20px_rgba(255,255,255,0.8)]
-                 origin-right"
-    >
-      <Image src="/assets/icons/about/right.svg" alt="Next" width={24} height={24} />
-    </button>
+      {/* Right Arrow */}
+      <button
+        onClick={handleNext}
+        className="absolute top-1/2 right-0 -translate-y-1/2 z-10 p-6 
+                   transition-transform duration-300 ease-out
+                   hover:scale-125 hover:shadow-[0_0_20px_rgba(255,255,255,0.8)]
+                   origin-right"
+      >
+        <Image src="/assets/icons/about/right.svg" alt="Next" width={24} height={24} />
+      </button>
 
-    {/* Slider */}
-    <div ref={sliderRef} className="keen-slider">
-      {testimonials.map((t, i) => (
-        <div key={i} className="keen-slider__slide flex justify-center">
-          <div
-            className="flex flex-col items-center"
-            style={{
-              width: 325,
-              height: 370,
-              backgroundColor: "#EDE5D8",
-              borderRadius: 16,
-              padding: "16px",
-              boxSizing: "border-box",
-              position: "relative",
-            }}
-          >
-            <p className="text-lg font-serif text-center leading-[2.2]">
-              {t.text}
-            </p>
-
+      {/* Slider */}
+      <div 
+        ref={sliderRef} 
+        className="keen-slider"
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+      >
+        {testimonials.map((t, i) => (
+          <div key={i} className="keen-slider__slide flex justify-center py-8">
             <div
+              className="flex flex-col items-center transition-all duration-300 ease-out hover:-translate-y-2 hover:shadow-[0_0_25px_rgba(0,0,0,0.15)] hover:scale-102"
               style={{
-                width: 125,
-                height: 125,
-                borderRadius: 100,
-                overflow: "hidden",
-                position: "absolute",
-                bottom: 60,
-                left: "50%",
-                transform: "translateX(-50%)",
-                backgroundColor: "#fff",
+                width: 325,
+                height: 370,
+                backgroundColor: "#F2ECE3",
+                borderRadius: 16,
+                padding: "16px",
+                boxSizing: "border-box",
+                position: "relative",
               }}
             >
-              <Image src={t.image} alt={`Testimonial ${i}`} fill className="object-cover"/>
+              <p className="text-lg font-serif text-center leading-[2.2]">
+                {t.text}
+              </p>
+
+              <div
+                style={{
+                  width: 125,
+                  height: 125,
+                  borderRadius: 100,
+                  overflow: "hidden",
+                  position: "absolute",
+                  bottom: 60,
+                  left: "50%",
+                  transform: "translateX(-50%)",
+                  backgroundColor: "#fff",
+                }}
+              >
+                <Image src={t.image} alt={`Testimonial ${i}`} fill className="object-cover"/>
+              </div>
             </div>
           </div>
-        </div>
-      ))}
+        ))}
+      </div>
     </div>
-  </div>
-);
-
+  );
 }

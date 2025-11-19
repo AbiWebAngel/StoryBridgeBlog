@@ -60,25 +60,25 @@ export default function ImageSlider({
       {/* Slider */}
       <div ref={sliderRef} className="keen-slider">
         {images.map((src, i) => (
- <div key={i} className="keen-slider__slide flex justify-center p-4">
-  <div
-    className="relative w-64 h-48 sm:w-72 sm:h-52 rounded-4xl 
-              shadow-[3px_3px_8px_rgba(0,0,0,0.2),6px_6px_12px_rgba(130,95,48,1)] cursor-pointer 
-               transform transition-transform duration-300 hover:scale-105 bg-white/5"
-    onClick={() => setCurrentImage(src)}
-  >
-    <div className="absolute inset-0 overflow-hidden rounded-4xl">
-      <Image
-        src={src}
-        alt={`Slide ${i}`}
-        fill
-        priority
-        sizes="(max-width: 768px) 100vw, 33vw"
-        className="object-cover object-center w-full h-full scale-[1.04] translate-x-[-0.5px]"
-      />
+    <div key={i} className="keen-slider__slide flex justify-center p-4">
+      <div
+        className="relative w-64 h-48 sm:w-72 sm:h-52 rounded-4xl 
+                  shadow-[3px_3px_8px_rgba(0,0,0,0.2),6px_6px_12px_rgba(130,95,48,1)] cursor-pointer 
+                  transform transition-transform duration-300 hover:scale-105 bg-white/5"
+        onClick={() => setCurrentImage(src)}
+      >
+      <div className="absolute inset-0 overflow-hidden rounded-4xl">
+        <Image
+          src={src}
+          alt={`Slide ${i}`}
+          fill
+          priority
+          sizes="(max-width: 768px) 100vw, 33vw"
+          className="object-cover object-center w-full h-full scale-[1.04] translate-x-[-0.5px]"
+        />
+      </div>
+      </div>
     </div>
-  </div>
-</div>
 
         ))}
       </div>
