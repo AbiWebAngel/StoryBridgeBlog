@@ -19,7 +19,7 @@ export default function MessageFromDirector() {
         <div className="flex-shrink-0">
           <div className="w-[197px] h-[263px] overflow-hidden rounded-[30px] relative">
             <Image
-              src="/assets/images/home/director.jpg"
+              src="/assets/images/director.jpg"
               alt="Director"
               fill
               className="object-cover"
@@ -51,7 +51,7 @@ export default function MessageFromDirector() {
           w-[500px] max-w-[90%] h-[105px] bg-[#F2ECE3] 
           flex items-center justify-center cursor-pointer overflow-hidden
           shadow-[0_8px_12px_rgba(0,0,0,0.25)] z-10
-          transition-transform transition-shadow duration-300
+          transition-transform duration-300
           hover:scale-101 hover:shadow-[0_12px_20px_rgba(0,0,0,0.35)]
           hover:brightness-105
         "
