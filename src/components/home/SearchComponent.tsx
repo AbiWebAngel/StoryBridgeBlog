@@ -24,6 +24,7 @@ export default function SearchComponent() {
 <div className="mt-12 mb-16 relative">
 
   {/* Search Box positioned above the section */}
+  
   <div className="absolute top-[-22px] right-0 w-80 md:w-96 z-10">
     <div className="relative">
       {/* Icon */}
