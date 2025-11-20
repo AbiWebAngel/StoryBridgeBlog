@@ -116,7 +116,7 @@ export default function AboutPage() {
       {/* Testimonial */}
      <div className="mb-12">
         <SectionHeading
-          src="/assets/headings/about/Testimonials.png"
+          src="/assets/headings/Testimonials.png"
           alt="Testimonials Heading"
           width={200}
           height={50}

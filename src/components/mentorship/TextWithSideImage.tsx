@@ -45,7 +45,7 @@ export default function TextSectionWithSideImage({
       />
 
       {/* Content Container */}
-      <div className={`mt-6 flex flex-col lg:flex-row gap-8 ${reverse ? 'lg:flex-row-reverse' : ''}`}>
+      <div className={`mt-4 flex flex-col lg:flex-row gap-8 ${reverse ? 'lg:flex-row-reverse' : ''}`}>
         {/* Text Content - 2/3 width on desktop */}
         <div className="lg:w-2/3">
           {isList ? (

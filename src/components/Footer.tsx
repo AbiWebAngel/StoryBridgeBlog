@@ -7,7 +7,7 @@ const Footer = () => {
       </div>
 
       {/* Right side */}
-      <div className="text-[12px] md:text-[14px] font-bold text-center md:text-right footer-contact">
+      <div className="text-[19px] md:text-[20px] font-bold text-center md:text-right footer-contact">
         Contact us:{" "}
         <a href="mailto:storybridgeteens@gmail.com" className="hover:underline">
           storybridgeteens@gmail.com

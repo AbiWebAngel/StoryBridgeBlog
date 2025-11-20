@@ -47,7 +47,7 @@ export default function LatestBlogs() {
           </div>
 
           {/* Body */}
-          <div className="flex flex-col lg:flex-row pt-0 pb-4 px-4 sm:px-6 md:px-8 gap-3 flex-1">
+          <div className="flex flex-col lg:flex-row pb-4 px-4 sm:px-6 md:px-8 gap-3 flex-1">
             {/* Image */}
             <div className="flex justify-center items-center lg:flex-[1_1_30%]">
               <Image

@@ -15,7 +15,7 @@ return (
       <SearchComponent />
 
       {/* Latest Blogs Section */}
-      <div className="mb-8">
+      <div className="mb-10">
           <SectionHeading
             src="/assets/headings/home/BlogPosts.png"
             alt="Blog Posts Heading"
@@ -27,7 +27,7 @@ return (
       <LatestBlogs />
         
       {/* Join Our Programs */}
-      <div className="mb-2 mt-16">
+      <div className="mb-2 mt-12">
           <SectionHeading
             src="/assets/headings/home/JoinOurPrograms.png"
             alt="Join Our Programs Heading"
@@ -39,7 +39,7 @@ return (
       <JoinOurPrograms />
 
        {/* Message From Director */}
-      <div className="mb-10 mt-16">
+      <div className="mb-12 mt-12">
           <SectionHeading
             src="/assets/headings/home/MessageFromDirector.png"
             alt="Message From Director Heading"
