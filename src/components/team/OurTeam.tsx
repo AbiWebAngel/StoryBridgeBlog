@@ -77,7 +77,7 @@ export default function OurTeam() {
 
             {/* Text Section - 3/4 of card with straight right side */}
             <div className="w-3/4 bg-[#EDE5D8] p-6 sm:p-8 flex flex-col">
-              {/* Name and Role - Fixed at top */}
+            
               <div className="space-y-3 sm:space-y-4 mb-4">
                 {/* Name */}
                 <h3 className="font-cinzel font-bold text-[24px]  text-[#000000] uppercase">
