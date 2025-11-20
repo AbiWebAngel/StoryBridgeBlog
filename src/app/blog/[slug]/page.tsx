@@ -51,10 +51,12 @@ export default function BlogPostPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Back button */}
         <button 
-          onClick={() => router.back()}
-          className="mb-6 flex items-center text-[#CF822A] hover:text-[#B36F24] hover:underline transition font-inter font-bold"
-        >
-          ← Back to articles
+            onClick={() => router.back()}
+            className="mb-6 flex items-center text-[#CF822A] hover:text-[#B36F24] transition font-inter font-bold group relative pb-1"
+          >
+            <span className="relative after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-[#B36F24] after:transition-all after:duration-300 group-hover:after:w-full">
+              ← Back to articles
+            </span>
         </button>
 
           {/* Article Card */}

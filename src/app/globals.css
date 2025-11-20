@@ -50,7 +50,7 @@ h1, h2, h3, h4, h5, h6 {
   font-weight: 700;
 }
 
-p,ul {
+p,ul,li,span,a {
   font-size: 18px; /* mobile default, smaller than 20px */
 }
 

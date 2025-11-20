@@ -26,7 +26,7 @@ export default function MentorshipPage() {
             
             {/* How it works Section */}
             <TextWithSideImage
-              heading={{ src: "/assets/headings/mentorship/HowItWorks.png", alt: "How it works Heading", width: 250, height: 180,maxWidth: "250px", }}
+              heading={{ src: "/assets/headings/mentorship/HowItWorks.png", alt: "How it works Heading", width: 200, height: 180,maxWidth: "250px", }}
               text={[
                 "Select one of the options below. You’ll be redirected to a form, answer a few questions and click submit.",
                 "Your application is logged in our system so we can begin processing it.",
