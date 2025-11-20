@@ -29,7 +29,7 @@ export default function SearchComponent() {
       {/* Icon */}
       <div className="absolute left-8 top-1/2 -translate-y-1/2 pointer-events-none z-10">
         <Image
-          src="/assets/images/home/search.png"
+          src="/assets/icons/home/search.png"
           alt="Search"
           width={25}
           height={25}
