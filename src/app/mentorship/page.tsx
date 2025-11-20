@@ -79,7 +79,7 @@ export default function MentorshipPage() {
             />
 
             {/* Sign Up Now Section */}
-            <div className="mb-12 mt-16">
+            <div className="mb-10 mt-16">
                       <SectionHeading
                         src="/assets/headings/mentorship/SignUpNow.png"
                         alt="Sign Up Now Heading"
