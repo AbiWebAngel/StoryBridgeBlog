@@ -1,8 +1,5 @@
 "use client";
 
-import Image from "next/image";
-
-
 export default function SignUpNow() {
 
 
@@ -82,7 +79,7 @@ export default function SignUpNow() {
         "
         >
         <h3 className=" font-bold text-[#403727] text-[25px] text-center">
-            Remember It's Free
+            Remember It&apos;s Free
         </h3>
     </div>
   </div>
