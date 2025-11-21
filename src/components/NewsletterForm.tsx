@@ -91,11 +91,11 @@ export default function NewsletterForm() {
         />
 
         {/* Send Button */}
-        <button
-          type="submit"
-          form="newsletter-form"
-          className="absolute top-[0px] right-[-15px] sm:top-[-5px] sm:right-10 md:top-[-14px] md:right-[-20px] lg:top-[-32px] lg:right-[-150px] z-10 bg-transparent transition hover:scale-105 hover:brightness-110"
-        >
+       <button
+        type="submit"
+        form="newsletter-form"
+        className="absolute top-[0px] right-[-15px] sm:top-[-5px] sm:right-10 md:top-[-14px] md:right-[-20px] lg:top-[-32px] lg:right-[-150px] z-10 bg-transparent transition hover:scale-102 hover:brightness-110 cursor-pointer"
+      >
           <Image
             src="/assets/icons/Send.svg"
             alt="Send"
