@@ -10,7 +10,7 @@ export default function MessageFromDirector() {
 
   return (
     // Outer wrapper — holds positioning context and provides bottom margin
-    <div className="relative mb-[140px]">
+    <div className="relative mb-[160px]">
       {/* Director message card with shadow */}
       <div
         className="w-full bg-[#D1BDA1] flex flex-col lg:flex-row items-center justify-center px-6 sm:px-10 lg:px-16 py-10 gap-8 relative overflow-visible shadow-[0_4px_6px_rgba(0,0,0,0.25)] z-20"

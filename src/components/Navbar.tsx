@@ -25,6 +25,7 @@ const links = [
 
 const Navbar = () => {
   const [menuOpen, setMenuOpen] = useState(false);
+  const totalItems = links.length + 2; // Main links + Login + Signup
 
   return (
     <nav className="relative flex items-center justify-between w-full shadow-lg navbar bg-black h-14 md:h-16">
@@ -126,111 +127,148 @@ const Navbar = () => {
           </button>
         </div>
 
-    {/* Profile */}
-    <div className="hidden lg:flex items-center">
-      <ul className="flex gap-3">
-        <li className="relative group">
-          {/* Clickable area wrapper */}
-          <div className="relative cursor-pointer p-2 -m-2 flex items-center justify-center">
-            <Image
-              src="/assets/icons/Profile.svg"
-              alt="Profile"
-              width={40}
-              height={40}
-              className="w-10 h-10 object-contain"
-            />
-          </div>
+        {/* Profile */}
+        <div className="hidden lg:flex items-center">
+          <ul className="flex gap-3">
+            <li className="relative group">
+              {/* Clickable area wrapper */}
+              <div className="relative cursor-pointer p-2 -m-2 flex items-center justify-center">
+                <Image
+                  src="/assets/icons/Profile.svg"
+                  alt="Profile"
+                  width={40}
+                  height={40}
+                  className="w-10 h-10 object-contain"
+                />
+              </div>
 
-          {/* Dropdown */}
-          <ul
-            className="absolute right-0 mt-4 w-44 bg-[#805C2C] text-white rounded-lg shadow-lg py-2
-                      opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50
-                      text-base font-bold tracking-wide pointer-events-auto"
-          >
-            <li>
-              <Link
-                href="/login"
-                className="block px-4 py-2 hover:bg-[#A07845]"
+              {/* Dropdown */}
+              <ul
+                className="absolute right-0 mt-4 w-44 bg-[#805C2C] text-white rounded-lg shadow-lg py-2
+                          opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50
+                          text-base font-bold tracking-wide pointer-events-auto"
               >
-                Log In / Sign Up
-              </Link>
-            </li>
-          </ul>
-        </li>
-      </ul>
-    </div>
-
-
-
-
-      </div>
-
-      {/* Mobile menu */}
-      {menuOpen && (
-        <div className="absolute top-14 left-0 w-full flex flex-col items-center text-white font-bold space-y-3 py-4 lg:hidden navbar-mobile-menu bg-black overflow-visible z-[9999]">
-          <ul className="flex flex-col items-center space-y-3 w-full">
-            {links.map((link, i) => (
-              <li key={i} className="text-center w-full">
-                {link.children ? (
-                  <details className="relative w-full group">
-                    <summary className="cursor-pointer flex items-center gap-1 justify-center">
-                      {link.label.toUpperCase()}
-                      <svg
-                        className="w-4 h-4 text-white transition-transform duration-200 group-open:rotate-180"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        viewBox="0 0 24 24"
-                      >
-                        <path d="M6 9l6 6 6-6" strokeLinecap="round" />
-                      </svg>
-                    </summary>
-                    <ul className="mt-1 space-y-1 w-full">
-                      {link.children.map((child) => (
-                        <li key={child.href} className="w-full">
-                          <Link
-                            href={child.href}
-                            className="block px-4 py-2 hover:bg-[#A07845] w-full text-center"
-                            onClick={() => setMenuOpen(false)}
-                          >
-                            {child.label}
-                          </Link>
-                        </li>
-                      ))}
-                    </ul>
-                  </details>
-                ) : (
+                <li>
                   <Link
-                    href={link.href}
-                    className="block px-4 py-2 hover:bg-[#A07845] w-full text-center"
-                    onClick={() => setMenuOpen(false)}
+                    href="/login"
+                    className="block px-4 py-2 hover:bg-[#A07845]"
                   >
-                    {link.label.toUpperCase()}
+                    Log In / Sign Up
                   </Link>
-                )}
-              </li>
-            ))}
-            <li className="w-full">
-              <Link
-                href="/login"
-                className="block px-4 py-2 hover:bg-[#A07845] w-full text-center"
-                onClick={() => setMenuOpen(false)}
-              >
-                Log In
-              </Link>
-            </li>
-            <li className="w-full">
-              <Link
-                href="/signup"
-                className="block px-4 py-2 hover:bg-[#A07845] w-full text-center"
-                onClick={() => setMenuOpen(false)}
-              >
-                Sign Up
-              </Link>
+                </li>
+              </ul>
             </li>
           </ul>
         </div>
-      )}
+      </div>
+
+      {/* Mobile menu with consistent timing */}
+      <div className={`
+        absolute top-14 left-0 w-full flex flex-col items-center text-white font-bold py-6 lg:hidden 
+        navbar-mobile-menu overflow-hidden z-[9999] transition-all duration-300 ease-in-out
+        ${menuOpen 
+          ? "max-h-screen opacity-100 visible" 
+          : "max-h-0 opacity-0 invisible delay-[400ms]"
+        }
+      `}>
+        <ul className="flex flex-col items-center w-full space-y-6">
+          {links.map((link, i) => (
+            <li 
+              key={i} 
+              className="text-center w-full transition-all duration-300 ease-out"
+              style={{
+                opacity: menuOpen ? 1 : 0,
+                transform: menuOpen ? 'translateY(0)' : 'translateY(-8px)',
+                transitionDelay: menuOpen ? `${100 + i * 60}ms` : `${(totalItems - 1 - i) * 60}ms`,
+              }}
+            >
+              {link.children ? (
+                <details className="relative w-full group">
+                  <summary className="cursor-pointer flex items-center gap-1 justify-center py-3">
+                    {link.label.toUpperCase()}
+                    <svg
+                      className="w-4 h-4 text-white transition-transform duration-200 group-open:rotate-180"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      viewBox="0 0 24 24"
+                    >
+                      <path d="M6 9l6 6 6-6" strokeLinecap="round" />
+                    </svg>
+                  </summary>
+                  <ul className="mt-2 space-y-3 w-full">
+                    {link.children.map((child, childIndex) => (
+                      <li 
+                        key={child.href} 
+                        className="w-full transition-all duration-300 ease-out"
+                        style={{
+                          opacity: menuOpen ? 1 : 0,
+                          transform: menuOpen ? 'translateX(0)' : 'translateX(-8px)',
+                          transitionDelay: menuOpen 
+                            ? `${150 + i * 60 + childIndex * 50}ms` 
+                            : `${(link.children.length - 1 - childIndex) * 50 + i * 60}ms`,
+                        }}
+                      >
+                        <Link
+                          href={child.href}
+                          className="block px-4 py-3 hover:bg-[#A07845] w-full text-center"
+                          onClick={() => setMenuOpen(false)}
+                        >
+                          {child.label}
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                </details>
+              ) : (
+                <Link
+                  href={link.href}
+                  className="block px-4 py-3 hover:bg-[#A07845] w-full text-center"
+                  onClick={() => setMenuOpen(false)}
+                >
+                  {link.label.toUpperCase()}
+                </Link>
+              )}
+            </li>
+          ))}
+          <li 
+            className="w-full transition-all duration-300 ease-out"
+            style={{
+              opacity: menuOpen ? 1 : 0,
+              transform: menuOpen ? 'translateY(0)' : 'translateY(-8px)',
+              transitionDelay: menuOpen 
+                ? `${100 + links.length * 60}ms` 
+                : `${(totalItems - 1 - links.length) * 60}ms`,
+            }}
+          >
+            <Link
+              href="/login"
+              className="block px-4 py-3 hover:bg-[#A07845] w-full text-center"
+              onClick={() => setMenuOpen(false)}
+            >
+              Log In
+            </Link>
+          </li>
+          <li 
+            className="w-full transition-all duration-300 ease-out"
+            style={{
+              opacity: menuOpen ? 1 : 0,
+              transform: menuOpen ? 'translateY(0)' : 'translateY(-8px)',
+              transitionDelay: menuOpen 
+                ? `${100 + (links.length + 1) * 60}ms` 
+                : `${(totalItems - 1 - (links.length + 1)) * 60}ms`,
+            }}
+          >
+            <Link
+              href="/signup"
+              className="block px-4 py-3 hover:bg-[#A07845] w-full text-center"
+              onClick={() => setMenuOpen(false)}
+            >
+              Sign Up
+            </Link>
+          </li>
+        </ul>
+      </div>
     </nav>
   );
 };

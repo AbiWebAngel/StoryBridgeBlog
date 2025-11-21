@@ -79,7 +79,7 @@ export default function NewsletterForm() {
   };
 
   return (
-    <div className="relative w-full max-w-3xl mx-auto mt-12 px-4 sm:px-6 lg:px-8">
+    <div className="relative w-full max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
       {/* Heading */}
       <h1 className="relative">
         <Image

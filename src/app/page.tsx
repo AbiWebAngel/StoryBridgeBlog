@@ -48,10 +48,11 @@ return (
             centerAll={true}
           />
       </div>
-      <MessageFromDirector />
+        <MessageFromDirector />
 
       {/* Newsletter */}
       <NewsletterForm />
+      
     </main>
 )
 }
