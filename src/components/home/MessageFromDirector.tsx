@@ -39,39 +39,34 @@ export default function MessageFromDirector() {
       </div>
 
       {/* Rest of Team card — appears “layered below” */}
-      <button
-        type="button"
-        onClick={goToTeam}
-        onKeyDown={(e) => {
-          if (e.key === "Enter") goToTeam();
-        }}
-        aria-label="Get To Know The Rest Of The Team"
-        className="
-          absolute top-full right-2 transform -translate-y-6
-          w-[500px] max-w-[90%] h-[105px] bg-[#F2ECE3] 
-          flex items-center justify-center cursor-pointer overflow-hidden
-          shadow-[0_8px_12px_rgba(0,0,0,0.25)] z-10
-          transition-transform duration-300
-          hover:scale-101 hover:shadow-[0_12px_20px_rgba(0,0,0,0.35)]
-          hover:brightness-105
-        "
-        style={{
-          borderTopLeftRadius: 0,
-          borderTopRightRadius: 0,
-          borderBottomLeftRadius: 30,
-          borderBottomRightRadius: 30,
-        }}
-      >
-        <div className="px-4 sm:px-6 pt-10 md:px-8 w-full flex justify-center">
-          <Image
-            src="/assets/headings/home/GetToKnowTheRestOfTheTeam.png"
-            alt="Get To Know The Rest Of The Team"
-            width={450}
-            height={88}
-            className="object-contain"
-            priority
-          />
-        </div>
+   <button
+  type="button"
+  onClick={goToTeam}
+  onKeyDown={(e) => {
+    if (e.key === "Enter") goToTeam();
+  }}
+  aria-label="Get To Know The Rest Of The Team"
+  className="
+    absolute top-full right-2 transform -translate-y-6
+    w-[550px] max-w-[90%] h-[110px] bg-[#F2ECE3] 
+    flex items-center justify-center cursor-pointer overflow-hidden
+    shadow-[0_8px_12px_rgba(0,0,0,0.25)] z-10
+    transition-all duration-500
+    hover:translate-y-0 hover:shadow-[0_12px_20px_rgba(0,0,0,0.35)]
+    hover:brightness-105
+  "
+  style={{
+    borderTopLeftRadius: 0,
+    borderTopRightRadius: 0,
+    borderBottomLeftRadius: 30,
+    borderBottomRightRadius: 30,
+  }}
+>
+      
+          <h3 className=" font-bold text-[#403727] text-[25px] text-center pt-10 px-4 ">
+              Get To Know the Rest Of the Team
+          </h3>
+   
       </button>
     </div>
   );
