@@ -47,12 +47,15 @@ export default function MentorshipPage() {
                       width: 450,
                       height: 180,
                       maxWidth: "450px",
+                      mobileWidth: 200,
+                      mobileHeight: 80,
                     }}
                     text={`Writing isn’t a skill you develop overnight. You often have to push through countless late-night
                            writing sprints before your story stops making you cringe. 
                            Although writing demands time and dedication, a mentor can help 
                            you avoid the mistakes before you make them.`
                           }
+                          
                   />
              </div>
             

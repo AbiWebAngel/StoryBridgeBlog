@@ -7,6 +7,8 @@ interface HeadingProps {
   width: number;
   height: number;
   maxWidth?: string;
+  mobileWidth?: number;       // new optional prop
+  mobileHeight?: number;      // new optional prop
 }
 
 interface ImageProps {

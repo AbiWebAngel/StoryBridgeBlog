@@ -21,6 +21,8 @@ return (
             alt="Blog Posts Heading"
             width={500}
             height={50}
+            mobileWidth={200}
+            mobileHeight={40}
             centerAll={true}
           />
       </div>
