@@ -39,7 +39,7 @@ export default function SignUpNow() {
             <div className="lg:w-1/2 flex items-center justify-center">
               <div className="w-full max-w-md">
                 <Image
-                  src="/assets/images/mentorship/image2.svg" 
+                  src="/assets/images/mentorship/imageMentee.svg" 
                   alt="Young writer working with mentor"
                   width={350}
                   height={320}
@@ -77,7 +77,7 @@ export default function SignUpNow() {
             <div className="lg:w-1/2 flex items-center justify-center lg:order-1">
               <div className="w-full max-w-md">
                 <Image
-                  src="/assets/images/mentorship/image3.svg" 
+                  src="/assets/images/mentorship/imageMentor.svg" 
                   alt="Experienced writer mentoring someone"
                   width={300}
                   height={320}

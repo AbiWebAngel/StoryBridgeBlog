@@ -74,7 +74,7 @@ export default function MentorshipPage() {
                 "And remember, it’s completely free to join."
               ]}
               image={{ 
-                src: "/assets/images/mentorship/image1.svg", 
+                src: "/assets/images/mentorship/imageMentorship.svg", 
                 alt: "A Mentor guiding a mentee", 
                 width: 350, 
                 height: 300 
