@@ -43,7 +43,7 @@ const Navbar = () => {
       </div>
 
       {/* Desktop menu */}
-      <div className="hidden lg:flex flex-1 items-center justify-center min-w-0 overflow-visible">
+      <div className="hidden lg:flex flex-1 items-center justify-center min-w-0 overflow-visible pt-2">
         <ul className="flex gap-6 xl:gap-8 text-white text-sm xl:text-base font-bold tracking-wide truncate overflow-visible">
           {links.map((link, i) => (
             <li
