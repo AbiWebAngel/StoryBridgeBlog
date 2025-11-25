@@ -2,7 +2,6 @@ import SectionHeading from "@/components/SectionHeading";
 import TextSection from "@/components/TextSection";
 import TextWithSideImage from "@/components/mentorship/TextWithSideImage";
 import SignUpNow from "@/components/mentorship/SignUpNow";
-import Image from "next/image";
 import Testimonials from "../../components/Testimonials";
 
 
@@ -71,12 +70,13 @@ export default function MentorshipPage() {
                 "Select one of the options below. You’ll be redirected to a form, answer a few questions and click submit.",
                 "Your application is logged in our system so we can begin processing it.",
                 "Once we receive your application, we’ll find your perfect match from among our mentors.", 
-                "We’ll then contact you with your match and share the next steps on how to connect with your mentor."
+                "We’ll then contact you with your match and share the next steps on how to connect with your mentor.",
+                "And remember, it’s completely free to join."
               ]}
               image={{ 
                 src: "/assets/images/mentorship/image1.svg", 
                 alt: "A Mentor guiding a mentee", 
-                width: 300, 
+                width: 350, 
                 height: 300 
               }}
             />
@@ -92,18 +92,6 @@ export default function MentorshipPage() {
                       />
             </div>
             <SignUpNow />
-
-            {/* People Celebrating Section */}
-            <div className="flex justify-center mb-16">
-              <Image
-                src="/assets/images/mentorship/image2.svg"
-                alt="People celebrating"
-                width={300} 
-                height={250} 
-                className="object-contain"
-                priority
-              />
-            </div>
            
            {/* Testimonial */}
             <div className="mb-12">

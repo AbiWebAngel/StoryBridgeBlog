@@ -29,7 +29,7 @@ export default function LatestBlogs() {
           key={item.id}
           onClick={() => handleItemClick(item.slug)}
           className="flex flex-col w-full sm:w-[90%] md:w-[95%] lg:max-w-[1096px] mx-auto rounded-[30px] bg-[#F2ECE3] text-[#413320] overflow-hidden shadow-xl h-full 
-            transition-transform duration-300 hover:scale-[1.02] cursor-pointer"
+            transition-transform duration-300 hover:scale-101 cursor-pointer"
         >
           {/* Heading + Heart */}
           <div className="flex justify-between items-start gap-4 pt-4 pb-2 px-4 sm:px-6 md:px-8">

@@ -29,7 +29,7 @@ export default function JoinOurPrograms() {
           <Link
             key={program.name}
             href={program.href}
-            className="flex flex-col items-center w-[250px] h-[250px] bg-[#F2ECE3] rounded-[30px] p-2 hover:shadow-lg transition hover:scale-105"
+            className="flex flex-col items-center w-[250px] h-[250px] bg-[#F2ECE3] rounded-[30px] p-2 hover:shadow-lg transition hover:scale-103"
           >
             <div className="w-[223px] h-[221px] relative">
               <Image
