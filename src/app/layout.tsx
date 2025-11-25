@@ -25,11 +25,16 @@ const jacquesFrancois = Jacques_Francois({
 export const metadata: Metadata = {
   title: "Storybridge Blog",
   description: "A blog about storytelling and writing",
+  icons: {
+    icon: "/favicon.ico",
+  },
 };
+
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
    <html lang="en" className={`${cinzel.variable} ${inter.variable} ${jacquesFrancois.variable}`}>
+ 
       <body>
         <header>
           <Navbar />
