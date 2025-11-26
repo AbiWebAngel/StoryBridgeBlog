@@ -64,7 +64,7 @@ const LoginModal = ({ isOpen, onClose, onSwitchToRegister }: LoginModalProps) =>
         </button>
 
         {/* Modal Content */}
-        <div className="bg-white rounded-2xl overflow-hidden shadow-2xl">
+        <div className="bg-white rounded-4xl overflow-hidden shadow-2xl">
           <div className="flex min-h-[600px]">
             {/* Left Section - Login Form */}
             <div className="flex-1 p-8 flex flex-col justify-center">
