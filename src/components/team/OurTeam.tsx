@@ -28,7 +28,7 @@ const teamData = [
     id: 4,
     name: "Nadia",
     role: "Writer",
-    description: "Writing is my way of shaping ideas and sharing them with the world. I enjoy blending insight with creativity in blogs, essays, or narratives, always aiming to connect with readers in a meaningful way.",
+    description: "romantic. Ever since I could read on my own I've been searching for stories that master Soul and Syntax.",
     image: "/assets/images/team/picture7.jpg"
   },
   {
@@ -50,7 +50,7 @@ const teamData = [
     name: "Tisha",
     role: "Feedback Coordinator",
     description: "Lover of literature",
-    image: "/assets/images/team/picture1.png"
+    image: "/assets/images/team/picture3.png"
   }
 ];
 
