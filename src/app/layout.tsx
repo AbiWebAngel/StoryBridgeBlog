@@ -3,6 +3,7 @@ import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import "./globals.css";
 import {Cinzel, Inter, Jacques_Francois} from "next/font/google";
+import { AuthProvider } from "@/context/AuthContext";
 
 const cinzel = Cinzel({
   subsets: ["latin"],
@@ -32,17 +33,18 @@ export const metadata: Metadata = {
 
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
-  return (
-   <html lang="en" className={`${cinzel.variable} ${inter.variable} ${jacquesFrancois.variable}`}>
- 
+   return (
+    <html lang="en" className={`${cinzel.variable} ${inter.variable} ${jacquesFrancois.variable}`}>
       <body>
-        <header>
-          <Navbar />
-        </header>
-        <main className="flex-grow mt-6 mb-6 pt-2">{children}</main>
-        <footer>
-          <Footer />
-        </footer>
+        <AuthProvider>
+          <header>
+            <Navbar />
+          </header>
+          <main className="flex-grow mt-6 mb-6 pt-2">{children}</main>
+          <footer>
+            <Footer />
+          </footer>
+        </AuthProvider>
       </body>
     </html>
   );
