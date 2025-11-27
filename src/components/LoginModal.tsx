@@ -3,6 +3,8 @@
 
 import { useState } from "react";
 import Image from "next/image";
+import { useAuth } from "@/context/AuthContext";
+
 
 interface LoginModalProps {
   isOpen: boolean;
@@ -11,6 +13,8 @@ interface LoginModalProps {
 }
 
 const LoginModal = ({ isOpen, onClose, onSwitchToRegister }: LoginModalProps) => {
+  
+  const { loginWithEmail, loginWithGoogle } = useAuth();
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -29,16 +33,32 @@ const LoginModal = ({ isOpen, onClose, onSwitchToRegister }: LoginModalProps) =>
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-    try {
-      // Handle login logic here
-      console.log("Login attempt:", formData);
-      // Add your API call here
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  e.preventDefault();
+  setIsLoading(true);
+  try {
+    await loginWithEmail(formData.email, formData.password);
+    onClose(); // close modal after login
+  } catch (error: any) {
+    console.error(error);
+    alert(error.message || "Login failed.");
+  } finally {
+    setIsLoading(false);
+  }
+};
+
+const handleGoogleLogin = async () => {
+  setIsLoading(true);
+  try {
+    await loginWithGoogle();
+    onClose();
+  } catch (error: any) {
+    console.error(error);
+    alert(error.message || "Google login failed.");
+  } finally {
+    setIsLoading(false);
+  }
+};
+
 
   const handleSwitchToRegister = () => {
     onClose();
@@ -51,6 +71,8 @@ const LoginModal = ({ isOpen, onClose, onSwitchToRegister }: LoginModalProps) =>
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };
+
+
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -182,11 +204,12 @@ const LoginModal = ({ isOpen, onClose, onSwitchToRegister }: LoginModalProps) =>
                   </div>
 
                   {/* Login Button */}
-                  <button
-                    type="submit"
-                    disabled={isLoading}
-                    className="w-full py-3 font-inter bg-[#805C2C] text-[#FFFFFF] rounded-[30px] hover:bg-[#705431] disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors text-base md:text-lg mt-4 md:mt-6"
-                  >
+                  <button 
+                      type="submit"
+                      disabled={isLoading}
+                      className="w-full py-3 border-[#403727] rounded-[30px] flex items-center justify-center gap-3 bg-[#805C2C] hover:bg-[#705431] transition-colors text-base md:text-lg font-inter"
+                    >
+
                     <span className="text-[#FFFFFF] font-medium">
                       {isLoading ? "Logging in..." : "Login"}
                     </span>
@@ -203,6 +226,8 @@ const LoginModal = ({ isOpen, onClose, onSwitchToRegister }: LoginModalProps) =>
                 {/* Google Login Button */}
                 <button 
                   type="button"
+                  onClick={handleGoogleLogin}  // ← add this
+                  disabled={isLoading}
                   className="w-full py-3 border-[#403727] rounded-[30px] flex items-center justify-center gap-3 bg-[#805C2C] hover:bg-[#705431] transition-colors text-base md:text-lg font-inter"
                 >
                   <svg width="18" height="18" className="md:w-[20px] md:h-[20px]" viewBox="0 0 24 24">
