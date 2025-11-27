@@ -42,7 +42,7 @@ export default function SearchComponent() {
         placeholder="Start typing to search"
         value={searchText}
         onChange={(e) => setSearchText(e.target.value)}
-        className="font-inter w-full rounded-l-full rounded-r-none border-4 border-l-[#694D28] border-y-[#694D28] border-r-0
+        className="font-inter w-full rounded-l-full rounded-r-none border-4 border-l-[#805C2C] border-y-[#805C2C] border-r-0
                    bg-[#C6B49C] pt-3 pb-[0.6rem] pl-16 pr-10 text-[#403727] font-bold placeholder-[#403727]
                    outline-none focus:ring-2 focus:ring-[#805D2D]/40 transition"
       />
@@ -56,10 +56,10 @@ export default function SearchComponent() {
 
 
   {/* Section with border */}
-  <section className="font-inter w-full bg-[#DDD2C3] py-8 relative overflow-hidden border-y-4 border-[#805D2D]">
+  <section className="font-inter w-full bg-[#DDD2C3] py-8 relative overflow-hidden border-y-4 border-[#805C2C]">
     {/* Search by Labels */}
     <div className="flex flex-col items-center py-4 space-y-4">
-      <h2 className="font-inter text-lg font-bold text-[#805D2D]">
+      <h2 className="font-inter text-lg font-bold text-[#805C2C]">
         Search by labels:
       </h2>
 
@@ -67,8 +67,8 @@ export default function SearchComponent() {
         {labels.map((label, index) => (
           <span
             key={index}
-            className="cursor-pointer px-5 py-2 rounded-full border-2 border-[#805D2D] bg-[#F2ECE3]
-                       text-[#805D2D] font-medium transition-transform duration-300
+            className="cursor-pointer px-5 py-2 rounded-full border-2 border-[#805C2C] bg-[#F2ECE3]
+                       text-[#805C2C] font-medium transition-transform duration-300
                        hover:scale-110 select-none"
           >
             {label}

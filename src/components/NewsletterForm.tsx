@@ -120,7 +120,7 @@ export default function NewsletterForm() {
                 ? isValid
                   ? "border-green-500"
                   : "border-red-500"
-                : "border-[#694D28]"
+                : "border-[#805C2C]"
             }`}
           >
             <input
