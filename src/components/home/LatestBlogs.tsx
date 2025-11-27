@@ -87,7 +87,7 @@ export default function LatestBlogs() {
             className={`px-3 py-1 rounded ${
               currentPage === page
                 ? "bg-[#805C2C] text-white"
-                : "bg-[#F2ECE3] hover:bg-[#D8CBBF]"
+                : "bg-white hover:bg-[#D8CBBF]"
             } transition`}
           >
             {page}
