@@ -16,6 +16,7 @@ const LoginModal = ({ isOpen, onClose, onSwitchToRegister }: LoginModalProps) =>
     password: "",
   });
   const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   if (!isOpen) return null;
 
@@ -27,10 +28,16 @@ const LoginModal = ({ isOpen, onClose, onSwitchToRegister }: LoginModalProps) =>
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle login logic here
-    console.log("Login attempt:", formData);
+    setIsLoading(true);
+    try {
+      // Handle login logic here
+      console.log("Login attempt:", formData);
+      // Add your API call here
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleSwitchToRegister = () => {
@@ -59,6 +66,7 @@ const LoginModal = ({ isOpen, onClose, onSwitchToRegister }: LoginModalProps) =>
         <button
           onClick={onClose}
           className="absolute -top-10 -right-2 md:-top-8 md:-right-4 z-10 text-white hover:text-gray-300 transition-colors"
+          aria-label="Close modal"
         >
           <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M6 6l12 12M6 18L18 6" />
@@ -92,17 +100,18 @@ const LoginModal = ({ isOpen, onClose, onSwitchToRegister }: LoginModalProps) =>
                   Login
                 </h2>
 
-                {/* Form */}
+                {/* Form - KEEPING ORIGINAL ORDER */}
                 <form onSubmit={handleSubmit} className="space-y-4 md:space-y-6">
-                  {/* Email Field - Updated for consistent width */}
+                 
+                  {/* Email Field */}
                   <div className="flex items-center gap-2">
                     <div className="flex-1 rounded-full border-4 shadow-md px-4 py-2 border-[#805C2C]">
                       <div className="flex items-center">
+
                         {/* Email Icon */}
-                        <div className="mr-3 flex-shrink-0">
-                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#403727" strokeWidth="2">
-                            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
-                            <polyline points="22,6 12,13 2,6" />
+                        <div className="mr-2 flex-shrink-0">
+                          <svg xmlns="http://www.w3.org/2000/svg" height="25px" viewBox="0 -960 960 960" width="25px" fill="#403727">
+                            <path d="M172.31-180Q142-180 121-201q-21-21-21-51.31v-455.38Q100-738 121-759q21-21 51.31-21h615.38Q818-780 839-759q21 21 21 51.31v455.38Q860-222 839-201q-21 21-51.31 21H172.31ZM480-457.69 160-662.31v410q0 5.39 3.46 8.85t8.85 3.46h615.38q5.39 0 8.85-3.46t3.46-8.85v-410L480-457.69Zm0-62.31 313.85-200h-627.7L480-520ZM160-662.31V-720v467.69q0 5.39 3.46 8.85t8.85 3.46H160v-422.31Z"/>
                           </svg>
                         </div>
                         <input
@@ -112,6 +121,7 @@ const LoginModal = ({ isOpen, onClose, onSwitchToRegister }: LoginModalProps) =>
                           onChange={handleInputChange}
                           placeholder="Email"
                           className="w-full focus:outline-none text-[#403727] font-bold placeholder-[#403727] border-b-2 border-[#403727] font-inter text-base md:text-lg bg-transparent"
+                          required
                         />
                       </div>
                     </div>
@@ -136,6 +146,7 @@ const LoginModal = ({ isOpen, onClose, onSwitchToRegister }: LoginModalProps) =>
                           onChange={handleInputChange}
                           placeholder="Password"
                           className="w-full focus:outline-none text-[#403727] font-bold placeholder-[#403727] border-b-2 border-[#403727] font-inter text-base md:text-lg bg-transparent"
+                          required
                         />
                       </div>
                     </div>
@@ -145,6 +156,7 @@ const LoginModal = ({ isOpen, onClose, onSwitchToRegister }: LoginModalProps) =>
                       type="button"
                       onClick={togglePasswordVisibility}
                       className="flex-shrink-0 text-[#403727] hover:text-[#705431] p-2 h-[44px] w-[44px] md:h-[52px] md:w-[52px] flex items-center justify-center"
+                      aria-label={showPassword ? "Hide password" : "Show password"}
                     >
                       <svg width="20" height="20" className="md:w-[25px] md:h-[25px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                         {showPassword ? (
@@ -172,9 +184,12 @@ const LoginModal = ({ isOpen, onClose, onSwitchToRegister }: LoginModalProps) =>
                   {/* Login Button */}
                   <button
                     type="submit"
-                    className="w-full py-3 font-inter bg-[#805C2C] text-[#FFFFFF] rounded-[30px] hover:bg-[#705431] transition-colors text-base md:text-lg mt-4 md:mt-6"
+                    disabled={isLoading}
+                    className="w-full py-3 font-inter bg-[#805C2C] text-[#FFFFFF] rounded-[30px] hover:bg-[#705431] disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors text-base md:text-lg mt-4 md:mt-6"
                   >
-                     <span className="text-[#FFFFFF] font-medium">Login</span>
+                    <span className="text-[#FFFFFF] font-medium">
+                      {isLoading ? "Logging in..." : "Login"}
+                    </span>
                   </button>
                 </form>
 
@@ -186,7 +201,10 @@ const LoginModal = ({ isOpen, onClose, onSwitchToRegister }: LoginModalProps) =>
                 </div>
 
                 {/* Google Login Button */}
-                <button className="w-full py-3 border-[#403727] rounded-[30px] flex items-center justify-center gap-3 bg-[#805C2C] hover:bg-[#705431] transition-colors text-base md:text-lg font-inter">
+                <button 
+                  type="button"
+                  className="w-full py-3 border-[#403727] rounded-[30px] flex items-center justify-center gap-3 bg-[#805C2C] hover:bg-[#705431] transition-colors text-base md:text-lg font-inter"
+                >
                   <svg width="18" height="18" className="md:w-[20px] md:h-[20px]" viewBox="0 0 24 24">
                     <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
                     <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
