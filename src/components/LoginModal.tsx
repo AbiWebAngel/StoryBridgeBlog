@@ -49,7 +49,7 @@ const LoginModal = ({ isOpen, onClose, onSwitchToRegister }: LoginModalProps) =>
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       {/* Dimmed Background */}
       <div 
-        className="absolute inset-0 bg-black/20 transition-opacity"
+        className="absolute inset-0 bg-black/25 transition-opacity"
         onClick={onClose}
       />
       
