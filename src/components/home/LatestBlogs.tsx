@@ -86,7 +86,7 @@ export default function LatestBlogs() {
             onClick={() => setCurrentPage(page)}
             className={`px-3 py-1 rounded ${
               currentPage === page
-                ? "bg-[#413320] text-white"
+                ? "bg-[#805C2C] text-white"
                 : "bg-[#F2ECE3] hover:bg-[#D8CBBF]"
             } transition`}
           >
