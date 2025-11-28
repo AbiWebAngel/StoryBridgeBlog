@@ -180,7 +180,7 @@ const Navbar = () => {
                 <Avatar
                   name={user?.name}
                   initials={user?.initials}
-                  size={40} // matches your w-10 h-10
+                  size={45} // matches your w-10 h-10
                 />
               </div>
 

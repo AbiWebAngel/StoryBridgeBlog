@@ -27,7 +27,7 @@ const stringToColor = (str: string) => {
 const Avatar = ({
   name,
   initials,
-  size = 40,
+  size = 45,
   textColor = "#fff",
   fallbackSrc = "/assets/icons/Profile.svg",
 }: AvatarProps) => {
@@ -50,7 +50,7 @@ const Avatar = ({
     </div>
   ) : (
     <div
-      className="relative rounded-full overflow-hidden"
+      className="relative rounded-md overflow-hidden"
       style={{ width: size, height: size }}
     >
       <Image src={fallbackSrc} alt="Profile" fill className="object-cover" />
