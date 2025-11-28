@@ -185,7 +185,7 @@ const Navbar = () => {
               </div>
 
              {/* Dropdown */}
-              <ul className="absolute right-0 mt-2 w-52 bg-[#805C2C] text-white rounded-lg shadow-lg py-1
+              <ul className="absolute right-0 mt-5 w-52 bg-[#805C2C] text-white rounded-lg shadow-lg py-1
                opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50
                text-sm font-semibold tracking-wide pointer-events-auto">
 
