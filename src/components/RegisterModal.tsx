@@ -3,6 +3,9 @@
 import { useState } from "react";
 import Image from "next/image";
 import { useAuth } from "@/context/AuthContext";
+import { getFriendlyErrorMessage } from "@/utils/firebaseErrors";
+import { FirebaseError } from "firebase/app";
+import { validatePassword, validateName, validateEmail } from "@/utils/validators";
 
 interface RegisterModalProps {
   isOpen: boolean;
@@ -24,52 +27,116 @@ const RegisterModal = ({ isOpen, onClose, onSwitchToLogin }: RegisterModalProps)
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string>("");
+  const [passwordStrength, setPasswordStrength] = useState<"Weak" | "Medium" | "Strong">("Weak");
+
 
   if (!isOpen) return null;
 
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-  };
+  const { name, value } = e.target;
+  setFormData(prev => ({ ...prev, [name]: value }));
+
+    // Live password strength
+    if (name === "password") {
+      const result = validatePassword(value);
+
+      // Only access strength if result is an object
+      if (typeof result === "object" && result !== null) {
+        setPasswordStrength(result.strength);
+      }
+    };
+  }
 
   
- const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (formData.password !== formData.confirmPassword) {
-      alert("Passwords don't match!");
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+
+  // Validate fields
+  const firstNameError = validateName(formData.firstName);
+  const lastNameError = validateName(formData.lastName);
+  const emailError = validateEmail(formData.email);
+  const result = validatePassword(formData.password);
+
+  let passwordError: string | null = null;
+
+  if (typeof result === "string") {
+    passwordError = result; // result is the error string
+  } else if (typeof result === "object" && result !== null) {
+    passwordError = result.error; // result has error & strength
+  }
+
+  // Now you can safely use passwordError
+  if (passwordError) {
+    setErrorMessage(passwordError);
+    return;
+  }
+
+    if (firstNameError || lastNameError || emailError || passwordError) {
+      setErrorMessage(firstNameError || lastNameError || emailError || passwordError!);
       return;
     }
 
-    setIsLoading(true);
-    try {
-      await registerWithEmail(
-        formData.email,
-        formData.password,
-        `${formData.firstName} ${formData.lastName}`
-      );
-      onClose(); // Close modal after successful registration
-    } catch (error: any) {
-      console.error(error);
-      alert(error.message || "Failed to register.");
-    } finally {
-      setIsLoading(false);
+    if (formData.password !== formData.confirmPassword) {
+      setErrorMessage("Passwords don't match!");
+      return;
     }
-  };
 
-  
-  const handleGoogleLogin = async () => {
-    setIsLoading(true);
-    try {
-      await loginWithGoogle();
-      onClose();
-    } catch (error: any) {
-      console.error(error);
-      alert(error.message || "Google login failed.");
-    } finally {
-      setIsLoading(false);
+  setIsLoading(true);
+  setErrorMessage("");
+
+  try {
+    await registerWithEmail(
+      formData.email,
+      formData.password,
+      `${formData.firstName} ${formData.lastName}`
+    );
+
+    // 🔥 Clear form before closing
+  setFormData({
+    firstName: "",
+    lastName: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+  });
+  setPasswordStrength("Weak");
+
+    onClose();
+  } catch (error: unknown) {
+    if (error instanceof FirebaseError) {
+      setErrorMessage(getFriendlyErrorMessage(error));
+    } else if (error instanceof Error) {
+      setErrorMessage(error.message);
+    } else {
+      setErrorMessage("Failed to register. Please try again.");
     }
-  };
+  } finally {
+    setIsLoading(false);
+  }
+};
+
+
+const handleGoogleLogin = async () => {
+  setIsLoading(true);
+  setErrorMessage(""); // clear previous error
+  try {
+    await loginWithGoogle();
+    onClose();
+  } catch (error: unknown) {
+    if (error instanceof FirebaseError) {
+      setErrorMessage(getFriendlyErrorMessage(error));
+    } else if (error instanceof Error) {
+      setErrorMessage(error.message);
+    } else {
+      setErrorMessage("Google login failed. Please try again.");
+    }
+  } finally {
+    setIsLoading(false);
+  }
+};
+
 
   const handleSwitchToLogin = () => {
     onClose();
@@ -211,56 +278,79 @@ const toggleConfirmPasswordVisibility = () => setShowConfirmPassword(!showConfir
                     </div>
                     {/* Consistent spacer for both fields */}
                     <div className="flex-shrink-0 w-[44px] md:w-[52px]"></div>
+                  
                   </div>
+                    {/* Password Field */}
+                    <div className="flex items-center gap-2">
+                      <div
+                          className={`flex-1 rounded-full shadow-md px-4 py-2 border-4 ${
+                            formData.password
+                              ? passwordStrength === "Weak"
+                                ? "border-red-600"
+                                : passwordStrength === "Medium"
+                                ? "border-yellow-500"
+                                : passwordStrength === "Strong"
+                                ? "border-green-600"
+                                : "border-[#805C2C]"
+                              : "border-[#805C2C]" // default when empty
+                          }`}
+                        >
 
-                  {/* Password Field */}
-                  <div className="flex items-center gap-2">
-                    <div className="flex-1 rounded-full border-4 shadow-md px-4 py-2 border-[#805C2C]">
-                      <div className="flex items-center">
-                        {/* Password Icon */}
-                        <div className="mr-2 flex-shrink-0">
-                          <svg xmlns="http://www.w3.org/2000/svg" height="25" className="md:h-[30px]" viewBox="0 -960 960 960" width="25" fill="#403727">
-                            <path d="M252.31-100q-29.92 0-51.12-21.19Q180-142.39 180-172.31v-375.38q0-29.92 21.19-51.12Q222.39-620 252.31-620H300v-80q0-74.92 52.54-127.46Q405.08-880 480-880q74.92 0 127.46 52.54Q660-774.92 660-700v80h47.69q29.92 0 51.12 21.19Q780-577.61 780-547.69v375.38q0 29.92-21.19 51.12Q737.61-100 707.69-100H252.31Zm0-60h455.38q5.39 0 8.85-3.46t3.46-8.85v-375.38q0-5.39-3.46-8.85t-8.85-3.46H252.31q-5.39 0-8.85 3.46t-3.46 8.85v375.38q0 5.39 3.46 8.85t8.85 3.46ZM480-290q29.15 0 49.58-20.42Q550-330.85 550-360t-20.42-49.58Q509.15-430 480-430t-49.58 20.42Q410-389.15 410-360t20.42 49.58Q450.85-290 480-290ZM360-620h240v-80q0-50-35-85t-85-35q-50 0-85 35t-35 85v80ZM240-160v-400 400Z"/>
-                          </svg>
+                        <div className="flex items-center">
+                          {/* Password Icon */}
+                          <div className="mr-2 flex-shrink-0">
+                            <svg xmlns="http://www.w3.org/2000/svg" height="25" className="md:h-[30px]" viewBox="0 -960 960 960" width="25" fill="#403727">
+                              <path d="M252.31-100q-29.92 0-51.12-21.19Q180-142.39 180-172.31v-375.38q0-29.92 21.19-51.12Q222.39-620 252.31-620H300v-80q0-74.92 52.54-127.46Q405.08-880 480-880q74.92 0 127.46 52.54Q660-774.92 660-700v80h47.69q29.92 0 51.12 21.19Q780-577.61 780-547.69v375.38q0 29.92-21.19 51.12Q737.61-100 707.69-100H252.31Zm0-60h455.38q5.39 0 8.85-3.46t3.46-8.85v-375.38q0-5.39-3.46-8.85t-8.85-3.46H252.31q-5.39 0-8.85 3.46t-3.46 8.85v375.38q0 5.39 3.46 8.85t8.85 3.46ZM480-290q29.15 0 49.58-20.42Q550-330.85 550-360t-20.42-49.58Q509.15-430 480-430t-49.58 20.42Q410-389.15 410-360t20.42 49.58Q450.85-290 480-290ZM360-620h240v-80q0-50-35-85t-85-35q-50 0-85 35t-35 85v80ZM240-160v-400 400Z"/>
+                            </svg>
+                          </div>
+
+                          {/* Password Input */}
+                          <input
+                            type={showPassword ? "text" : "password"}
+                            name="password"
+                            value={formData.password}
+                            onChange={handleInputChange}
+                            placeholder="Password"
+                            className="w-full focus:outline-none text-[#403727] font-bold placeholder-[#403727] border-b-2 border-[#403727] font-inter text-base md:text-lg bg-transparent"
+                            required
+                          />
                         </div>
-                        <input
-                          type={showPassword ? "text" : "password"}
-                          name="password"
-                          value={formData.password}
-                          onChange={handleInputChange}
-                          placeholder="Password"
-                          className="w-full focus:outline-none text-[#403727] font-bold placeholder-[#403727] border-b-2 border-[#403727] font-inter text-base md:text-lg bg-transparent"
-                          required
-                        />
                       </div>
+
+                      {/* Visibility Toggle */}
+                      <button
+                        type="button"
+                        onClick={togglePasswordVisibility}
+                        className="flex-shrink-0 text-[#403727] hover:text-[#705431] p-2 h-[44px] w-[44px] md:h-[52px] md:w-[52px] flex items-center justify-center"
+                        aria-label={showPassword ? "Hide password" : "Show password"}
+                      >
+                        <svg width="20" height="20" className="md:w-[25px] md:h-[25px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          {showPassword ? (
+                            <>
+                              <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
+                              <line x1="1" y1="1" x2="23" y2="23" />
+                            </>
+                          ) : (
+                            <>
+                              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                              <circle cx="12" cy="12" r="3" />
+                            </>
+                          )}
+                        </svg>
+                      </button>
                     </div>
-                    
-                    {/* Visibility Toggle */}
-                    <button
-                      type="button"
-                      onClick={togglePasswordVisibility}
-                      className="flex-shrink-0 text-[#403727] hover:text-[#705431] p-2 h-[44px] w-[44px] md:h-[52px] md:w-[52px] flex items-center justify-center"
-                      aria-label={showPassword ? "Hide password" : "Show password"}
-                    >
-                      <svg width="20" height="20" className="md:w-[25px] md:h-[25px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        {showPassword ? (
-                          <>
-                            <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
-                            <line x1="1" y1="1" x2="23" y2="23" />
-                          </>
-                        ) : (
-                          <>
-                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-                            <circle cx="12" cy="12" r="3" />
-                          </>
-                        )}
-                      </svg>
-                    </button>
-                  </div>
                   
                   {/* Confirm Password Field */}
-                  <div className="flex items-center gap-2">
-                    <div className="flex-1 rounded-full border-4 shadow-md px-4 py-2 border-[#805C2C]">
+                  <div className="flex items-center gap-2 mb-12">
+                    <div
+                      className={`flex-1 rounded-full shadow-md px-4 py-2 border-4 ${
+                        formData.confirmPassword
+                          ? formData.confirmPassword === formData.password
+                            ? "border-green-600" // matches
+                            : "border-red-600"   // doesn't match
+                          : "border-[#805C2C]"   // default brown when empty
+                      }`}
+                    >
                       <div className="flex items-center">
                         {/* Confirm Password Icon */}
                         <div className="mr-2 flex-shrink-0">
@@ -268,6 +358,8 @@ const toggleConfirmPasswordVisibility = () => setShowConfirmPassword(!showConfir
                             <path d="M252.31-100q-29.92 0-51.12-21.19Q180-142.39 180-172.31v-375.38q0-29.92 21.19-51.12Q222.39-620 252.31-620H300v-80q0-74.92 52.54-127.46Q405.08-880 480-880q74.92 0 127.46 52.54Q660-774.92 660-700v80h47.69q29.92 0 51.12 21.19Q780-577.61 780-547.69v375.38q0 29.92-21.19 51.12Q737.61-100 707.69-100H252.31Zm0-60h455.38q5.39 0 8.85-3.46t3.46-8.85v-375.38q0-5.39-3.46-8.85t-8.85-3.46H252.31q-5.39 0-8.85 3.46t-3.46 8.85v375.38q0 5.39 3.46 8.85t8.85 3.46ZM480-290q29.15 0 49.58-20.42Q550-330.85 550-360t-20.42-49.58Q509.15-430 480-430t-49.58 20.42Q410-389.15 410-360t20.42 49.58Q450.85-290 480-290ZM360-620h240v-80q0-50-35-85t-85-35q-50 0-85 35t-35 85v80ZM240-160v-400 400Z"/>
                           </svg>
                         </div>
+
+                        {/* Confirm Password Input */}
                         <input
                           type={showConfirmPassword ? "text" : "password"}
                           name="confirmPassword"
@@ -279,7 +371,7 @@ const toggleConfirmPasswordVisibility = () => setShowConfirmPassword(!showConfir
                         />
                       </div>
                     </div>
-                    
+
                     {/* Visibility Toggle */}
                     <button
                       type="button"
@@ -303,11 +395,19 @@ const toggleConfirmPasswordVisibility = () => setShowConfirmPassword(!showConfir
                     </button>
                   </div>
 
+
+                  
+                  {errorMessage && (
+                    <p className="text-red-600 text-sm md:text-base font-inter mb-2">
+                      {errorMessage}
+                    </p>
+                  )}
+
                   {/* Register Button */}
                   <button
                       type="submit"
                       disabled={isLoading}
-                      className="w-full py-3 font-inter bg-[#805C2C] text-[#FFFFFF] rounded-[30px] hover:bg-[#705431] disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors text-base md:text-lg mt-4 md:mt-6"
+                      className="w-full py-3 font-inter bg-[#805C2C] text-[#FFFFFF] rounded-[30px] hover:bg-[#705431] disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors text-base md:text-lg"
                     >
                     <span className="text-[#FFFFFF] font-medium">
                       {isLoading ? "Registering..." : "Register"}

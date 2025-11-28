@@ -4,6 +4,9 @@ import Image from "next/image";
 import Link from "next/link";
 import LoginModal from "./LoginModal";
 import RegisterModal from "./RegisterModal";
+import { useAuth } from "@/context/AuthContext";
+import Avatar from "@/components/Avatar"; // adjust the path if needed
+
 
 const links = [
   {
@@ -30,6 +33,8 @@ const Navbar = () => {
   const [loginModalOpen, setLoginModalOpen] = useState(false);
   const [registerModalOpen, setRegisterModalOpen] = useState(false);
   const totalItems = links.length + 2;
+  const { user, logout } = useAuth();
+
 
   const handleLoginClick = () => {
     setLoginModalOpen(true);
@@ -166,48 +171,64 @@ const Navbar = () => {
             </button>
           </div>
 
-          {/* Profile */}
-          <div className="hidden lg:flex items-center">
-            <ul className="flex gap-3">
-              <li className="relative group">
-                {/* Clickable area wrapper */}
-                <div className="relative cursor-pointer p-8 -m-2 flex items-center justify-center">
-                  <Image
-                    src="/assets/icons/Profile.svg"
-                    alt="Profile"
-                    width={40}
-                    height={40}
-                    className="w-10 h-10 object-contain"
-                  />
-                </div>
+        {/* Profile */}
+        <div className="hidden lg:flex items-center">
+          <ul className="flex gap-3">
+            <li className="relative group">
+              {/* Clickable area wrapper */}
+              <div className="relative cursor-pointer p-8 -m-2 flex items-center justify-center">
+                <Avatar
+                  name={user?.name}
+                  initials={user?.initials}
+                  size={40} // matches your w-10 h-10
+                />
+              </div>
 
-                {/* Dropdown */}
-                <ul
-                  className="absolute right-0 mt-4 w-48 bg-[#805C2C] text-white rounded-lg shadow-lg py-2
-                            opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50
-                            text-base font-bold tracking-wide pointer-events-auto"
-                >
-                  <li>
-                    <div className="flex items-stretch justify-between px-2">
-                      <button
-                        onClick={handleLoginClick}
-                        className="py-2 hover:bg-[#A07845] transition-colors flex-1 text-center rounded-l"
-                      >
-                        Log In
-                      </button>
-                      <span className="text-white/70 mx-1 flex items-center">/</span>
-                      <button
-                        onClick={handleRegisterClick}
-                        className="py-2 hover:bg-[#A07845] transition-colors flex-1 text-center rounded-r"
-                      >
-                        Sign Up
-                      </button>
-                    </div>
+             {/* Dropdown */}
+              <ul className="absolute right-0 mt-2 w-52 bg-[#805C2C] text-white rounded-lg shadow-lg py-1
+               opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50
+               text-sm font-semibold tracking-wide pointer-events-auto">
+
+              {user ? (
+                <>
+                  {/* Greeting */}
+                  <li className="px-4 py-2 border-b border-white/20 select-none cursor-default">
+                    <span>Hello, {user.name?.split(" ")[0] || "User"}</span>
                   </li>
-                </ul>
-              </li>
+
+
+                  {/* Logout */}
+                  <li
+                    className="px-4 py-2 hover:bg-[#A07845] cursor-pointer transition-colors"
+                    onClick={logout}
+                  >
+                    Log Out
+                  </li>
+                </>
+              ) : (
+                <li className="px-2 py-1 flex gap-1">
+                  <button
+                    onClick={handleLoginClick}
+                    className="flex-1 py-2 text-center rounded-l hover:bg-[#A07845] transition-colors"
+                  >
+                    Log In
+                  </button>
+                  <span className="text-white/70 flex items-center px-1 select-none">/</span>
+                  <button
+                    onClick={handleRegisterClick}
+                    className="flex-1 py-2 text-center rounded-r hover:bg-[#A07845] transition-colors"
+                  >
+                    Sign Up
+                  </button>
+                </li>
+              )}
             </ul>
-          </div>
+
+
+            </li>
+          </ul>
+        </div>
+
         </div>
 
         {/* Mobile menu with consistent timing */}

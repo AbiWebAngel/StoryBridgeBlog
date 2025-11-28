@@ -4,7 +4,8 @@
 import { useState } from "react";
 import Image from "next/image";
 import { useAuth } from "@/context/AuthContext";
-
+import { getFriendlyErrorMessage } from "@/utils/firebaseErrors";
+import { FirebaseError } from "firebase/app";
 
 interface LoginModalProps {
   isOpen: boolean;
@@ -21,6 +22,17 @@ const LoginModal = ({ isOpen, onClose, onSwitchToRegister }: LoginModalProps) =>
   });
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState(""); // NEW
+
+  const resetForm = () => {
+  setFormData({
+    email: "",
+    password: "",
+  });
+  setShowPassword(false);
+  setErrorMessage("");
+};
+
 
   if (!isOpen) return null;
 
@@ -32,15 +44,28 @@ const LoginModal = ({ isOpen, onClose, onSwitchToRegister }: LoginModalProps) =>
     }));
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+const handleSubmit = async (e: React.FormEvent) => {
   e.preventDefault();
   setIsLoading(true);
+  setErrorMessage("");
+
   try {
     await loginWithEmail(formData.email, formData.password);
-    onClose(); // close modal after login
-  } catch (error: any) {
-    console.error(error);
-    alert(error.message || "Login failed.");
+
+    // Clear form before closing modal
+    resetForm();
+
+    onClose();
+
+  } catch (error: unknown) {
+    // Type guard to check if it's a FirebaseError
+    if (error instanceof FirebaseError) {
+      console.log(error);
+      setErrorMessage(getFriendlyErrorMessage(error));
+    } else {
+      console.log(error);
+      setErrorMessage("An unexpected error occurred. Please try again.");
+    }
   } finally {
     setIsLoading(false);
   }
@@ -48,16 +73,26 @@ const LoginModal = ({ isOpen, onClose, onSwitchToRegister }: LoginModalProps) =>
 
 const handleGoogleLogin = async () => {
   setIsLoading(true);
+  setErrorMessage("");
+
   try {
     await loginWithGoogle();
+
+    resetForm();
     onClose();
-  } catch (error: any) {
-    console.error(error);
-    alert(error.message || "Google login failed.");
+  } catch (error: unknown) {
+    if (error instanceof FirebaseError) {
+      console.log(error);
+      setErrorMessage(getFriendlyErrorMessage(error));
+    } else {
+      console.log(error);
+      setErrorMessage("An unexpected error occurred. Please try again.");
+    }
   } finally {
     setIsLoading(false);
   }
 };
+
 
 
   const handleSwitchToRegister = () => {
@@ -202,6 +237,13 @@ const handleGoogleLogin = async () => {
                       Forgot Password?
                     </button>
                   </div>
+                  
+                  {errorMessage && (
+                    <div className="text-red-600 text-sm md:text-base font-inter mb-2">
+                      {errorMessage}
+                    </div>
+                  )}
+
 
                   {/* Login Button */}
                   <button 
