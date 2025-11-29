@@ -175,169 +175,247 @@ const Navbar = () => {
         <div className="hidden lg:flex items-center">
           <ul className="flex gap-3">
             <li className="relative group">
-              {/* Clickable area wrapper */}
+
+              {/* Clickable avatar wrapper */}
               <div className="relative cursor-pointer p-8 -m-2 flex items-center justify-center">
                 <Avatar
                   name={user?.name}
                   initials={user?.initials}
-                  size={45} // matches your w-10 h-10
+                  size={45}
                 />
               </div>
 
-             {/* Dropdown */}
-              <ul className="absolute right-0 mt-5 w-52 bg-[#805C2C] text-white rounded-lg shadow-lg py-1
-               opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50
-               text-sm font-semibold tracking-wide pointer-events-auto">
+              {/* Dropdown */}
+              <ul
+                className="absolute right-0 mt-5 w-52 bg-[#805C2C] text-white rounded-lg shadow-lg py-1
+                opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50
+                text-sm font-semibold tracking-wide pointer-events-auto"
+              >
+                {user ? (
+                  <>
+                    {/* Greeting */}
+                    <li className="px-4 py-2 border-b border-white select-none cursor-default">
+                      <span>Hello, {user.name?.split(' ')[0] || 'User'}</span>
+                    </li>
 
-              {user ? (
-                <>
-                  {/* Greeting */}
-                  <li className="px-4 py-2 border-b border-white/20 select-none cursor-default">
-                    <span>Hello, {user.name?.split(" ")[0] || "User"}</span>
+                    {/* Dashboard */}
+                    <li className="px-4 py-2 hover:bg-[#A07845] transition-colors">
+                      <Link href="/dashboard" className="block w-full h-full">
+                        Dashboard
+                      </Link>
+                    </li>
+
+                    {/* Favourites */}
+                    <li className="px-4 py-2 hover:bg-[#A07845] transition-colors">
+                      <Link href="/favourites" className="block w-full h-full">
+                        Favourites
+                      </Link>
+                    </li>
+
+                    {/* Logout */}
+                    <li
+                      className="px-4 py-2 hover:bg-[#A07845] cursor-pointer transition-colors"
+                      onClick={logout}
+                    >
+                      Log Out
+                    </li>
+                  </>
+                ) : (
+                  <li className="px-2 py-1 flex gap-1">
+                    <button
+                      onClick={handleLoginClick}
+                      className="flex-1 py-2 text-center rounded-l hover:bg-[#A07845] transition-colors"
+                    >
+                      Log In
+                    </button>
+
+                    <span className="text-white/70 flex items-center px-1 select-none">/</span>
+
+                    <button
+                      onClick={handleRegisterClick}
+                      className="flex-1 py-2 text-center rounded-r hover:bg-[#A07845] transition-colors"
+                    >
+                      Sign Up
+                    </button>
                   </li>
-
-
-                  {/* Logout */}
-                  <li
-                    className="px-4 py-2 hover:bg-[#A07845] cursor-pointer transition-colors"
-                    onClick={logout}
-                  >
-                    Log Out
-                  </li>
-                </>
-              ) : (
-                <li className="px-2 py-1 flex gap-1">
-                  <button
-                    onClick={handleLoginClick}
-                    className="flex-1 py-2 text-center rounded-l hover:bg-[#A07845] transition-colors"
-                  >
-                    Log In
-                  </button>
-                  <span className="text-white/70 flex items-center px-1 select-none">/</span>
-                  <button
-                    onClick={handleRegisterClick}
-                    className="flex-1 py-2 text-center rounded-r hover:bg-[#A07845] transition-colors"
-                  >
-                    Sign Up
-                  </button>
-                </li>
-              )}
-            </ul>
-
-
+                )}
+              </ul>
             </li>
           </ul>
         </div>
 
+
         </div>
 
-        {/* Mobile menu with consistent timing */}
-        <div className={`
-          absolute top-14 left-0 w-full flex flex-col items-center text-white font-bold lg:hidden 
-          navbar-mobile-menu overflow-hidden z-[9999] transition-all duration-300 ease-in-out
-          ${menuOpen 
-            ? "max-h-screen opacity-100 visible py-4" 
-            : "max-h-0 opacity-0 invisible delay-[400ms]"
-          }
-        `}>
-          <ul className="flex flex-col items-center w-full space-y-2">
-            {links.map((link, i) => (
-              <li 
-                key={i} 
-                className="text-center w-full transition-all duration-300 ease-out"
-                style={{
-                  opacity: menuOpen ? 1 : 0,
-                  transform: menuOpen ? 'translateY(0)' : 'translateY(-8px)',
-                  transitionDelay: menuOpen ? `${100 + i * 60}ms` : `${(totalItems - 1 - i) * 60}ms`,
-                }}
+     {/* Mobile menu with consistent timing */}
+<div className={`
+  absolute top-14 left-0 w-full flex flex-col items-center text-white font-bold lg:hidden 
+  navbar-mobile-menu overflow-hidden z-[9999] transition-all duration-300 ease-in-out
+  ${menuOpen 
+    ? "max-h-screen opacity-100 visible py-4" 
+    : "max-h-0 opacity-0 invisible delay-[400ms]"
+  }
+`}>
+  <ul className="flex flex-col items-center w-full space-y-1">
+    {links.map((link, i) => (
+      <li 
+        key={i} 
+        className="text-center w-full transition-all duration-300 ease-out"
+        style={{
+          opacity: menuOpen ? 1 : 0,
+          transform: menuOpen ? 'translateY(0)' : 'translateY(-8px)',
+          transitionDelay: menuOpen ? `${100 + i * 60}ms` : `${(totalItems - 1 - i) * 60}ms`,
+        }}
+      >
+        {link.children ? (
+          <details className="relative w-full group">
+            {/* Mobile dropdown trigger - consistent spacing */}
+            <summary className="cursor-pointer flex items-center gap-1 justify-center py-3 px-4 w-full hover:bg-[#A07845]">
+              {link.label.toUpperCase()}
+              <svg
+                className="w-4 h-4 text-white transition-transform duration-200 group-open:rotate-180"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                viewBox="0 0 24 24"
               >
-                {link.children ? (
-                  <details className="relative w-full group">
-                    {/* Mobile dropdown trigger - compact spacing */}
-                    <summary className="cursor-pointer flex items-center gap-1 justify-center py-4 px-4 w-full hover:bg-[#A07845]">
-                      {link.label.toUpperCase()}
-                      <svg
-                        className="w-4 h-4 text-white transition-transform duration-200 group-open:rotate-180"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        viewBox="0 0 24 24"
-                      >
-                        <path d="M6 9l6 6 6-6" strokeLinecap="round" />
-                      </svg>
-                    </summary>
-                    {/* Dropdown children with compact spacing */}
-                    <ul className="mt-1 space-y-1 w-full bg-[#6a4a24]">
-                      {link.children.map((child, childIndex) => (
-                        <li 
-                          key={child.href} 
-                          className="w-full transition-all duration-300 ease-out"
-                          style={{
-                            opacity: menuOpen ? 1 : 0,
-                            transform: menuOpen ? 'translateX(0)' : 'translateX(-8px)',
-                            transitionDelay: menuOpen 
-                              ? `${150 + i * 60 + childIndex * 50}ms` 
-                              : `${(link.children.length - 1 - childIndex) * 50 + i * 60}ms`,
-                          }}
-                        >
-                          <Link
-                            href={child.href}
-                            className="block px-4 py-3 hover:bg-[#A07845] w-full text-center"
-                            onClick={() => setMenuOpen(false)}
-                          >
-                            {child.label}
-                          </Link>
-                        </li>
-                      ))}
-                    </ul>
-                  </details>
-                ) : (
+                <path d="M6 9l6 6 6-6" strokeLinecap="round" />
+              </svg>
+            </summary>
+            {/* Dropdown children with consistent spacing */}
+            <ul className="mt-1 space-y-1 w-full bg-[#6a4a24]">
+              {link.children.map((child, childIndex) => (
+                <li 
+                  key={child.href} 
+                  className="w-full transition-all duration-300 ease-out"
+                  style={{
+                    opacity: menuOpen ? 1 : 0,
+                    transform: menuOpen ? 'translateX(0)' : 'translateX(-8px)',
+                    transitionDelay: menuOpen 
+                      ? `${150 + i * 60 + childIndex * 50}ms` 
+                      : `${(link.children.length - 1 - childIndex) * 50 + i * 60}ms`,
+                  }}
+                >
                   <Link
-                    href={link.href}
-                    className="block px-4 py-4 hover:bg-[#A07845] w-full text-center"
+                    href={child.href}
+                    className="block px-4 py-2 hover:bg-[#A07845] w-full text-center"
                     onClick={() => setMenuOpen(false)}
                   >
-                    {link.label.toUpperCase()}
+                    {child.label}
                   </Link>
-                )}
-              </li>
-            ))}
-            <li 
-              className="w-full transition-all duration-300 ease-out"
-              style={{
-                opacity: menuOpen ? 1 : 0,
-                transform: menuOpen ? 'translateY(0)' : 'translateY(-8px)',
-                transitionDelay: menuOpen 
-                  ? `${100 + links.length * 60}ms` 
-                  : `${(totalItems - 1 - links.length) * 60}ms`,
-              }}
-            >
-              <button
-                onClick={handleLoginClick}
-                className="block px-4 py-4 hover:bg-[#A07845] w-full text-center"
-              >
-                Log In
-              </button>
-            </li>
-            <li 
-              className="w-full transition-all duration-300 ease-out"
-              style={{
-                opacity: menuOpen ? 1 : 0,
-                transform: menuOpen ? 'translateY(0)' : 'translateY(-8px)',
-                transitionDelay: menuOpen 
-                  ? `${100 + (links.length + 1) * 60}ms` 
-                  : `${(totalItems - 1 - (links.length + 1)) * 60}ms`,
-              }}
-            >
-              <button
-                onClick={handleRegisterClick}
-                className="block px-4 py-4 hover:bg-[#A07845] w-full text-center"
-              >
-                Sign Up
-              </button>
-            </li>
-          </ul>
-        </div>
+                </li>
+              ))}
+            </ul>
+          </details>
+        ) : (
+          <Link
+            href={link.href}
+            className="block px-4 py-3 hover:bg-[#A07845] w-full text-center"
+            onClick={() => setMenuOpen(false)}
+          >
+            {link.label.toUpperCase()}
+          </Link>
+        )}
+      </li>
+    ))}
+    
+  {/* Mobile Profile / User Links */}
+<li className="w-full border-t border-white/50 mt-4 pt-6 space-y-3">
+  {user ? (
+    <>
+      {/* Greeting */}
+      <li
+        className="w-full px-4 py-2 select-none cursor-default text-center transition-all duration-300 ease-out"
+        style={{
+          opacity: menuOpen ? 1 : 0,
+          transform: menuOpen ? 'translateY(0)' : 'translateY(-8px)',
+          transitionDelay: menuOpen ? `${100 + links.length * 60}ms` : `${(totalItems - 1 - links.length) * 60}ms`,
+        }}
+      >
+        Hello, {user.name?.split(" ")[0] || "User"}
+      </li>
+
+      {/* Dashboard */}
+      <li
+        className="w-full px-4 py-2 hover:bg-[#A07845] transition-all duration-300 ease-out text-center"
+        style={{
+          opacity: menuOpen ? 1 : 0,
+          transform: menuOpen ? 'translateY(0)' : 'translateY(-8px)',
+          transitionDelay: menuOpen ? `${100 + (links.length + 1) * 60}ms` : `${(totalItems - 1 - (links.length + 1)) * 60}ms`,
+        }}
+      >
+        <Link href="/dashboard" className="block w-full h-full">
+          Dashboard
+        </Link>
+      </li>
+
+      {/* Favourites */}
+      <li
+        className="w-full px-4 py-2 hover:bg-[#A07845] transition-all duration-300 ease-out text-center"
+        style={{
+          opacity: menuOpen ? 1 : 0,
+          transform: menuOpen ? 'translateY(0)' : 'translateY(-8px)',
+          transitionDelay: menuOpen ? `${100 + (links.length + 2) * 60}ms` : `${(totalItems - 1 - (links.length + 2)) * 60}ms`,
+        }}
+      >
+        <Link href="/favourites" className="block w-full h-full">
+          Favourites
+        </Link>
+      </li>
+
+      {/* Logout */}
+      <li
+        className="w-full px-4 py-2 hover:bg-[#A07845] cursor-pointer transition-all duration-300 ease-out text-center"
+        style={{
+          opacity: menuOpen ? 1 : 0,
+          transform: menuOpen ? 'translateY(0)' : 'translateY(-8px)',
+          transitionDelay: menuOpen ? `${100 + (links.length + 3) * 60}ms` : `${(totalItems - 1 - (links.length + 3)) * 60}ms`,
+        }}
+        onClick={logout}
+      >
+        Log Out
+      </li>
+    </>
+  ) : (
+    <>
+      {/* Login */}
+      <li
+        className="w-full px-4 py-3 hover:bg-[#A07845] transition-all duration-300 ease-out"
+        style={{
+          opacity: menuOpen ? 1 : 0,
+          transform: menuOpen ? 'translateY(0)' : 'translateY(-8px)',
+          transitionDelay: menuOpen ? `${100 + links.length * 60}ms` : `${(totalItems - 1 - links.length) * 60}ms`,
+        }}
+      >
+        <button
+          onClick={handleLoginClick}
+          className="block w-full text-center"
+        >
+          Log In
+        </button>
+      </li>
+
+      {/* Sign Up */}
+      <li
+        className="w-full px-4 py-3 hover:bg-[#A07845] transition-all duration-300 ease-out"
+        style={{
+          opacity: menuOpen ? 1 : 0,
+          transform: menuOpen ? 'translateY(0)' : 'translateY(-8px)',
+          transitionDelay: menuOpen ? `${100 + (links.length + 1) * 60}ms` : `${(totalItems - 1 - (links.length + 1)) * 60}ms`,
+        }}
+      >
+        <button
+          onClick={handleRegisterClick}
+          className="block w-full text-center"
+        >
+          Sign Up
+        </button>
+      </li>
+    </>
+  )}
+</li>
+  </ul>
+</div>
       </nav>
 
       {/* Modals */}
