@@ -135,7 +135,7 @@ const LoginModal = ({ isOpen, onClose, onSwitchToRegister }: LoginModalProps) =>
 
       await resetPassword(formData.email);
 
-      setErrorMessage("Password reset email sent! Check your inbox or the spam folder.");
+      setErrorMessage("Password reset email sent! Check your inbox.");
       // Optionally switch back to login mode after successful reset
       setTimeout(() => {
         setMode("login");
@@ -315,7 +315,7 @@ const LoginModal = ({ isOpen, onClose, onSwitchToRegister }: LoginModalProps) =>
                   /* Forgot Password Form */
                   <form onSubmit={handleForgotSubmit} className="space-y-6">
                     <div className="text-[#403727] font-inter text-base md:text-lg mb-4">
-                      Enter your email address and we'll send you a link to reset your password.
+                      Enter your email address and we&apos;ll send you a link to reset your password.
                     </div>
 
                     {/* Email Field */}
