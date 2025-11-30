@@ -159,7 +159,8 @@ const loginWithGoogle = async () => {
   const snap = await getDoc(userRef);
 
  const info = getAdditionalUserInfo(result);
- const profile = (info?.profile ?? {}) as Record<string, any>;
+ const profile = info?.profile as Record<string, string> | undefined ?? {};
+
 
  // 1️⃣ Try structured Google fields first
 let firstName = profile?.given_name || "";
