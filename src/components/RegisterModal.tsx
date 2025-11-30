@@ -6,6 +6,9 @@ import { useAuth } from "@/context/AuthContext";
 import { getFriendlyErrorMessage } from "@/utils/firebaseErrors";
 import { FirebaseError } from "firebase/app";
 import { validatePassword, validateName, validateEmail } from "@/utils/validators";
+import HCaptcha from "@hcaptcha/react-hcaptcha";
+
+
 
 interface RegisterModalProps {
   isOpen: boolean;
@@ -29,6 +32,7 @@ const RegisterModal = ({ isOpen, onClose, onSwitchToLogin }: RegisterModalProps)
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string>("");
   const [passwordStrength, setPasswordStrength] = useState<"Weak" | "Medium" | "Strong">("Weak");
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
 
 
   if (!isOpen) return null;
@@ -83,15 +87,22 @@ const handleSubmit = async (e: React.FormEvent) => {
       return;
     }
 
+   if (!captchaToken) {
+    setErrorMessage("Please complete the captcha.");
+    return;
+  }
+ 
   setIsLoading(true);
   setErrorMessage("");
 
   try {
-    await registerWithEmail(
-      formData.email,
-      formData.password,
-      `${formData.firstName} ${formData.lastName}`
-    );
+   await registerWithEmail(
+    formData.email,
+    formData.password,
+    formData.firstName,
+    formData.lastName
+  );
+
 
     // 🔥 Clear form before closing
   setFormData({
@@ -395,6 +406,11 @@ const toggleConfirmPasswordVisibility = () => setShowConfirmPassword(!showConfir
                     </button>
                   </div>
 
+                <HCaptcha
+                  sitekey={process.env.NEXT_PUBLIC_HCAPTCHA_SITEKEY!}
+                  onVerify={(token) => setCaptchaToken(token)}
+                  onExpire={() => setCaptchaToken(null)}
+                />
 
                   
                   {errorMessage && (

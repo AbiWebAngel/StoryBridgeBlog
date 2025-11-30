@@ -1,7 +1,9 @@
 import Image from "next/image";
+import { getInitials } from "@/utils/getInitials";
 
 interface AvatarProps {
-  name?: string;
+  firstName?: string;
+  lastName?: string;
   initials?: string;
   size?: number; // diameter in px
   textColor?: string;
@@ -15,7 +17,6 @@ const COLORS = [
   "#BF9405", "#BF7600", "#C2461C", "#5E4039"
 ];
 
-
 const stringToColor = (str: string) => {
   let hash = 0;
   for (let i = 0; i < str.length; i++) {
@@ -26,16 +27,15 @@ const stringToColor = (str: string) => {
 };
 
 const Avatar = ({
-  name,
+  firstName,
+  lastName,
   initials,
   size = 45,
   textColor = "#fff",
   fallbackSrc = "/assets/icons/Profile.svg",
 }: AvatarProps) => {
-  const displayInitials =
-    initials || name?.split(" ").map((n) => n[0]).join("").toUpperCase() || "";
-
-  const bgColor = displayInitials ? stringToColor(name || initials || "") : undefined;
+  const displayInitials = initials || getInitials(firstName || "", lastName || "");
+  const bgColor = displayInitials ? stringToColor((firstName || "") + (lastName || "")) : undefined;
 
   return displayInitials ? (
     <div

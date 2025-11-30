@@ -13,15 +13,18 @@ import {
 } from "firebase/auth";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { getInitials } from "@/utils/getInitials";
+import { getAdditionalUserInfo } from "firebase/auth";
+
 
 // User role type
 type Role = "admin" | "author" | "reader" | null;
 
-// Extend Firebase User to include initials, role, and name
+// Extend Firebase User to include initials, role, and first/last name
 export interface AppUser extends User {
   initials?: string;
   role?: Role;
-  name?: string;
+  firstName?: string;
+  lastName?: string;
 }
 
 // Auth context interface
@@ -30,7 +33,7 @@ interface AuthContextProps {
   role: Role;
   loading: boolean;
   loginWithEmail: (email: string, password: string) => Promise<void>;
-  registerWithEmail: (email: string, password: string, name?: string) => Promise<void>;
+  registerWithEmail: (email: string, password: string, firstName?: string, lastName?: string) => Promise<void>;
   loginWithGoogle: () => Promise<void>;
   logout: () => Promise<void>;
 }
@@ -38,7 +41,6 @@ interface AuthContextProps {
 // Create context
 const AuthContext = createContext<AuthContextProps | undefined>(undefined);
 
-// Provider
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<AppUser | null>(null);
   const [role, setRole] = useState<Role>(null);
@@ -46,20 +48,21 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const googleProvider = new GoogleAuthProvider();
 
-  // Fetch Firestore user doc and ensure type safety
+  // Fetch Firestore user doc
   const fetchUserDoc = async (uid: string) => {
     const snap = await getDoc(doc(db, "users", uid));
     if (!snap.exists()) return null;
 
     const data = snap.data();
-    const name = data.name ?? data.displayName ?? "";
-    const role = (data.role as Role) || "reader";
+    const firstName = data.firstName ?? "";
+    const lastName = data.lastName ?? "";
 
     return {
       ...data,
-      name,
-      initials: data.initials || getInitials(name),
-      role,
+      firstName,
+      lastName,
+      initials: data.initials || getInitials(firstName, lastName),
+      role: data.role ?? "reader",
     };
   };
 
@@ -76,8 +79,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const userData = await fetchUserDoc(firebaseUser.uid);
 
       const mergedUser: AppUser = {
-        ...firebaseUser,                  // keep all Firebase User properties & methods
-        name: userData?.name ?? firebaseUser.displayName ?? "",
+        ...firebaseUser,
+        firstName: userData?.firstName ?? "",
+        lastName: userData?.lastName ?? "",
         initials: userData?.initials ?? "",
         role: userData?.role ?? "reader",
       };
@@ -97,7 +101,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     const mergedUser: AppUser = {
       ...userCred.user,
-      name: userData?.name ?? userCred.user.displayName ?? "",
+      firstName: userData?.firstName ?? "",
+      lastName: userData?.lastName ?? "",
       initials: userData?.initials ?? "",
       role: userData?.role ?? "reader",
     };
@@ -107,68 +112,127 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   // Email/password registration
-  const registerWithEmail = async (email: string, password: string, name?: string) => {
-    const userCred = await createUserWithEmailAndPassword(auth, email, password);
-    const initials = getInitials(name || "");
+  const registerWithEmail = async (
+  email: string,
+  password: string,
+  firstName?: string,
+  lastName?: string
+) => {
+  const userCred = await createUserWithEmailAndPassword(auth, email, password);
+  const initials = getInitials(firstName || "", lastName || "");
 
-    await setDoc(doc(db, "users", userCred.user.uid), {
-      email,
-      name: name || "",
-      initials,
-      role: "reader",
-      createdAt: new Date(),
-    });
+  await setDoc(doc(db, "users", userCred.user.uid), {
+    email,
+    firstName: firstName || "",
+    lastName: lastName || "",
+    initials,
+    role: "reader",
+    createdAt: new Date(),
+  });
 
-    const mergedUser: AppUser = {
-      ...userCred.user,
-      name: name || "",
-      initials,
-      role: "reader",
-    };
-
-    setUser(mergedUser);
-    setRole("reader");
+  const mergedUser: AppUser = {
+    ...userCred.user,
+    firstName: firstName || "",
+    lastName: lastName || "",
+    initials,
+    role: "reader",
   };
 
+  setUser(mergedUser);
+  setRole("reader");
+};
+
   // Google login
-  const loginWithGoogle = async () => {
-    const result = await signInWithPopup(auth, googleProvider);
-    const gUser = result.user;
-    const userRef = doc(db, "users", gUser.uid);
-    const snap = await getDoc(userRef);
+ // Replace your current loginWithGoogle with this (AuthContext)
+ 
+const loginWithGoogle = async () => {
+  const result = await signInWithPopup(auth, googleProvider);
 
-    let userData: { initials: string; role: Role; name: string };
+  // 🔍 INSPECT EVERYTHING GOOGLE RETURNS
+  console.log("🔥 Google RAW result:", result);
+  console.log("🔥 Additional info:", getAdditionalUserInfo(result));
+  console.log("🔥 Provider profile:", getAdditionalUserInfo(result)?.profile);
+  console.log("🔥 gUser.displayName:", result.user.displayName);
 
-    if (!snap.exists()) {
-      const initials = getInitials(gUser.displayName || "");
-      const name = gUser.displayName || "";
-      await setDoc(userRef, {
-        email: gUser.email,
-        name,
+  const gUser = result.user;
+  const userRef = doc(db, "users", gUser.uid);
+  const snap = await getDoc(userRef);
+
+ const info = getAdditionalUserInfo(result);
+ const profile = (info?.profile ?? {}) as Record<string, any>;
+
+ // 1️⃣ Try structured Google fields first
+let firstName = profile?.given_name || "";
+let lastName = profile?.family_name || "";
+
+// 2️⃣ Fallback to displayName splitting
+if (!firstName && !lastName) {
+  const displayName = gUser.displayName ?? "";
+  const parts = displayName.trim().split(/\s+/);
+  firstName = parts[0] ?? "";
+  lastName = parts.slice(1).join(" ") ?? "";
+}
+
+// 3️⃣ Final fallback — avoid undefined
+firstName = firstName.trim();
+lastName = lastName.trim();
+
+console.log("🔥 Extracted Names =>", { firstName, lastName });
+
+  let userData: { initials: string; role: Role; firstName: string; lastName: string };
+
+  if (!snap.exists()) {
+    const initials = getInitials(firstName, lastName);
+
+    // Merge true to avoid overwriting other fields if doc is created elsewhere
+    await setDoc(
+      userRef,
+      {
+        email: gUser.email ?? "",
+        firstName,
+        lastName,
         initials,
         role: "reader",
         createdAt: new Date(),
-      });
-      userData = { initials, role: "reader", name };
-    } else {
-      const data = await fetchUserDoc(gUser.uid);
-      userData = {
-        initials: data?.initials ?? "",
-        role: data?.role ?? "reader",
-        name: data?.name ?? "",
-      };
-    }
+      },
+      { merge: true }
+    );
 
-    const mergedUser: AppUser = {
-      ...gUser,
-      name: userData.name,
-      initials: userData.initials,
-      role: userData.role,
+    userData = { initials, role: "reader", firstName, lastName };
+  } else {
+    const data = await fetchUserDoc(gUser.uid);
+    userData = {
+      initials: data?.initials ?? "",
+      role: data?.role ?? "reader",
+      firstName: data?.firstName ?? firstName,
+      lastName: data?.lastName ?? lastName,
     };
 
-    setUser(mergedUser);
-    setRole(mergedUser.role ?? "reader");
+    // If Firestore doc exists but missing name info, optionally patch it:
+    if ((!data?.firstName || !data?.lastName) && (firstName || lastName)) {
+      await setDoc(
+        userRef,
+        {
+          firstName: data?.firstName || firstName,
+          lastName: data?.lastName || lastName,
+        },
+        { merge: true }
+      );
+    }
+  }
+
+  const mergedUser: AppUser = {
+    ...gUser,
+    firstName: userData.firstName,
+    lastName: userData.lastName,
+    initials: userData.initials,
+    role: userData.role,
   };
+
+  setUser(mergedUser);
+  setRole(mergedUser.role ?? "reader");
+};
+
 
   // Logout
   const logout = async () => {
@@ -194,7 +258,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   );
 };
 
-// Hook for consuming context
+// Hook
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) throw new Error("useAuth must be used within AuthProvider");

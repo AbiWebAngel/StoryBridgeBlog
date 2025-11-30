@@ -6,6 +6,8 @@ import Image from "next/image";
 import { useAuth } from "@/context/AuthContext";
 import { getFriendlyErrorMessage } from "@/utils/firebaseErrors";
 import { FirebaseError } from "firebase/app";
+import HCaptcha from '@hcaptcha/react-hcaptcha';
+
 
 interface LoginModalProps {
   isOpen: boolean;
@@ -22,7 +24,10 @@ const LoginModal = ({ isOpen, onClose, onSwitchToRegister }: LoginModalProps) =>
   });
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [errorMessage, setErrorMessage] = useState(""); // NEW
+  const [errorMessage, setErrorMessage] = useState("");
+  const [loginAttempts, setLoginAttempts] = useState(0);
+  const [showCaptcha, setShowCaptcha] = useState(false);
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
 
   const resetForm = () => {
   setFormData({
@@ -50,7 +55,17 @@ const handleSubmit = async (e: React.FormEvent) => {
   setErrorMessage("");
 
   try {
+    if (showCaptcha && !captchaToken) {
+      setErrorMessage("Please complete the captcha to continue.");
+      setIsLoading(false);
+      return;
+    }
+
     await loginWithEmail(formData.email, formData.password);
+
+    setLoginAttempts(0);
+    setShowCaptcha(false);
+    setCaptchaToken(null);
 
     // Clear form before closing modal
     resetForm();
@@ -58,15 +73,20 @@ const handleSubmit = async (e: React.FormEvent) => {
     onClose();
 
   } catch (error: unknown) {
-    // Type guard to check if it's a FirebaseError
-    if (error instanceof FirebaseError) {
-      console.log(error);
-      setErrorMessage(getFriendlyErrorMessage(error));
-    } else {
-      console.log(error);
-      setErrorMessage("An unexpected error occurred. Please try again.");
-    }
-  } finally {
+  if (error instanceof FirebaseError) {
+    setErrorMessage(getFriendlyErrorMessage(error));
+  } else {
+    setErrorMessage("An unexpected error occurred. Please try again.");
+  }
+
+  // Increment failed attempts
+  setLoginAttempts(prev => {
+    const newCount = prev + 1;
+    if (newCount >= 3) setShowCaptcha(true); // show captcha after 3 fails
+    return newCount;
+  });
+}
+ finally {
     setIsLoading(false);
   }
 };
@@ -238,12 +258,22 @@ const handleGoogleLogin = async () => {
                     </button>
                   </div>
                   
+                  {showCaptcha && (
+                    <div className="my-4">
+                      <HCaptcha
+                        sitekey={process.env.NEXT_PUBLIC_HCAPTCHA_SITEKEY!} // create env variable
+                        onVerify={(token) => setCaptchaToken(token)}
+                        onExpire={() => setCaptchaToken(null)}
+                      />
+                    </div>
+                  )}
+
+
                   {errorMessage && (
                     <div className="text-red-600 text-sm md:text-base font-inter mb-2">
                       {errorMessage}
                     </div>
                   )}
-
 
                   {/* Login Button */}
                   <button 
@@ -278,7 +308,10 @@ const handleGoogleLogin = async () => {
                     <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
                     <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
                   </svg>
-                  <span className="text-[#FFFFFF] font-medium">Login with Google</span>
+                  
+                  <span className="text-[#FFFFFF] font-medium">
+                      {isLoading ? "Logging in..." : "Login with Google"}
+                  </span>
                 </button>
 
                 {/* Full Line Divider */}

@@ -179,7 +179,8 @@ const Navbar = () => {
               {/* Clickable avatar wrapper */}
               <div className="relative cursor-pointer p-8 -m-2 flex items-center justify-center">
                 <Avatar
-                  name={user?.name}
+                  firstName={user?.firstName}
+                  lastName={user?.lastName}
                   initials={user?.initials}
                   size={45}
                 />
@@ -195,7 +196,7 @@ const Navbar = () => {
                   <>
                     {/* Greeting */}
                     <li className="px-4 py-2 border-b border-white select-none cursor-default">
-                      <span>Hello, {user.name?.split(' ')[0] || 'User'}</span>
+                      <span>Hello, {user?.firstName || "User"}</span>
                     </li>
 
                     {/* Dashboard */}
@@ -320,7 +321,8 @@ const Navbar = () => {
     ))}
     
   {/* Mobile Profile / User Links */}
-<li className="w-full border-t border-white/50 mt-4 pt-6 space-y-3">
+{/* Mobile Profile / User Links */}
+<div className="w-full border-t border-white/50 mt-4 pt-6 space-y-3">
   {user ? (
     <>
       {/* Greeting */}
@@ -332,7 +334,7 @@ const Navbar = () => {
           transitionDelay: menuOpen ? `${100 + links.length * 60}ms` : `${(totalItems - 1 - links.length) * 60}ms`,
         }}
       >
-        Hello, {user.name?.split(" ")[0] || "User"}
+        Hello, {user?.firstName || "User"}
       </li>
 
       {/* Dashboard */}
@@ -413,7 +415,7 @@ const Navbar = () => {
       </li>
     </>
   )}
-</li>
+</div>
   </ul>
 </div>
       </nav>
