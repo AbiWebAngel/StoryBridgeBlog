@@ -135,7 +135,7 @@ const LoginModal = ({ isOpen, onClose, onSwitchToRegister }: LoginModalProps) =>
 
       await resetPassword(formData.email);
 
-      setErrorMessage("Password reset email sent! Check your inbox.");
+      setErrorMessage("Password reset email sent! Check your inbox or the spam folder.");
       // Optionally switch back to login mode after successful reset
       setTimeout(() => {
         setMode("login");
