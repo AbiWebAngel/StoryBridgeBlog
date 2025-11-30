@@ -151,7 +151,7 @@ const handleGoogleLogin = async () => {
         </button>
 
         {/* Modal Content */}
-        <div className="bg-[#EDE5D8] rounded-3xl md:rounded-4xl overflow-hidden shadow-2xl border-2 border-[#EDE5D8] max-h-[90vh] overflow-y-auto">
+        <div className="bg-[#EDE5D8] rounded-3xl md:rounded-4xl overflow-hidden shadow-2xl border-2 border-[#EDE5D8] max-h-[90vh] overflow-y-auto scrollable-description">
           <div className="flex flex-col md:flex-row min-h-[500px] md:min-h-[600px]">
             {/* Image Section - Now on top for mobile, right for desktop */}
             <div className="flex-1 bg-[#805C2C] flex items-center justify-center p-4 md:p-8 order-1 md:order-2">
