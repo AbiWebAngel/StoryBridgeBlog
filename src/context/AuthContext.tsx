@@ -13,7 +13,7 @@ import {
 } from "firebase/auth";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { getInitials } from "@/utils/getInitials";
-import { getAdditionalUserInfo } from "firebase/auth";
+import { getAdditionalUserInfo,sendPasswordResetEmail } from "firebase/auth";
 
 
 // User role type
@@ -36,6 +36,7 @@ interface AuthContextProps {
   registerWithEmail: (email: string, password: string, firstName?: string, lastName?: string) => Promise<void>;
   loginWithGoogle: () => Promise<void>;
   logout: () => Promise<void>;
+  resetPassword: (email: string) => Promise<void>;
 }
 
 // Create context
@@ -47,7 +48,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(true);
 
   const googleProvider = new GoogleAuthProvider();
-
+  const resetPassword = (email: string) => {
+    return sendPasswordResetEmail(auth, email);
+  };
   // Fetch Firestore user doc
   const fetchUserDoc = async (uid: string) => {
     const snap = await getDoc(doc(db, "users", uid));
@@ -251,6 +254,7 @@ console.log("🔥 Extracted Names =>", { firstName, lastName });
         loginWithEmail,
         registerWithEmail,
         loginWithGoogle,
+        resetPassword,
         logout,
       }}
     >
