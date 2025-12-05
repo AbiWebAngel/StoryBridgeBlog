@@ -140,7 +140,7 @@ const LoginModal = ({ isOpen, onClose, onSwitchToRegister }: LoginModalProps) =>
       setTimeout(() => {
         setMode("login");
         setErrorMessage("");
-      }, 3000);
+      }, 5000);
     } catch (error: unknown) {
       if (error instanceof FirebaseError) {
         setErrorMessage(getFriendlyErrorMessage(error));

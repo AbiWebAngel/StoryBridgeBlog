@@ -24,7 +24,7 @@ const jacquesFrancois = Jacques_Francois({
 });
 
 export const metadata: Metadata = {
-  title: "Storybridge",
+  title: "StoryBridge",
   description: "A blog about storytelling and writing",
   icons: {
     icon: "/favicon.ico",
