@@ -1,6 +1,8 @@
+import TallyCounter from "@/components/team/TallyCounter";
 import SectionHeading from "../../components/SectionHeading";
 import OurTeam from "../../components/team/OurTeam";
 import TextSectionWithButton from "../../components/team/TextSectionWithButton";
+
 
 export default function TeamPage() {
   return (
@@ -23,6 +25,11 @@ export default function TeamPage() {
                   where ideas travel freely and creativity thrives."
                   />
           </div>
+           <div className="mb-12">
+              {/* Tally Counter Section */}
+               <TallyCounter matchesCount={42} workshopsCount={28} />
+          </div>
+
 
           {/* Our Team Section */}
           <div className="mb-8">
