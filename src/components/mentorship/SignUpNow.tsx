@@ -1,13 +1,9 @@
-"use client";
-
 import Image from "next/image";
+import MentorshipButton from "./MentorshipButton.client";
 
 export default function SignUpNow() {
-  const handleFindingMentor = () =>
-    window.open(process.env.NEXT_PUBLIC_FINDING_MENTOR_FORM_URL, "_blank");
-
-  const handleBecomingMentor = () =>
-    window.open(process.env.NEXT_PUBLIC_BECOMING_MENTOR_FORM_URL, "_blank");
+  // NOTE: Removed all client-side event handlers
+  // The button logic is now in the client component
 
   return (
     <div className="relative mb-[80px] group">
@@ -19,19 +15,17 @@ export default function SignUpNow() {
             <div className="lg:w-1/2">
               <h1 className="text-[24px] text-[#000000] text-left mb-4">Finding a Mentor</h1>
               <p className="text-[16px] sm:text-[18px] text-[#403727]">
-               The Mentorship Program gives young writers the guidance they need to grow without stumbling 
-               through every mistake alone. Writing takes time, effort, and plenty of &quot;Why did I write that?&quot; 
-               moments, but having a mentor means you&apos;ve got someone who&apos;s already been through the chaos and 
-               can help you sharpen your voice faster. Together, you&apos;ll explore new ideas, build confidence in 
-               your craft, and turn your stories into something you&apos;re proud to share.
+                The Mentorship Program gives young writers the guidance they need to grow without stumbling 
+                through every mistake alone. Writing takes time, effort, and plenty of &quot;Why did I write that?&quot; 
+                moments, but having a mentor means you&apos;ve got someone who&apos;s already been through the chaos and 
+                can help you sharpen your voice faster. Together, you&apos;ll explore new ideas, build confidence in 
+                your craft, and turn your stories into something you&apos;re proud to share.
               </p>
               <div className="relative mt-4">
-                <button
-                  onClick={handleFindingMentor}
-                  className="bg-[#805E2D] text-white text-[18px] px-8 py-3 rounded-[30px] hover:bg-[#6B4D23] transition-colors flex items-center justify-center hover:scale-105"
-                >
-                  <span className="translate-y-[1.5px]">Get Started</span>
-                </button>
+                <MentorshipButton 
+                  type="mentee"
+                  buttonText="Get Started"
+                />
               </div>
             </div>
             
@@ -64,12 +58,10 @@ export default function SignUpNow() {
                 growth, and watch a new generation of storytellers turn their ideas into something powerful.
               </p>
               <div className="relative mt-4">
-                <button
-                  onClick={handleBecomingMentor}
-                  className="bg-[#805E2D] text-white text-[18px] px-8 py-3 rounded-[30px] hover:bg-[#6B4D23] transition-colors flex items-center justify-center hover:scale-105"
-                >
-                  <span className="translate-y-[1.5px]">Get Started</span>
-                </button>
+                <MentorshipButton 
+                  type="mentor"
+                  buttonText="Get Started"
+                />
               </div>
             </div>
             
