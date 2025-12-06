@@ -175,7 +175,7 @@ export default function TallyCounter({
       <div className="hidden lg:flex relative items-center justify-between w-full max-w-6xl px-8">
         {/* Left circle */}
         <div className="relative flex flex-col items-center">
-        <div className="absolute -top-4 md:-top-6 lg:-top-9 left-1/2 -translate-x-1/2 w-full max-w-[360px] flex justify-center">
+        <div className="absolute -top-4 md:-top-6 lg:-top-10 left-1/2 -translate-x-1/2 w-full max-w-[360px] flex justify-center">
             <svg className="w-full h-30" viewBox="0 0 360 80">
               <path id="curve-left" d="M10,60 Q180,-40 350,60" fill="transparent" />
               <text
