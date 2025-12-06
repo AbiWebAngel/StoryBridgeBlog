@@ -24,7 +24,9 @@ const Footer = () => {
         <div className="footer-contact">
           <div className="inline-block text-right w-32">Designed by:</div>
           <a 
-            href="mailto:annnakutova@gmail.com" 
+            href="https://www.linkedin.com/in/anna-k-7b5a4b276/" 
+            target="_blank" 
+            rel="noopener noreferrer"
             className="relative group ml-2 inline-block"
           >
             <span className="relative">
