@@ -27,7 +27,7 @@ export default function TeamPage() {
           </div>
            <div className="mb-12">
               {/* Tally Counter Section */}
-               <TallyCounter matchesCount={42} workshopsCount={28} />
+               <TallyCounter matchesCount={120} workshopsCount={20} />
           </div>
 
 

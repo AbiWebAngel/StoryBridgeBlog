@@ -6,7 +6,7 @@ const teamData = [
   {
     id: 1,
     name: "Abigail",
-    role: "Writer",
+    role: "Founder",
     description: "As a writer, I enjoy crafting meaningful content that blends creativity with clarity. Whether it's articles, stories, or blog posts, I aim to capture ideas in a way that connects with readers and keeps them engaged.",
     image: "/assets/images/director.jpg"
   },

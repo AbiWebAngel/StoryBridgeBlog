@@ -115,4 +115,14 @@ p,ul,li,span,a {
   background: #8B7355;
 }
 
+.reveal-mask {
+  mask-image: linear-gradient(
+    to right,
+    black 0%,
+    black var(--reveal, 0%),
+    transparent var(--reveal, 0%)
+  );
+  mask-size: 100% 100%;
+  mask-repeat: no-repeat;
+}
 
