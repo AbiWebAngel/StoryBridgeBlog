@@ -10,7 +10,7 @@ interface TallyCounterProps {
 
 export default function TallyCounter({
   matchesCount,
-  workshopsCount
+  workshopsCount,
 }: TallyCounterProps) {
   const [leftTextVisible, setLeftTextVisible] = useState(false);
   const [rightTextVisible, setRightTextVisible] = useState(false);
@@ -18,41 +18,51 @@ export default function TallyCounter({
   const [displayWorkshops, setDisplayWorkshops] = useState(0);
   const [leftReveal, setLeftReveal] = useState(0);
   const [rightReveal, setRightReveal] = useState(0);
+  const [mobileLeftReveal, setMobileLeftReveal] = useState(0);
+  const [mobileRightReveal, setMobileRightReveal] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Smooth count-up animation
-function animateValue(
-  start: number,
-  end: number,
-  duration: number,
-  onUpdate: (v: number) => void
-) {
-  const startTime = performance.now();
+  // Smooth number animation
+  function animateValue(
+    start: number,
+    end: number,
+    duration: number,
+    onUpdate: (v: number) => void
+  ) {
+    const startTime = performance.now();
 
-  function update(now: number) {
-    const elapsed = now - startTime;
-    let progress = Math.min(elapsed / duration, 1);
-    const eased = 1 - Math.pow(1 - progress, 3); // cubic ease-out
-    const value = Math.round(start + (end - start) * eased); // use round instead of floor
+    function update(now: number) {
+      const elapsed = now - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3); // cubic ease-out
+      const value = Math.round(start + (end - start) * eased);
 
-    onUpdate(value);
+      onUpdate(value);
 
-    if (progress < 1) {
-      requestAnimationFrame(update);
-    } else {
-      onUpdate(end); // ensure final value is exact
+      if (progress < 1) requestAnimationFrame(update);
+      else onUpdate(end); // final value
     }
+
+    requestAnimationFrame(update);
   }
 
-  requestAnimationFrame(update);
-}
+  // Smooth text reveal helper
+  function animateReveal(setter: (v: number) => void, duration = 1200) {
+    let startTime: number | null = null;
+    function update(time: number) {
+      if (!startTime) startTime = time;
+      const progress = Math.min((time - startTime) / duration, 1);
+      setter(progress * 100);
+      if (progress < 1) requestAnimationFrame(update);
+    }
+    requestAnimationFrame(update);
+  }
 
-
-  // Intersection Observer for fade-in
+  // Intersection Observer
   useEffect(() => {
     const observer = new IntersectionObserver(
-      entries => {
-        entries.forEach(entry => {
+      (entries) => {
+        entries.forEach((entry) => {
           if (entry.isIntersecting) {
             setLeftTextVisible(true);
             setRightTextVisible(true);
@@ -63,44 +73,39 @@ function animateValue(
     );
 
     if (containerRef.current) observer.observe(containerRef.current);
-
     return () => observer.disconnect();
   }, []);
 
   // Animate numbers
   useEffect(() => {
-    if (!leftTextVisible) return;
-    animateValue(0, matchesCount, 2000, setDisplayMatches);
-  }, [leftTextVisible, matchesCount]); 
+    if (leftTextVisible) animateValue(0, matchesCount, 2000, setDisplayMatches);
+  }, [leftTextVisible, matchesCount]);
 
   useEffect(() => {
-    if (!rightTextVisible) return;
-    animateValue(0, workshopsCount, 2000, setDisplayWorkshops);
+    if (rightTextVisible)
+      animateValue(0, workshopsCount, 2000, setDisplayWorkshops);
   }, [rightTextVisible, workshopsCount]);
 
-  // Animate left-to-right reveal of text
+  // Animate desktop text reveal
+  useEffect(() => {
+    if (leftTextVisible) animateReveal(setLeftReveal);
+  }, [leftTextVisible]);
+
+  useEffect(() => {
+    if (rightTextVisible) animateReveal(setRightReveal);
+  }, [rightTextVisible]);
+
+  // Animate mobile text reveal (with small delay)
   useEffect(() => {
     if (!leftTextVisible) return;
-    let startTime: number | null = null;
-    function animate(time: number) {
-      if (!startTime) startTime = time;
-      const progress = Math.min((time - startTime) / 1200, 1); // 1.2s
-      setLeftReveal(progress * 100);
-      if (progress < 1) requestAnimationFrame(animate);
-    }
-    requestAnimationFrame(animate);
+    const timer = setTimeout(() => animateReveal(setMobileLeftReveal), 300);
+    return () => clearTimeout(timer);
   }, [leftTextVisible]);
 
   useEffect(() => {
     if (!rightTextVisible) return;
-    let startTime: number | null = null;
-    function animate(time: number) {
-      if (!startTime) startTime = time;
-      const progress = Math.min((time - startTime) / 1200, 1); // 1.2s
-      setRightReveal(progress * 100);
-      if (progress < 1) requestAnimationFrame(animate);
-    }
-    requestAnimationFrame(animate);
+    const timer = setTimeout(() => animateReveal(setMobileRightReveal), 300);
+    return () => clearTimeout(timer);
   }, [rightTextVisible]);
 
   return (
@@ -108,15 +113,73 @@ function animateValue(
       ref={containerRef}
       className="w-full flex flex-col items-center gap-8 py-8 bg-transparent"
     >
-      <div className="relative flex items-center justify-between w-full max-w-6xl px-8">
-        {/* LEFT CIRCLE */}
+      {/* Mobile layout */}
+      <div className="flex flex-col lg:hidden items-center w-full max-w-md px-4 gap-8">
+        {/* Matches */}
+        <div className="relative flex flex-col items-center w-full">
+          <div className="relative w-full mb-6 overflow-hidden">
+            <div
+              className="font-inter font-bold text-xl text-center text-[#000000] whitespace-nowrap"
+              style={{
+                transform: `translateX(-${100 - mobileLeftReveal}%)`,
+              }}
+            >
+              Number of matches made
+            </div>
+          </div>
+          <div className="relative w-48 h-48 flex items-center justify-center">
+            <div className="absolute inset-0 bg-[#F2ECE3] rounded-full shadow-lg" />
+            <div className="relative z-10 flex items-center justify-center w-full h-full">
+              <span className="font-inter font-bold !text-5xl text-[#000000]">
+                {displayMatches.toLocaleString()}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Book Image */}
+        <div className="relative w-40 h-40 my-2">
+          <Image
+            src="/assets/images/team/book.png"
+            alt="Book illustration"
+            fill
+            className="object-contain"
+            priority
+          />
+        </div>
+
+        {/* Workshops */}
+        <div className="relative flex flex-col items-center w-full">
+          <div className="relative w-full mb-6 overflow-hidden">
+            <div
+              className="font-inter font-bold text-xl text-center text-[#000000] whitespace-nowrap"
+              style={{
+                transform: `translateX(-${100 - mobileRightReveal}%)`,
+              }}
+            >
+              Number of workshops completed
+            </div>
+          </div>
+          <div className="relative w-48 h-48 flex items-center justify-center">
+            <div className="absolute inset-0 bg-[#F2ECE3] rounded-full shadow-lg" />
+            <div className="relative z-10 flex items-center justify-center w-full h-full">
+              <span className="font-inter font-bold !text-5xl text-[#000000]">
+                {displayWorkshops.toLocaleString()}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Desktop layout */}
+      <div className="hidden lg:flex relative items-center justify-between w-full max-w-7xl px-16">
+        {/* Left circle */}
         <div className="relative flex flex-col items-center">
-          {/* Arc Text */}
-          <div className="absolute -top-6 left-1/2 -translate-x-1/2 w-[360px]">
-            <svg className="w-full h-30" viewBox="0 0 360 80">
-              <path id="curve-left" d="M10,60 Q180,-40 350,60" fill="transparent" />
+          <div className="absolute -top-12 left-1/2 -translate-x-1/2 w-full max-w-[420px] flex justify-center">
+            <svg className="w-full h-44" viewBox="0 0 420 110">
+              <path id="curve-left" d="M10,75 Q210,-45 410,75" fill="transparent" />
               <text
-                fontSize="24"
+                fontSize="30"
                 fill="#000000"
                 fontFamily="Inter, sans-serif"
                 fontWeight="bold"
@@ -129,9 +192,7 @@ function animateValue(
               </text>
             </svg>
           </div>
-
-          {/* Circle */}
-          <div className="relative w-64 h-64 flex items-center justify-center mt-4">
+          <div className="relative w-64 h-64 flex items-center justify-center mt-10">
             <div className="absolute inset-0 bg-[#F2ECE3] rounded-full shadow-lg" />
             <div className="relative z-10 flex items-center justify-center w-full h-full">
               <span className="font-inter font-bold !text-7xl text-[#000000]">
@@ -141,7 +202,7 @@ function animateValue(
           </div>
         </div>
 
-        {/* CENTER IMAGE */}
+        {/* Center book image */}
         <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-20 w-80 h-80">
           <Image
             src="/assets/images/team/book.png"
@@ -152,14 +213,13 @@ function animateValue(
           />
         </div>
 
-        {/* RIGHT CIRCLE */}
+        {/* Right circle */}
         <div className="relative flex flex-col items-center">
-          {/* Arc Text */}
-          <div className="absolute -top-6 left-1/2 -translate-x-1/2 w-[380px]">
-            <svg className="w-full h-30" viewBox="0 0 380 80">
-              <path id="curve-right" d="M10,60 Q190,-40 370,60" fill="transparent" />
+          <div className="absolute -top-12 left-1/2 -translate-x-1/2 w-full max-w-[480px] flex justify-center">
+            <svg className="w-full h-44" viewBox="0 0 480 110">
+              <path id="curve-right" d="M10,75 Q240,-45 470,75" fill="transparent" />
               <text
-                fontSize="23"
+                fontSize="30"
                 fill="#000000"
                 fontFamily="Inter, sans-serif"
                 fontWeight="bold"
@@ -172,9 +232,7 @@ function animateValue(
               </text>
             </svg>
           </div>
-
-          {/* Circle */}
-          <div className="relative w-64 h-64 flex items-center justify-center mt-4">
+          <div className="relative w-64 h-64 flex items-center justify-center mt-10">
             <div className="absolute inset-0 bg-[#F2ECE3] rounded-full shadow-lg" />
             <div className="relative z-10 flex items-center justify-center w-full h-full">
               <span className="font-inter font-bold !text-7xl text-[#000000]">
