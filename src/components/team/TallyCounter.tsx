@@ -175,7 +175,7 @@ export default function TallyCounter({
       <div className="hidden lg:flex relative items-center justify-between w-full max-w-6xl px-8">
         {/* Left circle */}
         <div className="relative flex flex-col items-center">
-        <div className="absolute -top-4 md:-top-6 lg:-top-8 left-1/2 -translate-x-1/2 w-full max-w-[360px] flex justify-center">
+        <div className="absolute -top-4 md:-top-6 lg:-top-9 left-1/2 -translate-x-1/2 w-full max-w-[360px] flex justify-center">
             <svg className="w-full h-30" viewBox="0 0 360 80">
               <path id="curve-left" d="M10,60 Q180,-40 350,60" fill="transparent" />
               <text
@@ -215,23 +215,24 @@ export default function TallyCounter({
 
         {/* Right circle */}
         <div className="relative flex flex-col items-center">
-       <div className="absolute -top-4 md:-top-6 lg:-top-8 left-1/2 -translate-x-1/2 w-full max-w-[380px] flex justify-center">
-            <svg className="w-full h-30" viewBox="0 0 380 80">
-              <path id="curve-right" d="M10,60 Q190,-40 370,60" fill="transparent" />
-              <text
-                fontSize="23"
-                fill="#000000"
-                fontFamily="Inter, sans-serif"
-                fontWeight="bold"
-                className="reveal-mask"
-                style={{ ["--reveal" as any]: `${rightReveal}%` }}
-              >
-                <textPath href="#curve-right" startOffset="50%" textAnchor="middle">
-                  Number of workshops completed
-                </textPath>
-              </text>
-            </svg>
-          </div>
+       <div className="absolute -top-4 md:-top-6 lg:-top-8 left-1/2 -translate-x-[47%] w-full max-w-[380px] flex justify-center">
+  <svg className="w-full h-30" viewBox="0 0 380 80">
+    <path id="curve-right" d="M10,60 Q190,-70 350,70" fill="transparent" />
+    <text
+      fontSize="23"
+      fill="#000000"
+      fontFamily="Inter, sans-serif"
+      fontWeight="bold"
+      className="reveal-mask"
+      style={{ ["--reveal" as any]: `${rightReveal}%` }}
+    >
+      <textPath href="#curve-right" startOffset="50%" textAnchor="middle">
+        Number of workshops completed
+      </textPath>
+    </text>
+  </svg>
+</div>
+
           <div className="relative w-64 h-64 flex items-center justify-center mt-4">
             <div className="absolute inset-0 bg-[#F2ECE3] rounded-full shadow-lg" />
             <div className="relative z-10 flex items-center justify-center w-full h-full">
