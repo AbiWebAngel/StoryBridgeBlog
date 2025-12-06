@@ -1,5 +1,6 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { usePathname } from "next/navigation"; // Added import
 import Image from "next/image";
 import Link from "next/link";
 import LoginModal from "./LoginModal";
@@ -32,9 +33,33 @@ const Navbar = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [loginModalOpen, setLoginModalOpen] = useState(false);
   const [registerModalOpen, setRegisterModalOpen] = useState(false);
-  const totalItems = links.length + 2;
+  const pathname = usePathname(); // Get current path for router events
   const { user, logout } = useAuth();
 
+  // Close menu when route changes
+  useEffect(() => {
+    setMenuOpen(false);
+  }, [pathname]);
+
+  // Close menu when clicking outside (optional but helpful)
+  // Close menu when clicking outside (optional but helpful)
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (menuOpen && 
+          !(e.target as Element).closest('.navbar-mobile-menu') && 
+          !(e.target as Element).closest('[aria-label="Toggle menu"]')) {
+        setMenuOpen(false);
+      }
+    };
+    
+    if (menuOpen) {
+      document.addEventListener('click', handleClickOutside);
+    }
+    
+    return () => {
+      document.removeEventListener('click', handleClickOutside);
+    };
+  }, [menuOpen]);
 
   const handleLoginClick = () => {
     setLoginModalOpen(true);
@@ -208,7 +233,7 @@ const Navbar = () => {
 
                     {/* Favourites */}
                     <li className="px-4 py-2 hover:bg-[#A07845] transition-colors">
-                      <Link href="/favourites" className="block w-full h-full">
+                      <Link href="/dashboard/favourites" className="block w-full h-full">
                         Favourites
                       </Link>
                     </li>
@@ -248,30 +273,38 @@ const Navbar = () => {
 
         </div>
 
-     {/* Mobile menu with consistent timing */}
+     {/* Mobile menu - SIMPLIFIED VERSION */}
 <div className={`
-  absolute top-14 left-0 w-full flex flex-col items-center text-white font-bold lg:hidden 
-  navbar-mobile-menu overflow-hidden z-[9999] transition-all duration-300 ease-in-out
+  navbar-mobile-menu
+  fixed top-14 left-0 w-full flex flex-col items-center text-white font-bold lg:hidden 
+  bg-[#805C2C] shadow-lg overflow-y-auto z-[9999] transition-all duration-300 ease-in-out
   ${menuOpen 
     ? "max-h-screen opacity-100 visible py-4" 
-    : "max-h-0 opacity-0 invisible delay-[400ms]"
+    : "max-h-0 opacity-0 invisible"
   }
 `}>
   <ul className="flex flex-col items-center w-full space-y-1">
     {links.map((link, i) => (
       <li 
         key={i} 
-        className="text-center w-full transition-all duration-300 ease-out"
+        className="text-center w-full transition-opacity duration-300"
         style={{
           opacity: menuOpen ? 1 : 0,
-          transform: menuOpen ? 'translateY(0)' : 'translateY(-8px)',
-          transitionDelay: menuOpen ? `${100 + i * 60}ms` : `${(totalItems - 1 - i) * 60}ms`,
+          transitionDelay: menuOpen ? `${i * 50}ms` : '0ms',
         }}
       >
         {link.children ? (
           <details className="relative w-full group">
             {/* Mobile dropdown trigger - consistent spacing */}
-            <summary className="cursor-pointer flex items-center gap-1 justify-center py-3 px-4 w-full hover:bg-[#A07845]">
+            <summary 
+              className="cursor-pointer flex items-center gap-1 justify-center py-3 px-4 w-full hover:bg-[#A07845]"
+              onClick={(e) => {
+                // Prevent default details behavior to control menu closing
+                if (!menuOpen) {
+                  e.preventDefault();
+                }
+              }}
+            >
               {link.label.toUpperCase()}
               <svg
                 className="w-4 h-4 text-white transition-transform duration-200 group-open:rotate-180"
@@ -283,20 +316,11 @@ const Navbar = () => {
                 <path d="M6 9l6 6 6-6" strokeLinecap="round" />
               </svg>
             </summary>
+
             {/* Dropdown children with consistent spacing */}
             <ul className="mt-1 space-y-1 w-full bg-[#6a4a24]">
-              {link.children.map((child, childIndex) => (
-                <li 
-                  key={child.href} 
-                  className="w-full transition-all duration-300 ease-out"
-                  style={{
-                    opacity: menuOpen ? 1 : 0,
-                    transform: menuOpen ? 'translateX(0)' : 'translateX(-8px)',
-                    transitionDelay: menuOpen 
-                      ? `${150 + i * 60 + childIndex * 50}ms` 
-                      : `${(link.children.length - 1 - childIndex) * 50 + i * 60}ms`,
-                  }}
-                >
+              {link.children.map((child) => (
+                <li key={child.href} className="w-full">
                   <Link
                     href={child.href}
                     className="block px-4 py-2 hover:bg-[#A07845] w-full text-center"
@@ -321,17 +345,15 @@ const Navbar = () => {
     ))}
     
   {/* Mobile Profile / User Links */}
-{/* Mobile Profile / User Links */}
 <div className="w-full border-t border-white/50 mt-4 pt-6 space-y-3">
   {user ? (
     <>
       {/* Greeting */}
       <li
-        className="w-full px-4 py-2 select-none cursor-default text-center transition-all duration-300 ease-out"
+        className="w-full px-4 py-2 select-none cursor-default text-center transition-opacity duration-300"
         style={{
           opacity: menuOpen ? 1 : 0,
-          transform: menuOpen ? 'translateY(0)' : 'translateY(-8px)',
-          transitionDelay: menuOpen ? `${100 + links.length * 60}ms` : `${(totalItems - 1 - links.length) * 60}ms`,
+          transitionDelay: menuOpen ? `${links.length * 50}ms` : '0ms',
         }}
       >
         Hello, {user?.firstName || "User"}
@@ -339,41 +361,41 @@ const Navbar = () => {
 
       {/* Dashboard */}
       <li
-        className="w-full px-4 py-2 hover:bg-[#A07845] transition-all duration-300 ease-out text-center"
+        className="w-full px-4 py-2 hover:bg-[#A07845] transition-opacity duration-300 text-center"
         style={{
           opacity: menuOpen ? 1 : 0,
-          transform: menuOpen ? 'translateY(0)' : 'translateY(-8px)',
-          transitionDelay: menuOpen ? `${100 + (links.length + 1) * 60}ms` : `${(totalItems - 1 - (links.length + 1)) * 60}ms`,
+          transitionDelay: menuOpen ? `${(links.length + 1) * 50}ms` : '0ms',
         }}
       >
-        <Link href="/dashboard" className="block w-full h-full">
+        <Link href="/dashboard" className="block w-full h-full" onClick={() => setMenuOpen(false)}>
           Dashboard
         </Link>
       </li>
 
       {/* Favourites */}
       <li
-        className="w-full px-4 py-2 hover:bg-[#A07845] transition-all duration-300 ease-out text-center"
+        className="w-full px-4 py-2 hover:bg-[#A07845] transition-opacity duration-300 text-center"
         style={{
           opacity: menuOpen ? 1 : 0,
-          transform: menuOpen ? 'translateY(0)' : 'translateY(-8px)',
-          transitionDelay: menuOpen ? `${100 + (links.length + 2) * 60}ms` : `${(totalItems - 1 - (links.length + 2)) * 60}ms`,
+          transitionDelay: menuOpen ? `${(links.length + 2) * 50}ms` : '0ms',
         }}
       >
-        <Link href="/favourites" className="block w-full h-full">
+        <Link href="/dashboard/favourites" className="block w-full h-full" onClick={() => setMenuOpen(false)}>
           Favourites
         </Link>
       </li>
 
       {/* Logout */}
       <li
-        className="w-full px-4 py-2 hover:bg-[#A07845] cursor-pointer transition-all duration-300 ease-out text-center"
+        className="w-full px-4 py-2 hover:bg-[#A07845] cursor-pointer transition-opacity duration-300 text-center"
         style={{
           opacity: menuOpen ? 1 : 0,
-          transform: menuOpen ? 'translateY(0)' : 'translateY(-8px)',
-          transitionDelay: menuOpen ? `${100 + (links.length + 3) * 60}ms` : `${(totalItems - 1 - (links.length + 3)) * 60}ms`,
+          transitionDelay: menuOpen ? `${(links.length + 3) * 50}ms` : '0ms',
         }}
-        onClick={logout}
+        onClick={() => {
+          logout();
+          setMenuOpen(false);
+        }}
       >
         Log Out
       </li>
@@ -382,15 +404,17 @@ const Navbar = () => {
     <>
       {/* Login */}
       <li
-        className="w-full px-4 py-3 hover:bg-[#A07845] transition-all duration-300 ease-out"
+        className="w-full px-4 py-3 hover:bg-[#A07845] transition-opacity duration-300"
         style={{
           opacity: menuOpen ? 1 : 0,
-          transform: menuOpen ? 'translateY(0)' : 'translateY(-8px)',
-          transitionDelay: menuOpen ? `${100 + links.length * 60}ms` : `${(totalItems - 1 - links.length) * 60}ms`,
+          transitionDelay: menuOpen ? `${links.length * 50}ms` : '0ms',
         }}
       >
         <button
-          onClick={handleLoginClick}
+          onClick={() => {
+            handleLoginClick();
+            setMenuOpen(false);
+          }}
           className="block w-full text-center"
         >
           Log In
@@ -399,15 +423,17 @@ const Navbar = () => {
 
       {/* Sign Up */}
       <li
-        className="w-full px-4 py-3 hover:bg-[#A07845] transition-all duration-300 ease-out"
+        className="w-full px-4 py-3 hover:bg-[#A07845] transition-opacity duration-300"
         style={{
           opacity: menuOpen ? 1 : 0,
-          transform: menuOpen ? 'translateY(0)' : 'translateY(-8px)',
-          transitionDelay: menuOpen ? `${100 + (links.length + 1) * 60}ms` : `${(totalItems - 1 - (links.length + 1)) * 60}ms`,
+          transitionDelay: menuOpen ? `${(links.length + 1) * 50}ms` : '0ms',
         }}
       >
         <button
-          onClick={handleRegisterClick}
+          onClick={() => {
+            handleRegisterClick();
+            setMenuOpen(false);
+          }}
           className="block w-full text-center"
         >
           Sign Up

@@ -17,7 +17,7 @@ export default function DashboardHome() {
   
   const [registerModalOpen, setRegisterModalOpen] = useState(false);
 
-  const firstName = user?.firstName || "there";
+  const firstName = user?.firstName || "Unkown";
   const greetingName = firstName === "there" ? "there" : `${firstName}`;
 
   const options = [
