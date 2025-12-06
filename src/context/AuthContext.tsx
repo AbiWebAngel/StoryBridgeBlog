@@ -37,15 +37,35 @@ interface AuthContextProps {
   loginWithGoogle: () => Promise<void>;
   logout: () => Promise<void>;
   resetPassword: (email: string) => Promise<void>;
+  loginModalOpen: boolean;      // 👈 add this
+  openLoginModal: (forgot?: boolean) => void;  // 👈 add this
+  closeLoginModal: () => void;  // 👈 add this
+  forceForgot: boolean;         // 👈 add this
 }
+
 
 // Create context
 const AuthContext = createContext<AuthContextProps | undefined>(undefined);
+// inside AuthProvider
+
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<AppUser | null>(null);
   const [role, setRole] = useState<Role>(null);
   const [loading, setLoading] = useState(true);
+  const [loginModalOpen, setLoginModalOpen] = useState(false);
+  const [forceForgot, setForceForgot] = useState(false);
+
+  const openLoginModal = (forgot = false) => {
+    setForceForgot(forgot); // if true, opens forgot section
+    setLoginModalOpen(true);
+  };
+
+  const closeLoginModal = () => {
+    setForceForgot(false);
+    setLoginModalOpen(false);
+  };
+
 
   const googleProvider = new GoogleAuthProvider();
   const resetPassword = (email: string) => {
@@ -256,6 +276,10 @@ console.log("🔥 Extracted Names =>", { firstName, lastName });
         loginWithGoogle,
         resetPassword,
         logout,
+        loginModalOpen,
+        openLoginModal,
+        closeLoginModal,
+        forceForgot,
       }}
     >
       {children}

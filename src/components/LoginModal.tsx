@@ -1,7 +1,7 @@
 // components/LoginModal.tsx
 "use client";
 
-import { useState } from "react";
+import { useState,useEffect } from "react";
 import Image from "next/image";
 import { useAuth } from "@/context/AuthContext";
 import { getFriendlyErrorMessage } from "@/utils/firebaseErrors";
@@ -12,9 +12,10 @@ interface LoginModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSwitchToRegister: () => void;
+  forceForgot?: boolean; 
 }
 
-const LoginModal = ({ isOpen, onClose, onSwitchToRegister }: LoginModalProps) => {
+const LoginModal = ({ isOpen, onClose, onSwitchToRegister, forceForgot }: LoginModalProps) => {
   const { loginWithEmail, loginWithGoogle, resetPassword } = useAuth();
   const [formData, setFormData] = useState({
     email: "",
@@ -36,6 +37,13 @@ const LoginModal = ({ isOpen, onClose, onSwitchToRegister }: LoginModalProps) =>
     setShowPassword(false);
     setErrorMessage("");
   };
+
+    useEffect(() => {
+  if (forceForgot) {
+    setMode("forgot");
+    setShowCaptcha(true);
+  }
+}, [forceForgot]);
 
   if (!isOpen) return null;
 
