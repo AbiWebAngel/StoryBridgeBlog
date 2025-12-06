@@ -172,14 +172,14 @@ export default function TallyCounter({
       </div>
 
       {/* Desktop layout */}
-      <div className="hidden lg:flex relative items-center justify-between w-full max-w-7xl px-16">
+      <div className="hidden lg:flex relative items-center justify-between w-full max-w-6xl px-8">
         {/* Left circle */}
         <div className="relative flex flex-col items-center">
-          <div className="absolute -top-12 left-1/2 -translate-x-1/2 w-full max-w-[420px] flex justify-center">
-            <svg className="w-full h-44" viewBox="0 0 420 110">
-              <path id="curve-left" d="M10,75 Q210,-45 410,75" fill="transparent" />
+        <div className="absolute -top-4 md:-top-6 lg:-top-8 left-1/2 -translate-x-1/2 w-full max-w-[360px] flex justify-center">
+            <svg className="w-full h-30" viewBox="0 0 360 80">
+              <path id="curve-left" d="M10,60 Q180,-40 350,60" fill="transparent" />
               <text
-                fontSize="30"
+                fontSize="23"
                 fill="#000000"
                 fontFamily="Inter, sans-serif"
                 fontWeight="bold"
@@ -192,7 +192,7 @@ export default function TallyCounter({
               </text>
             </svg>
           </div>
-          <div className="relative w-64 h-64 flex items-center justify-center mt-10">
+          <div className="relative w-64 h-64 flex items-center justify-center mt-4">
             <div className="absolute inset-0 bg-[#F2ECE3] rounded-full shadow-lg" />
             <div className="relative z-10 flex items-center justify-center w-full h-full">
               <span className="font-inter font-bold !text-7xl text-[#000000]">
@@ -203,23 +203,23 @@ export default function TallyCounter({
         </div>
 
         {/* Center book image */}
-        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-20 w-80 h-80">
-          <Image
-            src="/assets/images/team/book.png"
-            alt="Book illustration"
-            fill
-            className="object-contain"
-            priority
-          />
-        </div>
+       <div className="relative w-96 h-40 my-2">
+        <Image
+          src="/assets/images/team/book.png"
+          alt="Book illustration"
+          fill
+          className="object-contain"
+          priority
+        />
+      </div>
 
         {/* Right circle */}
         <div className="relative flex flex-col items-center">
-          <div className="absolute -top-12 left-1/2 -translate-x-1/2 w-full max-w-[480px] flex justify-center">
-            <svg className="w-full h-44" viewBox="0 0 480 110">
-              <path id="curve-right" d="M10,75 Q240,-45 470,75" fill="transparent" />
+       <div className="absolute -top-4 md:-top-6 lg:-top-8 left-1/2 -translate-x-1/2 w-full max-w-[380px] flex justify-center">
+            <svg className="w-full h-30" viewBox="0 0 380 80">
+              <path id="curve-right" d="M10,60 Q190,-40 370,60" fill="transparent" />
               <text
-                fontSize="30"
+                fontSize="23"
                 fill="#000000"
                 fontFamily="Inter, sans-serif"
                 fontWeight="bold"
@@ -232,7 +232,7 @@ export default function TallyCounter({
               </text>
             </svg>
           </div>
-          <div className="relative w-64 h-64 flex items-center justify-center mt-10">
+          <div className="relative w-64 h-64 flex items-center justify-center mt-4">
             <div className="absolute inset-0 bg-[#F2ECE3] rounded-full shadow-lg" />
             <div className="relative z-10 flex items-center justify-center w-full h-full">
               <span className="font-inter font-bold !text-7xl text-[#000000]">
