@@ -20,16 +20,16 @@ const Footer = () => {
       </div>
 
       {/* Right side - with light italic styling */}
-      <div className="text-[19px] md:text-[20px] font-light italic">
+      <div className="text-[19px] md:text-[20px] font-light">
         <div className="footer-contact">
-          <div className="inline-block text-right w-32">Designed by:</div>
+          <div className="inline-block text-right">Designed by:</div>
           <a 
             href="https://www.linkedin.com/in/anna-k-7b5a4b276/" 
             target="_blank" 
             rel="noopener noreferrer"
             className="relative group ml-2 inline-block"
           >
-            <span className="relative">
+            <span className="relative !text-[20px]">
               Anna Kutova
               <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-white transition-all duration-300 group-hover:w-full"></span>
             </span>
@@ -43,7 +43,7 @@ const Footer = () => {
             rel="noopener noreferrer"
             className="relative group ml-2 inline-block"
           >
-            <span className="relative">
+            <span className="relative !text-[20px]">
               Prince Sithole
               <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-white transition-all duration-300 group-hover:w-full"></span>
             </span>
