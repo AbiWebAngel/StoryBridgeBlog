@@ -40,28 +40,21 @@ export default function FavouritesPage() {
     setFavourites(favourites.filter(f => f.id !== id));
   };
 
-  if (loading) return <p>Loading favourites...</p>;
+ if (!user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-[#4A3820]">
+        Please log in to view your favourites.
+      </div>
+    );
+  }
 
   return (
-    <div>
-      <h1 className="text-2xl font-cinzel mb-4">Your Favourites</h1>
-      {favourites.length === 0 ? (
-        <p>No favourites yet.</p>
-      ) : (
-        <ul className="flex flex-col gap-3">
-          {favourites.map(fav => (
-            <li key={fav.id} className="p-4 border rounded flex justify-between items-center bg-white">
-              <span>{fav.title}</span>
-              <button
-                onClick={() => removeFavourite(fav.id)}
-                className="bg-[#805C2C] text-white px-3 py-1 rounded hover:bg-[#D1BDA1]"
-              >
-                Remove
-              </button>
-            </li>
-          ))}
-        </ul>
-      )}
+    <div className="min-h-screen px-6 font-sans">
+      <div className="max-w-md mx-auto">
+        <h1 className="text-3xl font-extrabold text-[#4A3820] mb-6 text-center font-inter">
+          My Favourites
+        </h1>
+      </div>
     </div>
   );
 }
