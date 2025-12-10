@@ -9,6 +9,7 @@ import { validateName } from "@/utils/validators";
 export default function ProfilePage() {
   const { user } = useAuth();
 
+
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
@@ -127,16 +128,16 @@ export default function ProfilePage() {
   };
 
   if (!user) {
-    return (
-      <div className="min-h-screen flex items-center justify-center text-[#4A3820]">
+    return (      <div className="min-h-screen flex items-center justify-center text-[#4A3820]">
         Please log in to view your profile.
+
       </div>
     );
   }
 
-  return (
-    <div className="min-h-screen px-6 font-sans">
+  return (    <div className="min-h-screen px-6 font-sans">
       <div className="max-w-md mx-auto">
+
         <h1 className="text-3xl font-extrabold text-[#4A3820] mb-6 text-center font-inter">
           My Profile
         </h1>
