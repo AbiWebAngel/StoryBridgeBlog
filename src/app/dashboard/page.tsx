@@ -30,7 +30,7 @@ export default function DashboardHome() {
   const [registerModalOpen, setRegisterModalOpen] = useState(false);
 
   const firstName = user?.firstName || "Unknown";
-  const greetingName = firstName === "there" ? "there" : `${firstName}`;
+  const greetingName = firstName;
 
   // Define options for different user roles
   const profileOptions: Option[] = [
@@ -47,9 +47,11 @@ export default function DashboardHome() {
   ];
 
   const adminOptions: Option[] = [
+    { label: " All Articles", href: "/admin/articles", icon: FiFileText },
     { label: "User Management", href: "/admin/users", icon: FiUsers },
-    { label: "Content Management", href: "/admin/content", icon: FiFileText },
+    { label: "Site Content", href: "/admin/site-content", icon: FiFileText },
     { label: "Analytics Dashboard", href: "/admin/analytics", icon: FiUsers },
+   
   ];
 
   // Combine options based on user role

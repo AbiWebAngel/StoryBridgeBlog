@@ -2,16 +2,16 @@ const Footer = () => {
   return (
     <footer className="footer-brand-dark py-4 px-6 flex flex-col md:flex-row text-center md:text-left md:justify-between gap-2 md:gap-0 w-full">
       {/* Left side */}
-      <div className="text-[20px] md:text-[20px] font-bold tracking-wide">
+      <div className="text-[20px] font-bold tracking-wide">
         StoryBridge
         
-        <div className="footer-contact">
+        <div className="footer-contact ">
           Contact us:{" "}
           <a 
             href="mailto:storybridgeteens@gmail.com" 
             className="relative group inline-block"
           >
-            <span className="relative">
+            <span className="relative !text-[20px]">
               storybridgeteens@gmail.com
               <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-white transition-all duration-300 group-hover:w-full"></span>
             </span>
@@ -20,7 +20,7 @@ const Footer = () => {
       </div>
 
       {/* Right side - with light italic styling */}
-      <div className="text-[19px] md:text-[20px] font-light">
+      <div className="text-[20px] font-light">
         <div className="footer-contact">
           <div className="inline-block text-right">Designed by:</div>
           <a 
