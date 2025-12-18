@@ -420,10 +420,10 @@ export default function AdminUsersPage() {
                             onClick={() => handleDisableClick(u)}
                             className={`
                               px-4 py-2 rounded-lg font-medium transition-all duration-200
-                              w-full sm:w-auto disabled:opacity-60 disabled:cursor-not-allowed
+                              w-full sm:w-auto disabled:opacity-60 disabled:cursor-not-allowed !font-sans
                               ${u.disabled 
                                 ? "border-2 border-emerald-600 text-emerald-600 hover:bg-emerald-600 hover:text-white" 
-                                : "border-2 border-red-500 text-red-500 hover:bg-red-500 hover:text-white !font-sans"
+                                : "border-2 border-red-500 text-red-500 hover:bg-red-500 hover:text-white"
                               }
                               ${isCurrentUser ? 'border-gray-400 text-gray-500 hover:bg-gray-100 hover:text-gray-500' : ''}
                             `}
