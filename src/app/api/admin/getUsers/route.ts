@@ -15,13 +15,6 @@ export async function GET(req: Request) {
     // 2️⃣ Verify token
     const decoded = await adminAuth.verifyIdToken(token);
 
-    // 🔍 TEMP DEBUG LOG (THIS IS THE CORRECT SPOT)
-    console.log("Decoded auth token:", {
-      uid: decoded.uid,
-      admin: decoded.admin,
-      role: decoded.role,
-      claims: decoded,
-    });
 
     // 3️⃣ Admin guard
     if (!decoded.admin) {
@@ -36,14 +29,16 @@ export async function GET(req: Request) {
       const doc = await adminDb.collection("users").doc(u.uid).get();
       const data = doc.data();
 
-      users.push({
-        uid: u.uid,
-        email: u.email,
-        firstName: data?.firstName || "",
-        lastName: data?.lastName || "",
-        role: data?.role || "user",
-        createdAt: data?.createdAt?.toDate?.().toISOString() || "",
-      });
+     users.push({
+      uid: u.uid,
+      email: u.email,
+      firstName: data?.firstName || "",
+      lastName: data?.lastName || "",
+      role: data?.role || "user",
+      disabled: u.disabled ?? false, // 👈 ADD THIS
+      createdAt: data?.createdAt?.toDate?.().toISOString() || "",
+    });
+
     }
 
     return NextResponse.json({ users });

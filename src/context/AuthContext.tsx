@@ -90,39 +90,56 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       lastName,
       initials: data.initials || getInitials(firstName, lastName),
       role: data.role ?? "reader",
+      disabled: data.disabled ?? false,
     };
   };
 
   // Monitor auth state
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser: User | null) => {
-      if (!firebaseUser) {
-        setUser(null);
-        setRole(null);
-        setLoading(false);
-        return;
-      }
+ const unsubscribe = onAuthStateChanged(auth, async (firebaseUser: User | null) => {
+  if (!firebaseUser) {
+    setUser(null);
+    setRole(null);
+    setLoading(false);
+    return;
+  }
 
-      const userData = await fetchUserDoc(firebaseUser.uid);
+  try {
+    // 🔒 Force refresh token — throws if user is disabled
+    await firebaseUser.getIdToken(true);
+  } catch {
+    // 🚪 Disabled user detected → log them out
+    await signOut(auth);
+    setUser(null);
+    setRole(null);
+    setLoading(false);
 
-      const mergedUser: AppUser = {
-        ...firebaseUser,
-        firstName: userData?.firstName ?? "",
-        lastName: userData?.lastName ?? "",
-        initials: userData?.initials ?? "",
-        role: userData?.role ?? "reader",
-      };
+    // Optional: nuke cookies
+    document.cookie = "auth-token=; path=/; max-age=0";
+    document.cookie = "user-role=; path=/; max-age=0";
+    return;
+  }
 
-      setUser(mergedUser);
-      setRole(mergedUser.role ?? "reader");
+  const userData = await fetchUserDoc(firebaseUser.uid);
 
-      // ✅ Correct token & cookie handling
-      const idToken = await firebaseUser.getIdToken();
-      document.cookie = `auth-token=${idToken}; path=/;`;
-      document.cookie = `user-role=${mergedUser.role}; path=/;`;
+  const mergedUser: AppUser = {
+    ...firebaseUser,
+    firstName: userData?.firstName ?? "",
+    lastName: userData?.lastName ?? "",
+    initials: userData?.initials ?? "",
+    role: userData?.role ?? "reader",
+  };
 
-      setLoading(false);
-    });
+  setUser(mergedUser);
+  setRole(mergedUser.role ?? "reader");
+
+  const idToken = await firebaseUser.getIdToken();
+  document.cookie = `auth-token=${idToken}; path=/;`;
+  document.cookie = `user-role=${mergedUser.role}; path=/;`;
+
+  setLoading(false);
+});
+
 
     return () => unsubscribe();
   }, []);
@@ -165,6 +182,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       lastName: lastName || "",
       initials,
       role: "reader",
+      disabled: false,
       createdAt: new Date(),
     });
 
@@ -218,6 +236,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           lastName,
           initials,
           role: "reader",
+          disabled: false,
           createdAt: new Date(),
         },
         { merge: true }
