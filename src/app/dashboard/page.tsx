@@ -186,7 +186,7 @@ export default function DashboardHome() {
                   </p>
                   <button
                     onClick={() => openLoginModal(false)}
-                    className="px-6 py-3 bg-[#6D4F27] text-white font-medium rounded-md hover:bg-[#5A3F20] transition-colors duration-200"
+                    className="px-6 py-3 bg-[#6D4F27] text-white font-medium rounded-md hover:bg-[#5A3F20] transition-colors duration-200 !font-sans"
                   >
                     Log In
                   </button>
