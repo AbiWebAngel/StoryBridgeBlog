@@ -12,6 +12,7 @@
     "@hcaptcha/react-hcaptcha": "^1.16.0",
     "axios": "^1.11.0",
     "firebase": "^12.6.0",
+    "firebase-admin": "^13.6.0",
     "keen-slider": "^6.8.6",
     "lucide-react": "^0.545.0",
     "next": "^16.0.7",

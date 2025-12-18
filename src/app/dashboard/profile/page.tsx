@@ -135,10 +135,10 @@ export default function ProfilePage() {
     );
   }
 
-  return (    <div className="min-h-screen px-6 font-sans">
+  return (    <div className="min-h-screen px-6 !font-sans">
       <div className="max-w-md mx-auto">
 
-        <h1 className="text-3xl font-extrabold text-[#4A3820] mb-6 text-center font-inter">
+        <h1 className="text-3xl font-extrabold text-[#4A3820] mb-6 text-center !font-sans">
           My Profile
         </h1>
         <div className="bg-[#F0E8DB] border border-[#D8CDBE] rounded-lg shadow-md p-6 sm:p-8">
@@ -176,7 +176,7 @@ export default function ProfilePage() {
                     name="email"
                     value={email}
                     disabled
-                    className="w-full focus:outline-none text-[#403727] font-bold placeholder-[#403727] border-b-2 border-[#403727] font-inter text-base md:text-lg bg-transparent opacity-70 cursor-not-allowed"
+                    className="w-full focus:outline-none text-[#403727] font-bold placeholder-[#403727] border-b-2 border-[#403727] !font-sans text-base md:text-lg bg-transparent opacity-70 cursor-not-allowed"
                     required
                   />
                 </div>
@@ -208,7 +208,7 @@ export default function ProfilePage() {
                     onChange={(e) => setFirstName(e.target.value)}
                     onBlur={handleFirstNameBlur}
                     placeholder="First Name"
-                    className="w-full focus:outline-none text-[#403727] font-bold placeholder-[#403727] border-b-2 border-[#403727] font-inter text-base md:text-lg bg-transparent"
+                    className="w-full focus:outline-none text-[#403727] font-bold placeholder-[#403727] border-b-2 border-[#403727] !font-sans text-base md:text-lg bg-transparent"
                     required
                   />
                 </div>
@@ -242,7 +242,7 @@ export default function ProfilePage() {
                     onChange={(e) => setLastName(e.target.value)}
                     onBlur={handleLastNameBlur}
                     placeholder="Last Name"
-                    className="w-full focus:outline-none text-[#403727] font-bold placeholder-[#403727] border-b-2 border-[#403727] font-inter text-base md:text-lg bg-transparent"
+                    className="w-full focus:outline-none text-[#403727] font-bold placeholder-[#403727] border-b-2 border-[#403727] !font-sans text-base md:text-lg bg-transparent"
                     required
                   />
                 </div>
@@ -260,7 +260,7 @@ export default function ProfilePage() {
               <button
                 type="submit"
                 disabled={loading}
-                className="py-3 px-8 font-inter bg-[#805C2C] text-[#FFFFFF] rounded-[30px] hover:bg-[#705431] disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors text-base md:text-lg w-auto"
+                className="py-3 px-8  !font-sans bg-[#805C2C] text-[#FFFFFF] rounded-[30px] hover:bg-[#705431] disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors text-base md:text-lg w-auto"
               >
                 <span className="text-[#FFFFFF] font-medium">
                   {loading ? "Saving..." : "Save Changes"}

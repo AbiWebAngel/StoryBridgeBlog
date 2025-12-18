@@ -51,7 +51,7 @@ export default function FavouritesPage() {
   return (
     <div className="min-h-screen px-6 font-sans">
       <div className="max-w-md mx-auto">
-        <h1 className="text-3xl font-extrabold text-[#4A3820] mb-6 text-center font-inter">
+        <h1 className="text-3xl font-extrabold text-[#4A3820] mb-6 text-center !font-sans">
           My Favourites
         </h1>
       </div>

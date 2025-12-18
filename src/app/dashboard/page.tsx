@@ -78,12 +78,7 @@ export default function DashboardHome() {
     }, 300);
   };
 
-  // useEffect(() => {
-  //   // Avoid running while AuthContext is still loading
-  //   if (user === null) {
-  //     router.replace("/");
-  //   }
-  // }, [user]);
+
 
   const renderOptionCard = (option: Option) => {
     const Icon = option.icon;
@@ -123,9 +118,9 @@ export default function DashboardHome() {
 
   return (
     <>
-      <div className="min-h-screen px-4 sm:px-6 lg:px-8 font-sans">
+      <div className="min-h-screen px-4 sm:px-6 lg:px-8 !font-sans">
         <div className="max-w-4xl mx-auto">
-          <h1 className="text-3xl font-extrabold text-[#4A3820] mb-2 text-center font-inter">
+          <h1 className="text-3xl font-extrabold text-[#4A3820] mb-2 text-center  !font-sans">
             Welcome to Your Dashboard
           </h1>
 
@@ -140,7 +135,7 @@ export default function DashboardHome() {
               {role === "admin" && (
                 <div className="space-y-6">
                   <div className="bg-[#F0E8DB] border border-[#D8CDBE] rounded-lg shadow-md p-6 sm:p-8">
-                    <h2 className="text-2xl font-extrabold text-[#4A3820] mb-6 text-center font-inter">
+                    <h2 className="text-2xl font-extrabold text-[#4A3820] mb-6 text-center  !font-sans">
                       Admin Tools 
                     </h2>
                     <div className="flex flex-wrap justify-center gap-4">
@@ -154,7 +149,7 @@ export default function DashboardHome() {
               {(role === "author" || role === "admin") && (
                 <div className="space-y-6">
                   <div className="bg-[#F0E8DB] border border-[#D8CDBE] rounded-lg shadow-md p-6 sm:p-8">
-                    <h2 className="text-2xl font-extrabold text-[#4A3820] mb-6 text-center font-inter">
+                    <h2 className="text-2xl font-extrabold text-[#4A3820] mb-6 text-center  !font-sans">
                       Author Tools 
                     </h2>
                     <div className="flex flex-wrap justify-center gap-4">
@@ -167,7 +162,7 @@ export default function DashboardHome() {
               {/* Profile Section - For all logged-in users */}
               <div className="space-y-6">
                 <div className="bg-[#F0E8DB] border border-[#D8CDBE] rounded-lg shadow-md p-6 sm:p-8">
-                  <h2 className="text-2xl font-extrabold text-[#4A3820] mb-6 text-center font-inter">
+                  <h2 className="text-2xl font-extrabold text-[#4A3820] mb-6 text-center !font-sans">
                     My Account
                   </h2>
                   <div className="flex flex-wrap justify-center gap-4">
@@ -182,7 +177,7 @@ export default function DashboardHome() {
           {!user && (
             <div className="space-y-6 mt-8">
               <div className="bg-[#F0E8DB] border border-[#D8CDBE] rounded-lg shadow-md p-6 sm:p-8">
-                <h2 className="text-2xl font-extrabold text-[#4A3820] mb-6 text-center font-inter">
+                <h2 className="text-2xl font-extrabold text-[#4A3820] mb-6 text-center !font-sans">
                   Please Log In
                 </h2>
                 <div className="text-center">

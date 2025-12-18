@@ -23,10 +23,9 @@ const roleProtectedRoutes: Record<string, string[]> = {
     "/dashboard/analytics",
   ],
   admin: [
-    "/admin",
+    "/admin/articles",
     "/admin/users",
-    "/admin/content",
-    "/admin/settings",
+    "/admin/site-content",
     "/admin/analytics",
   ],
 };

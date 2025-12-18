@@ -12,6 +12,11 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 
+# Firebase service account keys
+**/service-account*.json
+**/firebase-admin*.json
+
+
 # Environment variables
 .env
 .env.local

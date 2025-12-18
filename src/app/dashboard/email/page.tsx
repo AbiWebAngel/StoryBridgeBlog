@@ -421,7 +421,7 @@ const handleChangeEmail = async (e: React.FormEvent) => {
   return (
     <div className="min-h-screen px-6 font-sans">
       <div className="max-w-md mx-auto">
-        <h1 className="text-3xl font-extrabold text-[#4A3820] mb-6 text-center font-inter">
+        <h1 className="text-3xl font-extrabold text-[#4A3820] mb-6 text-center !font-sans">
           Change Email
         </h1>
         
@@ -474,7 +474,7 @@ const handleChangeEmail = async (e: React.FormEvent) => {
                       name="email"
                       value={currentEmail}
                       disabled
-                      className="w-full focus:outline-none text-[#403727] font-bold placeholder-[#403727] border-b-2 border-[#403727] font-inter text-base md:text-lg bg-transparent opacity-70 cursor-not-allowed"
+                      className="w-full focus:outline-none text-[#403727] font-bold placeholder-[#403727] border-b-2 border-[#403727] !font-sans text-base md:text-lg bg-transparent opacity-70 cursor-not-allowed"
                       required
                     />
                   </div>
@@ -514,7 +514,7 @@ const handleChangeEmail = async (e: React.FormEvent) => {
                           onChange={(e) => handlePasswordChange(e.target.value)}
                           onBlur={handlePasswordBlur}
                           placeholder="Enter your current password"
-                          className="w-full focus:outline-none text-[#403727] font-bold placeholder-[#403727] border-b-2 border-[#403727] font-inter text-base md:text-lg bg-transparent"
+                          className="w-full focus:outline-none text-[#403727] font-bold placeholder-[#403727] border-b-2 border-[#403727]  !font-sans text-base md:text-lg bg-transparent"
                           required
                           disabled={loading}
                           autoComplete="current-password"
@@ -580,7 +580,7 @@ const handleChangeEmail = async (e: React.FormEvent) => {
                 type="button"
                 onClick={handleReauthentication}
                 disabled={loading || (!isProviderUser && !password) || reauthenticationAttempts >= MAX_REAUTH_ATTEMPTS}
-                className="py-3 px-8 font-inter bg-[#805C2C] text-[#FFFFFF] rounded-[30px] hover:bg-[#705431] disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors text-base md:text-lg w-full sm:w-auto"
+                className="py-3 px-8  !font-sans bg-[#805C2C] text-[#FFFFFF] rounded-[30px] hover:bg-[#705431] disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors text-base md:text-lg w-full sm:w-auto"
               >
 
                   <span className="text-[#FFFFFF] font-medium flex items-center justify-center gap-2">
@@ -631,7 +631,7 @@ const handleChangeEmail = async (e: React.FormEvent) => {
                       name="email"
                       value={currentEmail}
                       disabled
-                      className="w-full focus:outline-none text-[#403727] font-bold placeholder-[#403727] border-b-2 border-[#403727] font-inter text-base md:text-lg bg-transparent opacity-70 cursor-not-allowed"
+                      className="w-full focus:outline-none text-[#403727] font-bold placeholder-[#403727] border-b-2 border-[#403727] !font-sans text-base md:text-lg bg-transparent opacity-70 cursor-not-allowed"
                       required
                     />
                   </div>
@@ -669,7 +669,7 @@ const handleChangeEmail = async (e: React.FormEvent) => {
                       onChange={(e) => setNewEmail(e.target.value)}
                       onBlur={handleNewEmailBlur}
                       placeholder="New Email Address"
-                      className="w-full focus:outline-none text-[#403727] font-bold placeholder-[#403727] border-b-2 border-[#403727] font-inter text-base md:text-lg bg-transparent"
+                      className="w-full focus:outline-none text-[#403727] font-bold placeholder-[#403727] border-b-2 border-[#403727]  !font-sans text-base md:text-lg bg-transparent"
                       required
                       disabled={loading}
                       autoComplete="email"
@@ -704,7 +704,7 @@ const handleChangeEmail = async (e: React.FormEvent) => {
                       onChange={(e) => setConfirmEmail(e.target.value)}
                       onBlur={handleConfirmEmailBlur}
                       placeholder="Confirm New Email"
-                      className="w-full focus:outline-none text-[#403727] font-bold placeholder-[#403727] border-b-2 border-[#403727] font-inter text-base md:text-lg bg-transparent"
+                      className="w-full focus:outline-none text-[#403727] font-bold placeholder-[#403727] border-b-2 border-[#403727] !font-sans text-base md:text-lg bg-transparent"
                       required
                       disabled={loading}
                       autoComplete="email"
@@ -723,7 +723,7 @@ const handleChangeEmail = async (e: React.FormEvent) => {
                 <button
                   type="submit"
                   disabled={loading || !newEmail || !confirmEmail}
-                  className="py-3 px-8 font-inter bg-green-600 text-[#FFFFFF] rounded-[30px] hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors text-base md:text-lg"
+                  className="py-3 px-8 !font-sans bg-green-600 text-[#FFFFFF] rounded-[30px] hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors text-base md:text-lg"
                 >
                   <span className="text-[#FFFFFF] font-medium">
                     {loading ? (
@@ -741,7 +741,7 @@ const handleChangeEmail = async (e: React.FormEvent) => {
                   type="button"
                   onClick={resetForm}
                   disabled={loading}
-                  className="py-3 px-8 font-inter bg-gray-500 text-[#FFFFFF] rounded-[30px] hover:bg-gray-600 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors text-base md:text-lg"
+                  className="py-3 px-8 !font-sans bg-gray-500 text-[#FFFFFF] rounded-[30px] hover:bg-gray-600 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors text-base md:text-lg"
                 >
                   <span className="text-[#FFFFFF] font-medium">
                     Cancel
