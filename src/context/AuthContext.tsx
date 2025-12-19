@@ -18,6 +18,25 @@ import { getInitials } from "@/utils/getInitials";
 
 // Role type
 type Role = "admin" | "author" | "reader" | null;
+function attachProfileToUser(
+  firebaseUser: User,
+  profile?: {
+    firstName?: string;
+    lastName?: string;
+    initials?: string;
+    role?: Role;
+  }
+): AppUser {
+  const user = firebaseUser as AppUser;
+
+  user.firstName = profile?.firstName ?? "";
+  user.lastName = profile?.lastName ?? "";
+  user.initials = profile?.initials ?? "";
+  user.role = profile?.role ?? "reader";
+
+  return user;
+}
+
 
 // Extended user
 export interface AppUser extends User {
@@ -122,16 +141,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const userData = await fetchUserDoc(firebaseUser.uid);
 
-  const mergedUser: AppUser = {
-    ...firebaseUser,
-    firstName: userData?.firstName ?? "",
-    lastName: userData?.lastName ?? "",
-    initials: userData?.initials ?? "",
-    role: userData?.role ?? "reader",
-  };
+  const mergedUser = attachProfileToUser(firebaseUser, {
+    firstName: userData?.firstName,
+    lastName: userData?.lastName,
+    initials: userData?.initials,
+    role: userData?.role,
+  });
 
   setUser(mergedUser);
   setRole(mergedUser.role ?? "reader");
+
 
   const idToken = await firebaseUser.getIdToken();
   document.cookie = `auth-token=${idToken}; path=/;`;
@@ -149,16 +168,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const userCred = await signInWithEmailAndPassword(auth, email, password);
     const userData = await fetchUserDoc(userCred.user.uid);
 
-    const mergedUser: AppUser = {
-      ...userCred.user,
-      firstName: userData?.firstName ?? "",
-      lastName: userData?.lastName ?? "",
-      initials: userData?.initials ?? "",
-      role: userData?.role ?? "reader",
-    };
+   const mergedUser = attachProfileToUser(userCred.user, {
+    firstName: userData?.firstName,
+    lastName: userData?.lastName,
+    initials: userData?.initials,
+    role: userData?.role,
+  });
 
-    setUser(mergedUser);
-    setRole(mergedUser.role ?? "reader");
+  setUser(mergedUser);
+  setRole(mergedUser.role ?? "reader");
+
 
     // ✅ Cookies
     const idToken = await userCred.user.getIdToken();
@@ -186,13 +205,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       createdAt: new Date(),
     });
 
-    const mergedUser: AppUser = {
-      ...userCred.user,
-      firstName: firstName || "",
-      lastName: lastName || "",
+    const mergedUser = attachProfileToUser(userCred.user, {
+      firstName,
+      lastName,
       initials,
       role: "reader",
-    };
+    });
+
 
     setUser(mergedUser);
     setRole("reader");
@@ -253,13 +272,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       };
     }
 
-    const mergedUser: AppUser = {
-      ...gUser,
-      firstName: userData.firstName,
-      lastName: userData.lastName,
-      initials: userData.initials,
-      role: userData.role,
-    };
+    const mergedUser = attachProfileToUser(gUser, {
+    firstName: userData.firstName,
+    lastName: userData.lastName,
+    initials: userData.initials,
+    role: userData.role,
+  });
+
 
     setUser(mergedUser);
     setRole(mergedUser.role ?? "reader");

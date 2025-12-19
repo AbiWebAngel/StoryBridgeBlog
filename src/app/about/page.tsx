@@ -4,10 +4,25 @@ import SectionHeading from "../../components/SectionHeading";
 import TextSection from "../../components/TextSection";
 import ImageSlider from "../../components/ImageSlider";
 import Testimonials from "../../components/Testimonials";
+import { getAboutContent } from "@/lib/getAboutContent";
 
 
+export default async function AboutPage({
+  searchParams,
+  }: {
+    searchParams?: { updated?: string };
+  }) {
 
-export default function AboutPage() {
+  const content = await getAboutContent();
+
+  // Fallback so prod doesn't explode if Firestore is empty
+  if (!content) {
+    return (
+      <main className="py-16 text-center">
+        <p>About content coming soon ✨</p>
+      </main>
+    );
+  }
   
   const bookImages = [
     "/assets/images/about/book1.png",
@@ -16,35 +31,14 @@ export default function AboutPage() {
     "/assets/images/about/book4.png",
   ];
 
-  const testimonials = [
-    {
-      text: "This blog is my daily dose of inspiration—always fresh, clear, and insightful.",
-      image: "/assets/images/about/test1.jpg",
-    },
-    {
-      text: "I’ve learned more here in weeks than months of browsing random sites. Brilliant!",
-      image: "/assets/images/about/test2.jpg",
-    },
-    {
-      text: "Engaging, well-written, and reliable—this blog keeps me coming back every week.",
-      image: "/assets/images/about/test3.jpg",
-    },
-     {
-      text: "This blog is my daily dose of inspiration—always fresh, clear, and insightful.",
-      image: "/assets/images/about/test4.jpg",
-    },
-    {
-      text: "I’ve learned more here in weeks than months of browsing random sites. Brilliant!",
-      image: "/assets/images/about/test5.jpg",
-    },
-    {
-      text: "Engaging, well-written, and reliable—this blog keeps me coming back every week.",
-      image: "/assets/images/about/test6.jpg",
-    },
-  ];
 
     return (
       <main>
+        {searchParams?.updated === "1" && (
+        <div className="mx-auto mt-6 mb-8 max-w-3xl rounded-lg border border-green-400 bg-green-50 px-6 py-4 text-green-800 text-center font-medium">
+          ✅ About page updated successfully
+        </div>
+      )}
       {/* Mission Statement */}
       <TextSection
         heading={{
@@ -54,10 +48,10 @@ export default function AboutPage() {
           height: 180,
           maxWidth: "360px",
         }}
-        text="StoryBridge is a youth-led initiative bringing young writers and readers together through storytelling, literacy projects and community connection."
-      />
+        text={content.missionStatement} 
+        />
 
-        <ImageSlider images={bookImages} />
+      <ImageSlider images={bookImages} />
 
       <div className="mt-12">
         {/* Who We Are */}
@@ -69,8 +63,8 @@ export default function AboutPage() {
             height: 180,
             maxWidth: "230px",
           }}
-          text="Founded on the belief that stories can build bridges between people and communities,
-           StoryBridge provides writers, especially teens, with resources to help them grow into their full potential!"
+             text={content.whoWeAre}
+             
         />
 
       </div>
@@ -85,8 +79,7 @@ export default function AboutPage() {
             height: 200,
             maxWidth: "240px",
           }}
-          text="We offer beta-reading services for novelists, a mentorship program for those just starting out,
-           and weekly competitions based on writing prompts to keep the creativity flowing."
+          text={content.whatWeDo}
           image={{
             src: "/assets/images/about/PeopleAreDoingOnline.png",
             alt: "People Are Doing Online",
@@ -103,12 +96,8 @@ export default function AboutPage() {
             height: 200,
             maxWidth: "290px",
           }}
-          text="Young writers are often told to wait until they “grow up” before their words can make a difference. 
-          At StoryBridge, we believe the opposite: every young person already has something worth saying, and writing is one of the most powerful ways to say it.
-           StoryBridge matters because it gives teen writers a place to be heard, to share, and to connect. Writing isn’t just a skill — it’s a way of understanding the world,
-            building empathy, and turning ideas into action. We’re not only encouraging better stories; we’re encouraging better storytellers, nurturing leaders, 
-            and supporting the authors of tomorrow, today."
-        />
+           text={content.whyItMatters}
+           />
       </div>
 
       {/* Testimonial */}
@@ -121,7 +110,7 @@ export default function AboutPage() {
           centerAll={true}
       />
       </div>
-      <Testimonials testimonials={testimonials} />
+       <Testimonials testimonials={content.testimonials} />
     </main>
   );
 }

@@ -312,29 +312,31 @@ export default function AdminUsersPage() {
             )}
 
             <div className="bg-[#F0E8DB] border border-[#D8CDBE] rounded-lg shadow-md p-6 sm:p-8">
-              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+             <div className="flex flex-col sm:flex-row justify-between items-start gap-4 mb-6">
+              {/* LEFT: Heading + counts */}
+              <div className="flex flex-col">
                 <h2 className="text-2xl font-medium text-[#4A3820] !font-sans">
                   Users
                 </h2>
-                
-                {/* Search Field with better placeholder */}
-                <div className="w-full sm:w-auto">
-                  <input
-                    type="text"
-                    placeholder="Search by name, email, role, disabled/enabled, or date (DD/MM/YYYY)..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full sm:w-96 px-4 py-2 rounded-lg border-2 border-[#805C2C] bg-white text-[#4A3820] placeholder-[#4A3820]/60 focus:outline-none focus:ring-2 focus:ring-[#805C2C]/50"
-                  />
-                  {searchQuery && (
-                    <p className="!text-sm text-[#4A3820]/70 mt-1">
-                      Found {filteredUsers.length} user{filteredUsers.length !== 1 ? 's' : ''}
-                      {filteredUsers.some(u => u.disabled) && filteredUsers.some(u => !u.disabled) && 
-                        ` (${filteredUsers.filter(u => !u.disabled).length} active, ${filteredUsers.filter(u => u.disabled).length} disabled)`}
-                    </p>
-                  )}
-                </div>
+                <p className="text-sm text-[#4A3820]/70 mt-1">
+                  Total: <strong>{users.length}</strong> ·
+                  Active: <strong>{users.filter(u => !u.disabled).length}</strong> ·
+                  Disabled: <strong>{users.filter(u => u.disabled).length}</strong>
+                </p>
               </div>
+
+              {/* RIGHT: Search */}
+              <div className="w-full sm:w-auto">
+                <input
+                  type="text"
+                  placeholder="Search by name, email, role, disabled/enabled, or date (DD/MM/YYYY)..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full sm:w-96 px-4 py-2 rounded-lg border-2 border-[#805C2C] bg-white text-[#4A3820] placeholder-[#4A3820]/60 focus:outline-none focus:ring-2 focus:ring-[#805C2C]/50"
+                />
+              </div>
+            </div>
+
 
               {loading ? (
                 <p className="text-center text-[#4A3820]">Loading users...</p>
