@@ -348,6 +348,7 @@ export default function AdminUsersPage() {
                   className="space-y-4 max-h-[60vh] overflow-y-auto pr-2 scrollable-description"
                 >
                   {filteredUsers.map((u) => {
+                    const isSuperAdmin = u.uid === "z2Vhrt7WiBSBDLlvnNuJ3PMtsvk2";
                     const isCurrentUser = u.uid === currentAuthUser?.uid;
                     return (
                       <div
@@ -368,6 +369,11 @@ export default function AdminUsersPage() {
                                 )}
                               </p>
                               {/* Role Badges */}
+                              {isSuperAdmin && (
+                                <span className="ml-2 px-2 py-1 !text-sm bg-purple-100 text-purple-800 rounded-full">
+                                  Super Admin
+                                </span>
+                              )}
                               {u.role === 'admin' && (
                                 <span className="ml-2 px-2 py-1 !text-sm bg-red-100 text-red-800 rounded-full">Admin</span>
                               )}
@@ -401,7 +407,7 @@ export default function AdminUsersPage() {
                                   : 'border-[#805C2C] bg-[#F0E8DB] text-[#4A3820]'
                               } font-inter min-w-[120px] disabled:opacity-60 disabled:cursor-not-allowed`}
                               value={u.role || "reader"}
-                              disabled={updatingUid === u.uid || isCurrentUser}
+                              disabled={isSuperAdmin || isCurrentUser || updatingUid === u.uid}
                               onChange={(e) => handleRoleChange(u.uid, e.target.value, u)}
                             >
                               <option value="reader">Reader</option>
@@ -416,11 +422,12 @@ export default function AdminUsersPage() {
 
                           {/* Disable/Enable Button - New design */}
                           <button
-                            disabled={isCurrentUser || updatingUid === u.uid}
+                            disabled={isSuperAdmin || isCurrentUser || updatingUid === u.uid}
                             onClick={() => handleDisableClick(u)}
                             className={`
                               px-4 py-2 rounded-lg font-medium transition-all duration-200
                               w-full sm:w-auto disabled:opacity-60 disabled:cursor-not-allowed !font-sans
+                              ${isSuperAdmin ? 'border-purple-300 text-purple-400 cursor-not-allowed' : ''}
                               ${u.disabled 
                                 ? "border-2 border-emerald-600 text-emerald-600 hover:bg-emerald-600 hover:text-white" 
                                 : "border-2 border-red-500 text-red-500 hover:bg-red-500 hover:text-white"

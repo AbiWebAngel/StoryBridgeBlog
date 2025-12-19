@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { adminAuth, adminDb } from "@/lib/firebaseAdmin";
+import { SUPER_ADMIN_UID } from "@/lib/constants";
 
 export async function POST(req: Request) {
   try {
@@ -24,6 +25,15 @@ export async function POST(req: Request) {
       uid?: string;
       disabled?: boolean;
     };
+
+    // 🚫 Absolute super-admin lock
+    if (uid === SUPER_ADMIN_UID) {
+      return NextResponse.json(
+        { error: "This account cannot be disabled or enabled." },
+        { status: 403 }
+      );
+    }
+
 
     if (!uid || typeof disabled !== "boolean") {
       return NextResponse.json(

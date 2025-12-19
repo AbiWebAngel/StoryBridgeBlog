@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 import { adminAuth, adminDb } from "@/lib/firebaseAdmin";
+import { SUPER_ADMIN_UID } from "@/lib/constants";
+
 
 type Role = "admin" | "author" | "reader";
 
@@ -17,6 +19,7 @@ export async function POST(req: Request) {
     // 2️⃣ Verify token
     const decoded = await adminAuth.verifyIdToken(token);
 
+
     // 🔒 Admin guard
     if (!decoded.admin) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
@@ -28,6 +31,14 @@ export async function POST(req: Request) {
       role?: Role;
     };
 
+    // 🚫 Absolute super-admin lock
+    if (uid === SUPER_ADMIN_UID) {
+      return NextResponse.json(
+        { error: "This account role cannot be modified." },
+        { status: 403 }
+      );
+    }
+    
     if (!uid || !role) {
       return NextResponse.json(
         { error: "Missing uid or role" },
