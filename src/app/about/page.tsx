@@ -33,7 +33,7 @@ export default async function AboutPage() {
     <main>
       {/* ✅ REQUIRED for useSearchParams */}
       <Suspense fallback={null}>
-        <AboutSuccessMessage />
+       <AboutSuccessMessage /> 
       </Suspense>
 
       <TextSection
@@ -47,7 +47,7 @@ export default async function AboutPage() {
         text={content.missionStatement}
       />
 
-      <ImageSlider images={bookImages} />
+     <ImageSlider images={bookImages} />
 
       <div className="mt-12">
         <TextSection
