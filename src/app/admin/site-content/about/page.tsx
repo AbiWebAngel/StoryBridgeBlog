@@ -17,6 +17,7 @@ type AboutContent = {
   whatWeDo: string;
   whyItMatters: string;
   testimonials: Testimonial[];
+  bookImages: string[]; // Added this line
 };
 
 export default function AdminAboutPage() {
@@ -33,6 +34,7 @@ export default function AdminAboutPage() {
     whatWeDo: "",
     whyItMatters: "",
     testimonials: [],
+    bookImages: [], // Added this line
   });
 
   // Load Firestore data
@@ -56,6 +58,7 @@ export default function AdminAboutPage() {
             whatWeDo: data.whatWeDo || "",
             whyItMatters: data.whyItMatters || "",
             testimonials: data.testimonials || [],
+            bookImages: data.bookImages || [], // Added this line
           });
         }
       } catch (err) {
@@ -103,7 +106,7 @@ export default function AdminAboutPage() {
     }
   }
 
-  // Handle input changes
+  // Handle input changes for text content
   const handleContentChange = (field: keyof AboutContent, value: string) => {
     setContent(prev => ({
       ...prev,
@@ -134,6 +137,29 @@ export default function AdminAboutPage() {
     setContent(prev => ({
       ...prev,
       testimonials: prev.testimonials.filter((_, i) => i !== index)
+    }));
+  };
+
+  // Book Images functions
+  const addBookImage = () => {
+    setContent(prev => ({
+      ...prev,
+      bookImages: [...prev.bookImages, ""]
+    }));
+  };
+
+  const updateBookImage = (index: number, value: string) => {
+    setContent(prev => {
+      const updatedBookImages = [...prev.bookImages];
+      updatedBookImages[index] = value;
+      return { ...prev, bookImages: updatedBookImages };
+    });
+  };
+
+  const removeBookImage = (index: number) => {
+    setContent(prev => ({
+      ...prev,
+      bookImages: prev.bookImages.filter((_, i) => i !== index)
     }));
   };
 
@@ -182,7 +208,7 @@ export default function AdminAboutPage() {
           </div>
         )}
 
-        {/* Main Content Card - REMOVED height restriction */}
+        {/* Main Content Card */}
         <div className="bg-[#F0E8DB] border border-[#D8CDBE] rounded-lg shadow-md p-6 sm:p-8 mb-8">
           <h2 className="text-2xl font-medium text-[#4A3820] mb-6 !font-sans">
             Edit About Page Content
@@ -191,125 +217,174 @@ export default function AdminAboutPage() {
           {loading ? (
             <p className="text-center text-[#4A3820] py-8">Loading content...</p>
           ) : (
-    <div className="space-y-6">
-  {/* Mission Statement */}
-  <div className="bg-white rounded-lg border border-[#D8CDBE] p-5 shadow-md">
-    <label className="block text-lg font-bold text-[#4A3820] mb-3 !font-sans">
-      Mission Statement
-    </label>
-    <textarea
-      value={content.missionStatement}
-      onChange={(e) => handleContentChange("missionStatement", e.target.value)}
-      className="w-full px-4 py-3 rounded-lg border-2 border-[#805C2C] bg-white text-[#4A3820] placeholder-[#4A3820]/60 focus:outline-none focus:ring-2 focus:ring-[#805C2C]/50 min-h-[120px] scrollable-description"
-      placeholder="Enter your mission statement..."
-    />
-  </div>
+            <div className="space-y-6">
+              {/* Mission Statement */}
+              <div className="bg-white rounded-lg border border-[#D8CDBE] p-5 shadow-md">
+                <label className="block text-lg font-bold text-[#4A3820] mb-3 !font-sans">
+                  Mission Statement
+                </label>
+                <textarea
+                  value={content.missionStatement}
+                  onChange={(e) => handleContentChange("missionStatement", e.target.value)}
+                  className="w-full px-4 py-3 rounded-lg border-2 border-[#805C2C] bg-white text-[#4A3820] placeholder-[#4A3820]/60 focus:outline-none focus:ring-2 focus:ring-[#805C2C]/50 min-h-[120px] scrollable-description"
+                  placeholder="Enter your mission statement..."
+                />
+              </div>
 
-  {/* Who We Are */}
-  <div className="bg-white rounded-lg border border-[#D8CDBE] p-5 shadow-md">
-    <label className="block text-lg font-bold text-[#4A3820] mb-3 !font-sans">
-      Who We Are
-    </label>
-    <textarea
-      value={content.whoWeAre}
-      onChange={(e) => handleContentChange("whoWeAre", e.target.value)}
-      className="w-full px-4 py-3 rounded-lg border-2 border-[#805C2C] bg-white text-[#4A3820] placeholder-[#4A3820]/60 focus:outline-none focus:ring-2 focus:ring-[#805C2C]/50 min-h-[150px] scrollable-description"
-      placeholder="Describe who you are..."
-    />
-  </div>
+              {/* Who We Are */}
+              <div className="bg-white rounded-lg border border-[#D8CDBE] p-5 shadow-md">
+                <label className="block text-lg font-bold text-[#4A3820] mb-3 !font-sans">
+                  Who We Are
+                </label>
+                <textarea
+                  value={content.whoWeAre}
+                  onChange={(e) => handleContentChange("whoWeAre", e.target.value)}
+                  className="w-full px-4 py-3 rounded-lg border-2 border-[#805C2C] bg-white text-[#4A3820] placeholder-[#4A3820]/60 focus:outline-none focus:ring-2 focus:ring-[#805C2C]/50 min-h-[150px] scrollable-description"
+                  placeholder="Describe who you are..."
+                />
+              </div>
 
-  {/* What We Do */}
-  <div className="bg-white rounded-lg border border-[#D8CDBE] p-5 shadow-md">
-    <label className="block text-lg font-bold text-[#4A3820] mb-3 !font-sans">
-      What We Do
-    </label>
-    <textarea
-      value={content.whatWeDo}
-      onChange={(e) => handleContentChange("whatWeDo", e.target.value)}
-      className="w-full px-4 py-3 rounded-lg border-2 border-[#805C2C] bg-white text-[#4A3820] placeholder-[#4A3820]/60 focus:outline-none focus:ring-2 focus:ring-[#805C2C]/50 min-h-[150px] scrollable-description"
-      placeholder="Explain what you do..."
-    />
-  </div>
+              {/* What We Do */}
+              <div className="bg-white rounded-lg border border-[#D8CDBE] p-5 shadow-md">
+                <label className="block text-lg font-bold text-[#4A3820] mb-3 !font-sans">
+                  What We Do
+                </label>
+                <textarea
+                  value={content.whatWeDo}
+                  onChange={(e) => handleContentChange("whatWeDo", e.target.value)}
+                  className="w-full px-4 py-3 rounded-lg border-2 border-[#805C2C] bg-white text-[#4A3820] placeholder-[#4A3820]/60 focus:outline-none focus:ring-2 focus:ring-[#805C2C]/50 min-h-[150px] scrollable-description"
+                  placeholder="Explain what you do..."
+                />
+              </div>
 
-  {/* Why It Matters */}
-  <div className="bg-white rounded-lg border border-[#D8CDBE] p-5 shadow-md">
-    <label className="block text-lg font-bold text-[#4A3820] mb-3 !font-sans">
-      Why It Matters
-    </label>
-    <textarea
-      value={content.whyItMatters}
-      onChange={(e) => handleContentChange("whyItMatters", e.target.value)}
-      className="w-full px-4 py-3 rounded-lg border-2 border-[#805C2C] bg-white text-[#4A3820] placeholder-[#4A3820]/60 focus:outline-none focus:ring-2 focus:ring-[#805C2C]/50 min-h-[150px] scrollable-description"
-      placeholder="Explain why it matters..."
-    />
-  </div>
+              {/* Why It Matters */}
+              <div className="bg-white rounded-lg border border-[#D8CDBE] p-5 shadow-md">
+                <label className="block text-lg font-bold text-[#4A3820] mb-3 !font-sans">
+                  Why It Matters
+                </label>
+                <textarea
+                  value={content.whyItMatters}
+                  onChange={(e) => handleContentChange("whyItMatters", e.target.value)}
+                  className="w-full px-4 py-3 rounded-lg border-2 border-[#805C2C] bg-white text-[#4A3820] placeholder-[#4A3820]/60 focus:outline-none focus:ring-2 focus:ring-[#805C2C]/50 min-h-[150px] scrollable-description"
+                  placeholder="Explain why it matters..."
+                />
+              </div>
 
-  {/* Testimonials Section */}
-  <div className="bg-white rounded-lg border border-[#D8CDBE] p-5 shadow-md">
-    <div className="flex justify-between items-center mb-6">
-      <h3 className="text-xl font-bold text-[#4A3820] !font-sans">
-        Testimonials
-      </h3>
-      <button
-        onClick={addTestimonial}
-        className="px-4 py-2 rounded-lg border-2 border-[#805C2C] text-[#805C2C] font-medium hover:bg-[#F0E8DB] transition-colors !font-sans"
-      >
-        + Add Testimonial
-      </button>
-    </div>
+              {/* Book Images Section - Added this new section */}
+              <div className="bg-white rounded-lg border border-[#D8CDBE] p-5 shadow-md">
+                <div className="flex justify-between items-center mb-6">
+                  <h3 className="text-xl font-bold text-[#4A3820] !font-sans">
+                    Book Images (for Slider)
+                  </h3>
+                  <button
+                    onClick={addBookImage}
+                    className="px-4 py-2 rounded-lg border-2 border-[#805C2C] text-[#805C2C] font-medium hover:bg-[#F0E8DB] transition-colors !font-sans"
+                  >
+                    + Add Book Image
+                  </button>
+                </div>
 
-    <div className="space-y-6">
-      {content.testimonials.map((testimonial, index) => (
-        <div key={index} className="border-2 border-[#D8CDBE] rounded-lg p-5 bg-[#F9F5F0]">
-          <div className="flex justify-between items-start mb-4">
-            <h4 className="font-bold text-[#4A3820] !font-sans">
-              Testimonial #{index + 1}
-            </h4>
-            <button
-              onClick={() => removeTestimonial(index)}
-              className="px-3 py-1 rounded-lg border-2 border-red-500 text-red-500 text-sm hover:bg-red-50 transition-colors !font-sans"
-            >
-              Remove
-            </button>
-          </div>
+                <div className="space-y-4">
+                  {content.bookImages.map((imageUrl, index) => (
+                    <div key={index} className="flex items-center gap-4 border-2 border-[#D8CDBE] rounded-lg p-4 bg-[#F9F5F0]">
+                      <div className="flex-1">
+                        <label className="block text-sm font-medium text-[#4A3820] mb-2">
+                          Book Image #{index + 1} URL
+                        </label>
+                        <input
+                          type="text"
+                          value={imageUrl}
+                          onChange={(e) => updateBookImage(index, e.target.value)}
+                          className="w-full px-4 py-2 rounded-lg border-2 border-[#805C2C] bg-white text-[#4A3820] placeholder-[#4A3820]/60 focus:outline-none focus:ring-2 focus:ring-[#805C2C]/50"
+                          placeholder="/assets/images/about/book1.png or https://..."
+                        />
+                      </div>
+                      <button
+                        onClick={() => removeBookImage(index)}
+                        className="px-3 py-2 rounded-lg border-2 border-red-500 text-red-500 text-sm hover:bg-red-50 transition-colors !font-sans whitespace-nowrap"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  ))}
 
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-[#4A3820] mb-2">
-                Text
-              </label>
-              <textarea
-                value={testimonial.text}
-                onChange={(e) => updateTestimonial(index, "text", e.target.value)}
-                className="w-full px-4 py-2 rounded-lg border-2 border-[#805C2C] bg-white text-[#4A3820] placeholder-[#4A3820]/60 focus:outline-none focus:ring-2 focus:ring-[#805C2C]/50 min-h-[100px] scrollable-description"
-                placeholder="Enter testimonial text..."
-              />
+                  {content.bookImages.length === 0 && (
+                    <div className="text-center py-8 border-2 border-dashed border-[#D8CDBE] rounded-lg">
+                      <p className="text-[#4A3820]/70">No book images yet. Add one above.</p>
+                      <p className="text-sm text-[#4A3820]/60 mt-2">
+                        These images will appear in the slider between Mission Statement and Who We Are
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Testimonials Section */}
+              <div className="bg-white rounded-lg border border-[#D8CDBE] p-5 shadow-md">
+                <div className="flex justify-between items-center mb-6">
+                  <h3 className="text-xl font-bold text-[#4A3820] !font-sans">
+                    Testimonials
+                  </h3>
+                  <button
+                    onClick={addTestimonial}
+                    className="px-4 py-2 rounded-lg border-2 border-[#805C2C] text-[#805C2C] font-medium hover:bg-[#F0E8DB] transition-colors !font-sans"
+                  >
+                    + Add Testimonial
+                  </button>
+                </div>
+
+                <div className="space-y-6">
+                  {content.testimonials.map((testimonial, index) => (
+                    <div key={index} className="border-2 border-[#D8CDBE] rounded-lg p-5 bg-[#F9F5F0]">
+                      <div className="flex justify-between items-start mb-4">
+                        <h4 className="font-bold text-[#4A3820] !font-sans">
+                          Testimonial #{index + 1}
+                        </h4>
+                        <button
+                          onClick={() => removeTestimonial(index)}
+                          className="px-3 py-1 rounded-lg border-2 border-red-500 text-red-500 text-sm hover:bg-red-50 transition-colors !font-sans"
+                        >
+                          Remove
+                        </button>
+                      </div>
+
+                      <div className="space-y-4">
+                        <div>
+                          <label className="block text-sm font-medium text-[#4A3820] mb-2">
+                            Text
+                          </label>
+                          <textarea
+                            value={testimonial.text}
+                            onChange={(e) => updateTestimonial(index, "text", e.target.value)}
+                            className="w-full px-4 py-2 rounded-lg border-2 border-[#805C2C] bg-white text-[#4A3820] placeholder-[#4A3820]/60 focus:outline-none focus:ring-2 focus:ring-[#805C2C]/50 min-h-[100px] scrollable-description"
+                            placeholder="Enter testimonial text..."
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-medium text-[#4A3820] mb-2">
+                            Image URL
+                          </label>
+                          <input
+                            type="text"
+                            value={testimonial.image}
+                            onChange={(e) => updateTestimonial(index, "image", e.target.value)}
+                            className="w-full px-4 py-2 rounded-lg border-2 border-[#805C2C] bg-white text-[#4A3820] placeholder-[#4A3820]/60 focus:outline-none focus:ring-2 focus:ring-[#805C2C]/50"
+                            placeholder="https://example.com/image.jpg"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+
+                  {content.testimonials.length === 0 && (
+                    <div className="text-center py-8 border-2 border-dashed border-[#D8CDBE] rounded-lg">
+                      <p className="text-[#4A3820]/70">No testimonials yet. Add one above.</p>
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
-
-            <div>
-              <label className="block text-sm font-medium text-[#4A3820] mb-2">
-                Image URL
-              </label>
-              <input
-                type="text"
-                value={testimonial.image}
-                onChange={(e) => updateTestimonial(index, "image", e.target.value)}
-                className="w-full px-4 py-2 rounded-lg border-2 border-[#805C2C] bg-white text-[#4A3820] placeholder-[#4A3820]/60 focus:outline-none focus:ring-2 focus:ring-[#805C2C]/50"
-                placeholder="https://example.com/image.jpg"
-              />
-            </div>
-          </div>
-        </div>
-      ))}
-
-      {content.testimonials.length === 0 && (
-        <div className="text-center py-8 border-2 border-dashed border-[#D8CDBE] rounded-lg">
-          <p className="text-[#4A3820]/70">No testimonials yet. Add one above.</p>
-        </div>
-      )}
-    </div>
-  </div>
-</div>
           )}
         </div>
 
@@ -323,7 +398,6 @@ export default function AdminAboutPage() {
             {saving ? "Saving..." : "Save All Changes"}
           </button>
         </div>
-
       </div>
     </div>
   );

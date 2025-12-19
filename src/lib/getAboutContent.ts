@@ -11,6 +11,7 @@ export type AboutContent = {
   whatWeDo: string;
   whyItMatters: string;
   testimonials: Testimonial[];
+  bookImages: string[]; // Add this line
 };
 
 export async function getAboutContent(): Promise<AboutContent | null> {
@@ -27,5 +28,6 @@ export async function getAboutContent(): Promise<AboutContent | null> {
     whatWeDo: data?.whatWeDo ?? "",
     whyItMatters: data?.whyItMatters ?? "",
     testimonials: data?.testimonials ?? [],
+    bookImages: data?.bookImages ?? [], // Add this line
   };
 }
