@@ -96,22 +96,26 @@ p,ul,li,span,a {
 }
 
 
-/* Custom scrollbar for team cards */
-.scrollable-description::-webkit-scrollbar {
+/* Custom scrollbar for team cards AND textareas */
+.scrollable-description::-webkit-scrollbar,
+textarea.scrollable-description::-webkit-scrollbar {
   width: 6px;
 }
 
-.scrollable-description::-webkit-scrollbar-track {
+.scrollable-description::-webkit-scrollbar-track,
+textarea.scrollable-description::-webkit-scrollbar-track {
   background: #EDE5D8;
   border-radius: 3px;
 }
 
-.scrollable-description::-webkit-scrollbar-thumb {
+.scrollable-description::-webkit-scrollbar-thumb,
+textarea.scrollable-description::-webkit-scrollbar-thumb {
   background: #D1BDA1;
   border-radius: 3px;
 }
 
-.scrollable-description::-webkit-scrollbar-thumb:hover {
+.scrollable-description::-webkit-scrollbar-thumb:hover,
+textarea.scrollable-description::-webkit-scrollbar-thumb:hover {
   background: #8B7355;
 }
 

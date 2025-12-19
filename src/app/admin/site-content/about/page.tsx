@@ -1,252 +1,330 @@
-// 🔍 DEBUG-ENABLED VERSION
 "use client";
 
 import { useState, useEffect } from "react";
 import { db } from "@/lib/firebase";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
+import { useAuth } from "@/context/AuthContext";
+
+type Testimonial = {
+  text: string;
+  image: string;
+};
+
+type AboutContent = {
+  missionStatement: string;
+  whoWeAre: string;
+  whatWeDo: string;
+  whyItMatters: string;
+  testimonials: Testimonial[];
+};
 
 export default function AdminAboutPage() {
+  const { user: currentAuthUser } = useAuth();
+  
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
 
-  const [missionStatement, setMissionStatement] = useState("");
-  const [whoWeAre, setWhoWeAre] = useState("");
-  const [whatWeDo, setWhatWeDo] = useState("");
-  const [whyItMatters, setWhyItMatters] = useState("");
+  const [content, setContent] = useState<AboutContent>({
+    missionStatement: "",
+    whoWeAre: "",
+    whatWeDo: "",
+    whyItMatters: "",
+    testimonials: [],
+  });
 
-  const [testimonials, setTestimonials] = useState<
-    { text: string; image: string }[]
-  >([]);
-
-  // ❤️ Add auth debug
+  // Load Firestore data
   useEffect(() => {
-    async function debugAuth() {
-      const auth = getAuth();
-      const user = auth.currentUser;
-
-      console.log("🔍 User loaded:", user);
-
-      if (!user) {
-        console.warn("⚠️ No user logged in — Firestore writes will fail");
+    async function loadContent() {
+      if (!currentAuthUser) {
+        setLoading(false);
         return;
       }
 
-      const token = await user.getIdTokenResult(true);
-      console.log("🔍 Token claims:", token.claims);
-
-      if (!token.claims.role) {
-        console.warn("⚠️ No 'role' claim found on this user");
-      } else {
-        console.log("✅ User role:", token.claims.role);
-      }
-    }
-
-    debugAuth();
-  }, []);
-
-  
-
-  // 🔹 Load Firestore data on mount
-  useEffect(() => {
-    async function loadContent() {
-      console.log("🔍 Fetching about page content…");
-
-      const ref = doc(db, "siteContent", "about");
-      console.log("🔍 Firestore document path:", ref.path);
-
+      setLoading(true);
       try {
+        const ref = doc(db, "siteContent", "about");
         const snap = await getDoc(ref);
-
-        console.log("🔍 Document exists:", snap.exists());
 
         if (snap.exists()) {
           const data = snap.data();
-          console.log("🔍 Fetched data:", data);
-
-          setMissionStatement(data.missionStatement || "");
-          setWhoWeAre(data.whoWeAre || "");
-          setWhatWeDo(data.whatWeDo || "");
-          setWhyItMatters(data.whyItMatters || "");
-          setTestimonials(data.testimonials || []);
+          setContent({
+            missionStatement: data.missionStatement || "",
+            whoWeAre: data.whoWeAre || "",
+            whatWeDo: data.whatWeDo || "",
+            whyItMatters: data.whyItMatters || "",
+            testimonials: data.testimonials || [],
+          });
         }
       } catch (err) {
-        console.error("❌ Error reading document:", err);
+        console.error("Error loading content:", err);
+        setErrorMessage("Failed to load content.");
+      } finally {
+        setLoading(false);
       }
-
-      setLoading(false);
     }
 
     loadContent();
-  }, []);
+  }, [currentAuthUser]);
 
-useEffect(() => {
-  const auth = getAuth();
-  const currentUser = auth.currentUser;
-
-  if (currentUser) {
-    currentUser.getIdTokenResult().then((idTokenResult) => {
-      console.log("ID Token Claims:", idTokenResult.claims);
-    });
-  }
-}, []);
-
-
-
-  // 🔹 Save to Firestore
+  // Save to Firestore
   async function handleSave() {
-    setSaving(true);
-
-    const auth = getAuth();
-    const user = auth.currentUser;
-
-    console.log("🔍 Attempting save by user:", user);
-
-    if (!user) {
-      console.error("❌ User is null — cannot save");
-      alert("Not logged in");
-      setSaving(false);
+    if (!currentAuthUser) {
+      setErrorMessage("Please log in to save changes.");
       return;
     }
 
-    const token = await user.getIdTokenResult();
-    console.log("🔍 Claims before save:", token.claims);
-
-    const ref = doc(db, "siteContent", "about");
-    console.log("🔍 Write path:", ref.path);
+    setSaving(true);
+    setErrorMessage("");
+    setSuccessMessage("");
 
     try {
-      await setDoc(
-        ref,
-        {
-          missionStatement,
-          whoWeAre,
-          whatWeDo,
-          whyItMatters,
-          testimonials,
-        },
-        { merge: true }
-      );
+      const token = await currentAuthUser.getIdTokenResult();
+      
+      // Check if user has admin or author role
+      if (token.claims.role !== "admin" && token.claims.role !== "author") {
+        throw new Error("Insufficient permissions. Admin or author role required.");
+      }
 
-      console.log("✅ Saved successfully");
-      alert("Saved!");
-    } catch (err) {
-      console.error("❌ Firestore error:", err);
-      alert("Error saving — check console");
+      const ref = doc(db, "siteContent", "about");
+      await setDoc(ref, content, { merge: true });
+
+      setSuccessMessage("About page content saved successfully!");
+      
+      // Clear success message after 3 seconds
+      setTimeout(() => setSuccessMessage(""), 3000);
+    } catch (err: any) {
+      console.error("Save error:", err);
+      setErrorMessage(err.message || "Failed to save changes. Please try again.");
+    } finally {
+      setSaving(false);
     }
-
-    setSaving(false);
   }
 
-  function addTestimonial() {
-    setTestimonials([...testimonials, { text: "", image: "" }]);
-  }
+  // Handle input changes
+  const handleContentChange = (field: keyof AboutContent, value: string) => {
+    setContent(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
 
-  function removeTestimonial(index: number) {
-    setTestimonials(testimonials.filter((_, i) => i !== index));
-  }
+  // Testimonial functions
+  const addTestimonial = () => {
+    setContent(prev => ({
+      ...prev,
+      testimonials: [...prev.testimonials, { text: "", image: "" }]
+    }));
+  };
 
-  if (loading) return <p>Loading...</p>;
+  const updateTestimonial = (index: number, field: keyof Testimonial, value: string) => {
+    setContent(prev => {
+      const updatedTestimonials = [...prev.testimonials];
+      updatedTestimonials[index] = {
+        ...updatedTestimonials[index],
+        [field]: value
+      };
+      return { ...prev, testimonials: updatedTestimonials };
+    });
+  };
+
+  const removeTestimonial = (index: number) => {
+    setContent(prev => ({
+      ...prev,
+      testimonials: prev.testimonials.filter((_, i) => i !== index)
+    }));
+  };
+
+  // Guest state when not logged in
+  if (!currentAuthUser && !loading) {
+    return (
+      <div className="px-6 min-h-screen font-sans">
+        <div className="max-w-3xl mx-auto">
+          <h1 className="text-3xl font-extrabold text-[#4A3820] mb-6 text-center !font-sans">
+            About Page Management
+          </h1>
+          <div className="space-y-6 mt-8">
+            <div className="bg-[#F0E8DB] border border-[#D8CDBE] rounded-lg shadow-md p-6 sm:p-8">
+              <h2 className="text-2xl font-extrabold text-[#4A3820] mb-6 text-center !font-sans">
+                Please Log In
+              </h2>
+              <div className="text-center">
+                <p className="text-lg text-[#4A3820] mb-6">
+                  Log in as an administrator or author to manage about page content
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="p-6 max-w-3xl mx-auto space-y-8">
-      <h1 className="text-3xl font-bold text-[#4A3820] text-center">
-        About Page Content
-      </h1>
+    <div className="px-6 min-h-screen font-sans">
+      <div className="max-w-4xl mx-auto">
+        <h1 className="text-3xl font-extrabold text-[#4A3820] mb-6 text-center !font-sans">
+          About Page Management
+        </h1>
 
-      {/* Mission Statement */}
-      <div>
-        <label className="block font-semibold mb-1">Mission Statement</label>
-        <textarea
-          value={missionStatement}
-          onChange={(e) => setMissionStatement(e.target.value)}
-          className="w-full border p-2 rounded"
-        />
-      </div>
+        {/* Messages */}
+        {successMessage && (
+          <div className="mb-6 p-4 bg-green-100 border border-green-400 text-green-700 rounded-lg">
+            {successMessage}
+          </div>
+        )}
 
-      {/* Who We Are */}
-      <div>
-        <label className="block font-semibold mb-1">Who We Are</label>
-        <textarea
-          value={whoWeAre}
-          onChange={(e) => setWhoWeAre(e.target.value)}
-          className="w-full border p-2 rounded"
-        />
-      </div>
+        {errorMessage && (
+          <div className="mb-6 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg">
+            {errorMessage}
+          </div>
+        )}
 
-      {/* What We Do */}
-      <div>
-        <label className="block font-semibold mb-1">What We Do</label>
-        <textarea
-          value={whatWeDo}
-          onChange={(e) => setWhatWeDo(e.target.value)}
-          className="w-full border p-2 rounded"
-        />
-      </div>
+        {/* Main Content Card - REMOVED height restriction */}
+        <div className="bg-[#F0E8DB] border border-[#D8CDBE] rounded-lg shadow-md p-6 sm:p-8 mb-8">
+          <h2 className="text-2xl font-medium text-[#4A3820] mb-6 !font-sans">
+            Edit About Page Content
+          </h2>
 
-      {/* Why It Matters */}
-      <div>
-        <label className="block font-semibold mb-1">Why It Matters</label>
-        <textarea
-          value={whyItMatters}
-          onChange={(e) => setWhyItMatters(e.target.value)}
-          className="w-full border p-2 rounded"
-        />
-      </div>
+          {loading ? (
+            <p className="text-center text-[#4A3820] py-8">Loading content...</p>
+          ) : (
+    <div className="space-y-6">
+  {/* Mission Statement */}
+  <div className="bg-white rounded-lg border border-[#D8CDBE] p-5 shadow-md">
+    <label className="block text-lg font-bold text-[#4A3820] mb-3 !font-sans">
+      Mission Statement
+    </label>
+    <textarea
+      value={content.missionStatement}
+      onChange={(e) => handleContentChange("missionStatement", e.target.value)}
+      className="w-full px-4 py-3 rounded-lg border-2 border-[#805C2C] bg-white text-[#4A3820] placeholder-[#4A3820]/60 focus:outline-none focus:ring-2 focus:ring-[#805C2C]/50 min-h-[120px] scrollable-description"
+      placeholder="Enter your mission statement..."
+    />
+  </div>
 
-      {/* Testimonials */}
-      <div className="space-y-4">
-        <h2 className="text-xl font-bold">Testimonials</h2>
+  {/* Who We Are */}
+  <div className="bg-white rounded-lg border border-[#D8CDBE] p-5 shadow-md">
+    <label className="block text-lg font-bold text-[#4A3820] mb-3 !font-sans">
+      Who We Are
+    </label>
+    <textarea
+      value={content.whoWeAre}
+      onChange={(e) => handleContentChange("whoWeAre", e.target.value)}
+      className="w-full px-4 py-3 rounded-lg border-2 border-[#805C2C] bg-white text-[#4A3820] placeholder-[#4A3820]/60 focus:outline-none focus:ring-2 focus:ring-[#805C2C]/50 min-h-[150px] scrollable-description"
+      placeholder="Describe who you are..."
+    />
+  </div>
 
-        {testimonials.map((t, index) => (
-          <div key={index} className="border p-4 rounded space-y-2">
-            <textarea
-              value={t.text}
-              onChange={(e) => {
-                const arr = [...testimonials];
-                arr[index].text = e.target.value;
-                setTestimonials(arr);
-              }}
-              placeholder="Testimonial text"
-              className="w-full border p-2 rounded"
-            />
+  {/* What We Do */}
+  <div className="bg-white rounded-lg border border-[#D8CDBE] p-5 shadow-md">
+    <label className="block text-lg font-bold text-[#4A3820] mb-3 !font-sans">
+      What We Do
+    </label>
+    <textarea
+      value={content.whatWeDo}
+      onChange={(e) => handleContentChange("whatWeDo", e.target.value)}
+      className="w-full px-4 py-3 rounded-lg border-2 border-[#805C2C] bg-white text-[#4A3820] placeholder-[#4A3820]/60 focus:outline-none focus:ring-2 focus:ring-[#805C2C]/50 min-h-[150px] scrollable-description"
+      placeholder="Explain what you do..."
+    />
+  </div>
 
-            <input
-              type="text"
-              value={t.image}
-              onChange={(e) => {
-                const arr = [...testimonials];
-                arr[index].image = e.target.value;
-                setTestimonials(arr);
-              }}
-              placeholder="Image URL"
-              className="w-full border p-2 rounded"
-            />
+  {/* Why It Matters */}
+  <div className="bg-white rounded-lg border border-[#D8CDBE] p-5 shadow-md">
+    <label className="block text-lg font-bold text-[#4A3820] mb-3 !font-sans">
+      Why It Matters
+    </label>
+    <textarea
+      value={content.whyItMatters}
+      onChange={(e) => handleContentChange("whyItMatters", e.target.value)}
+      className="w-full px-4 py-3 rounded-lg border-2 border-[#805C2C] bg-white text-[#4A3820] placeholder-[#4A3820]/60 focus:outline-none focus:ring-2 focus:ring-[#805C2C]/50 min-h-[150px] scrollable-description"
+      placeholder="Explain why it matters..."
+    />
+  </div>
 
+  {/* Testimonials Section */}
+  <div className="bg-white rounded-lg border border-[#D8CDBE] p-5 shadow-md">
+    <div className="flex justify-between items-center mb-6">
+      <h3 className="text-xl font-bold text-[#4A3820] !font-sans">
+        Testimonials
+      </h3>
+      <button
+        onClick={addTestimonial}
+        className="px-4 py-2 rounded-lg border-2 border-[#805C2C] text-[#805C2C] font-medium hover:bg-[#F0E8DB] transition-colors !font-sans"
+      >
+        + Add Testimonial
+      </button>
+    </div>
+
+    <div className="space-y-6">
+      {content.testimonials.map((testimonial, index) => (
+        <div key={index} className="border-2 border-[#D8CDBE] rounded-lg p-5 bg-[#F9F5F0]">
+          <div className="flex justify-between items-start mb-4">
+            <h4 className="font-bold text-[#4A3820] !font-sans">
+              Testimonial #{index + 1}
+            </h4>
             <button
               onClick={() => removeTestimonial(index)}
-              className="text-red-600 font-semibold"
+              className="px-3 py-1 rounded-lg border-2 border-red-500 text-red-500 text-sm hover:bg-red-50 transition-colors !font-sans"
             >
               Remove
             </button>
           </div>
-        ))}
 
-        <button
-          onClick={addTestimonial}
-          className="px-4 py-2 bg-[#6D4F27] text-white rounded"
-        >
-          Add Testimonial
-        </button>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-[#4A3820] mb-2">
+                Text
+              </label>
+              <textarea
+                value={testimonial.text}
+                onChange={(e) => updateTestimonial(index, "text", e.target.value)}
+                className="w-full px-4 py-2 rounded-lg border-2 border-[#805C2C] bg-white text-[#4A3820] placeholder-[#4A3820]/60 focus:outline-none focus:ring-2 focus:ring-[#805C2C]/50 min-h-[100px] scrollable-description"
+                placeholder="Enter testimonial text..."
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-[#4A3820] mb-2">
+                Image URL
+              </label>
+              <input
+                type="text"
+                value={testimonial.image}
+                onChange={(e) => updateTestimonial(index, "image", e.target.value)}
+                className="w-full px-4 py-2 rounded-lg border-2 border-[#805C2C] bg-white text-[#4A3820] placeholder-[#4A3820]/60 focus:outline-none focus:ring-2 focus:ring-[#805C2C]/50"
+                placeholder="https://example.com/image.jpg"
+              />
+            </div>
+          </div>
+        </div>
+      ))}
+
+      {content.testimonials.length === 0 && (
+        <div className="text-center py-8 border-2 border-dashed border-[#D8CDBE] rounded-lg">
+          <p className="text-[#4A3820]/70">No testimonials yet. Add one above.</p>
+        </div>
+      )}
+    </div>
+  </div>
+</div>
+          )}
+        </div>
+
+        {/* Save Button */}
+        <div className="flex justify-center">
+          <button
+            onClick={handleSave}
+            disabled={saving || !currentAuthUser}
+            className="px-8 py-3 rounded-lg bg-[#805C2C] text-white font-bold text-lg hover:bg-[#6B4C24] transition-colors disabled:opacity-60 disabled:cursor-not-allowed !font-sans"
+          >
+            {saving ? "Saving..." : "Save All Changes"}
+          </button>
+        </div>
+
       </div>
-
-      <button
-        onClick={handleSave}
-        disabled={saving}
-        className="px-6 py-3 bg-[#4A3820] text-white rounded-lg w-full font-bold"
-      >
-        {saving ? "Saving..." : "Save Changes"}
-      </button>
     </div>
   );
 }
