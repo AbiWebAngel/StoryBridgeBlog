@@ -1,47 +1,71 @@
 import TallyCounter from "@/components/team/TallyCounter";
 import SectionHeading from "../../components/SectionHeading";
-import OurTeam from "../../components/team/OurTeam";
+import OurTeam, { TeamMember } from "../../components/team/OurTeam";
 import TextSectionWithButton from "../../components/team/TextSectionWithButton";
+import { getTeamContent } from "@/lib/getTeamContent";
 
+export default async function TeamPage() {
+  // Fetch team content from Firestore
+  const teamContent = await getTeamContent();
+  
+  // Use Firestore data
+  const joinTeamText = teamContent?.joinTeamText || "";
+  const matchesCount = teamContent?.matchesCount || 0;
+  const workshopsCount = teamContent?.workshopsCount || 0;
+  const teamData = teamContent?.teamMembers || [];
 
-export default function TeamPage() {
   return (
-      <main>
+    <main>
+      {/* Only show Join Us section if there's content */}
+      {joinTeamText && (
+        <div className="mb-12">
+          <TextSectionWithButton
+            heading={{ 
+              src: "/assets/headings/team/JoinTheTeam.png",
+              alt: "Join The Team heading", 
+              width: 193, 
+              height: 100,
+              maxWidth: "270px"
+            }}
+            text={joinTeamText}
+          />
+        </div>
+      )}
+      
+      {/* Only show Tally Counter if there are counts */}
+      {(matchesCount > 0 || workshopsCount > 0) && (
+        <div className="mb-12">
+          <TallyCounter 
+            matchesCount={matchesCount} 
+            workshopsCount={workshopsCount} 
+          />
+        </div>
+      )}
 
-          <div className="mb-12">
-              {/* Join Us Section */}
-                <TextSectionWithButton
-                  heading={{ 
-                    src: "/assets/headings/team/JoinTheTeam.png",
-                     alt: "Join The Team heading", 
-                     width: 193, 
-                     height: 100 ,
-                     maxWidth: "270px"
-                    }}
-                  text="At StoryBridge, we believe stories have the power to connect people, spark imagination, 
-                  and open doors to entirely new worlds. Every voice brings something unique, and every story 
-                  helps build a bridge between experiences. We&apos;d love for you to be part of that journey with us. 
-                  Whether you create, collaborate, or simply share your perspective, together we can shape a community 
-                  where ideas travel freely and creativity thrives."
-                  />
-          </div>
-           <div className="mb-12">
-              {/* Tally Counter Section */}
-               <TallyCounter matchesCount={120} workshopsCount={20} />
-          </div>
-
-
-          {/* Our Team Section */}
+      {/* Only show Our Team section if there are team members */}
+      {teamData.length > 0 && (
+        <>
           <div className="mb-8">
-                  <SectionHeading
-                    src="/assets/headings/team/OurTeam.png"
-                    alt="Our Team Heading"
-                    width={150}
-                    height={50}
-                    centerAll={true}
-                  />
+            <SectionHeading
+              src="/assets/headings/team/OurTeam.png"
+              alt="Our Team Heading"
+              width={150}
+              height={50}
+              centerAll={true}
+            />
           </div>
-          <OurTeam />
-      </main>
-  )
+          
+          <OurTeam teamData={teamData} />
+        </>
+      )}
+      
+      {/* Show empty state message when no team content exists */}
+      {!joinTeamText && teamData.length === 0 && (
+        <div className="text-center py-16">
+          <h2 className="text-2xl font-bold text-gray-700 mb-4">Team Content Coming Soon</h2>
+          <p className="text-gray-600">Our team information is being prepared. Please check back later.</p>
+        </div>
+      )}
+    </main>
+  );
 }

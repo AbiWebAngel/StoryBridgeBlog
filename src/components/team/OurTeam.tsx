@@ -2,59 +2,19 @@
 
 import Image from "next/image";
 
-const teamData = [
-  {
-    id: 1,
-    name: "Abigail",
-    role: "Founder",
-    description: "As a writer, I enjoy crafting meaningful content that blends creativity with clarity. Whether it's articles, stories, or blog posts, I aim to capture ideas in a way that connects with readers and keeps them engaged.",
-    image: "/assets/images/director.jpg"
-  },
-  {
-    id: 2,
-    name: "Julianna",
-    role: "Writer",
-    description: "Writing lets me explore ideas and share them in ways that spark curiosity. From thoughtful blogs to creative stories, I aim to leave readers with something inspiring and worth remembering.",
-    image: "/assets/images/team/picture5.jpg"
-  },
-  {
-    id: 3,
-    name: "Feather",
-    role: "Writer",
-    description: "Each piece I write is a chance to turn thoughts into something valuable. Whether articles, blogs, or stories, I aim to capture attention and share perspectives that resonate long after reading.",
-    image: "/assets/images/team/picture6.jpg"
-  },
-  {
-    id: 4,
-    name: "Nadia",
-    role: "Writer",
-    description: "romantic. Ever since I could read on my own I've been searching for stories that master Soul and Syntax.",
-    image: "/assets/images/team/picture7.jpg"
-  },
-  {
-    id: 5,
-    name: "Riddhima",
-    role: "Marketer, Feedback Coordinator",
-    description: "Addicted to coffee.",
-    image: "/assets/images/team/picture1.png"
-  },
-  {
-    id: 6,
-    name: "Nyxelle",
-    role: "Blogger, Beta reader",
-    description: "A teen who's obsessed with reading, always has a pen nearby, and probably thinks in stories more than actual thoughts. Writing is my favorite way to make sense of the world, and books are my go-to escape. I love learning weird facts, listening to sad music on repeat, and staying up way too late with a good story. Quiet but curious, creative but chill — just figuring things out one page at a time.",
-    image: "/assets/images/team/picture2.jpg"
-  },
-  {
-    id: 7,
-    name: "Tisha",
-    role: "Feedback Coordinator",
-    description: "Lover of literature",
-    image: "/assets/images/team/picture3.png"
-  }
-];
+export interface TeamMember {
+  id: number;
+  name: string;
+  role: string;
+  description: string;
+  image: string;
+}
 
-export default function OurTeam() {
+interface OurTeamProps {
+  teamData: TeamMember[]; // Now this is required
+}
+
+export default function OurTeam({ teamData }: OurTeamProps) {
   return (
     <section className="w-full bg-[#D1BDA1] py-12 px-4 sm:px-6 md:px-8 lg:px-12">
       <div className="max-w-6xl mx-auto space-y-8">
