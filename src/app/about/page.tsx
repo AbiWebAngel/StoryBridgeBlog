@@ -1,10 +1,12 @@
-import React from "react";
+import React, { Suspense } from "react";
 import SectionHeading from "../../components/SectionHeading";
 import TextSection from "../../components/TextSection";
 import ImageSlider from "../../components/ImageSlider";
 import Testimonials from "../../components/Testimonials";
 import AboutSuccessMessage from "@/components/about/AboutSuccessMessage";
 import { getAboutContent } from "@/lib/getAboutContent";
+
+export const dynamic = "force-dynamic";
 
 export default async function AboutPage() {
   const content = await getAboutContent();
@@ -29,8 +31,10 @@ export default async function AboutPage() {
 
   return (
     <main>
-      {/* ✅ Client-side success message */}
-      <AboutSuccessMessage />
+      {/* ✅ REQUIRED for useSearchParams */}
+      <Suspense fallback={null}>
+        <AboutSuccessMessage />
+      </Suspense>
 
       <TextSection
         heading={{
