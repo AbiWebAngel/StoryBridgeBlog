@@ -5,6 +5,13 @@ import { db } from "@/lib/firebase";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
 import { useAuth } from "@/context/AuthContext";
+import {
+  isNonEmptyString,
+  isPositiveNumber,
+  isNonEmptyArray,
+} from "@/lib/contentValidation";
+
+
 
 type TeamMember = {
   id: number;
@@ -69,39 +76,95 @@ export default function AdminTeamPage() {
     loadContent();
   }, [currentAuthUser]);
 
-  // Save to Firestore
-  async function handleSave() {
-    if (!currentAuthUser) {
-      setErrorMessage("Please log in to save changes.");
-      return;
-    }
 
-    setSaving(true);
-    setErrorMessage("");
-    setSuccessMessage("");
+function validateContent(content: TeamContent): string | null {
+  if (!isNonEmptyString(content.joinTeamText)) {
+    return "Join Team text cannot be empty.";
+  }
 
-    try {
-      const token = await currentAuthUser.getIdTokenResult();
-      
-      // Check if user has admin or author role
-      if (token.claims.role !== "admin" && token.claims.role !== "author") {
-        throw new Error("Insufficient permissions. Admin or author role required.");
-      }
+  if (!isPositiveNumber(content.matchesCount)) {
+    return "Matches count must be greater than 0.";
+  }
 
-      const ref = doc(db, "siteContent", "team");
-      await setDoc(ref, content, { merge: true });
+  if (!isPositiveNumber(content.workshopsCount)) {
+    return "Workshops count must be greater than 0.";
+  }
 
-      setSuccessMessage("Team page content saved successfully!");
-      
-      // Clear success message after 3 seconds
-      setTimeout(() => setSuccessMessage(""), 3000);
-    } catch (err: any) {
-      console.error("Save error:", err);
-      setErrorMessage(err.message || "Failed to save changes. Please try again.");
-    } finally {
-      setSaving(false);
+  if (!isNonEmptyArray(content.teamMembers)) {
+    return "Please add at least one team member.";
+  }
+
+  for (let i = 0; i < content.teamMembers.length; i++) {
+    const member = content.teamMembers[i];
+
+    if (
+      !isNonEmptyString(member.name) ||
+      !isNonEmptyString(member.role) ||
+      !isNonEmptyString(member.description) ||
+      !isNonEmptyString(member.image)
+    ) {
+      return `Team member #${i + 1} has empty fields.`;
     }
   }
+
+  return null; // ✅ valid
+}
+
+
+  // Save to Firestore
+ async function handleSave() {
+  if (!currentAuthUser) {
+    setErrorMessage("Please log in to save changes.");
+    return;
+  }
+
+  // 🔎 Validate BEFORE saving
+  const validationError = validateContent(content);
+  if (validationError) {
+    setErrorMessage(validationError);
+    return;
+  }
+
+  setSaving(true);
+  setErrorMessage("");
+  setSuccessMessage("");
+
+  try {
+    const token = await currentAuthUser.getIdTokenResult();
+
+    if (token.claims.role !== "admin" && token.claims.role !== "author") {
+      throw new Error("Insufficient permissions. Admin or author role required.");
+    }
+
+    const ref = doc(db, "siteContent", "team");
+
+    await setDoc(
+      ref,
+      {
+        ...content,
+        joinTeamText: content.joinTeamText.trim(),
+        teamMembers: content.teamMembers.map(m => ({
+          ...m,
+          name: m.name.trim(),
+          role: m.role.trim(),
+          description: m.description.trim(),
+          image: m.image.trim(),
+        })),
+        updatedAt: new Date(),
+      },
+      { merge: true }
+    );
+
+    setSuccessMessage("Team page content saved successfully!");
+    setTimeout(() => setSuccessMessage(""), 3000);
+  } catch (err: any) {
+    console.error("Save error:", err);
+    setErrorMessage(err.message || "Failed to save changes.");
+  } finally {
+    setSaving(false);
+  }
+}
+
 
   // Handle input changes
   const handleContentChange = (field: keyof TeamContent, value: string | number) => {

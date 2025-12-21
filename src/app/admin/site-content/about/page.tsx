@@ -5,6 +5,11 @@ import { db } from "@/lib/firebase";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
 import { useAuth } from "@/context/AuthContext";
+import {
+  isNonEmptyString,
+  isNonEmptyArray,
+} from "@/lib/contentValidation";
+
 
 type Testimonial = {
   text: string;
@@ -72,39 +77,99 @@ export default function AdminAboutPage() {
     loadContent();
   }, [currentAuthUser]);
 
-  // Save to Firestore
-  async function handleSave() {
-    if (!currentAuthUser) {
-      setErrorMessage("Please log in to save changes.");
-      return;
-    }
+function validateAboutContent(content: AboutContent): string | null {
+  if (
+    !isNonEmptyString(content.missionStatement) ||
+    !isNonEmptyString(content.whoWeAre) ||
+    !isNonEmptyString(content.whatWeDo) ||
+    !isNonEmptyString(content.whyItMatters)
+  ) {
+    return "All About page text sections must be filled.";
+  }
 
-    setSaving(true);
-    setErrorMessage("");
-    setSuccessMessage("");
+  if (!isNonEmptyArray(content.bookImages)) {
+    return "Please add at least one book image.";
+  }
 
-    try {
-      const token = await currentAuthUser.getIdTokenResult();
-      
-      // Check if user has admin or author role
-      if (token.claims.role !== "admin" && token.claims.role !== "author") {
-        throw new Error("Insufficient permissions. Admin or author role required.");
-      }
-
-      const ref = doc(db, "siteContent", "about");
-      await setDoc(ref, content, { merge: true });
-
-      setSuccessMessage("About page content saved successfully!");
-      
-      // Clear success message after 3 seconds
-      setTimeout(() => setSuccessMessage(""), 3000);
-    } catch (err: any) {
-      console.error("Save error:", err);
-      setErrorMessage(err.message || "Failed to save changes. Please try again.");
-    } finally {
-      setSaving(false);
+  for (let i = 0; i < content.bookImages.length; i++) {
+    if (!isNonEmptyString(content.bookImages[i])) {
+      return `Book image #${i + 1} URL cannot be empty.`;
     }
   }
+
+  if (!isNonEmptyArray(content.testimonials)) {
+    return "Please add at least one testimonial.";
+  }
+
+  for (let i = 0; i < content.testimonials.length; i++) {
+    const t = content.testimonials[i];
+
+    if (
+      !isNonEmptyString(t.text) ||
+      !isNonEmptyString(t.image)
+    ) {
+      return `Testimonial #${i + 1} has empty fields.`;
+    }
+  }
+
+  return null; // ✅ valid
+}
+
+
+  // Save to Firestore
+ async function handleSave() {
+  if (!currentAuthUser) {
+    setErrorMessage("Please log in to save changes.");
+    return;
+  }
+
+  // 🔎 Validate BEFORE saving
+  const validationError = validateAboutContent(content);
+  if (validationError) {
+    setErrorMessage(validationError);
+    return;
+  }
+
+  setSaving(true);
+  setErrorMessage("");
+  setSuccessMessage("");
+
+  try {
+    const token = await currentAuthUser.getIdTokenResult();
+
+    if (token.claims.role !== "admin" && token.claims.role !== "author") {
+      throw new Error("Insufficient permissions. Admin or author role required.");
+    }
+
+    const ref = doc(db, "siteContent", "about");
+
+    await setDoc(
+      ref,
+      {
+        missionStatement: content.missionStatement.trim(),
+        whoWeAre: content.whoWeAre.trim(),
+        whatWeDo: content.whatWeDo.trim(),
+        whyItMatters: content.whyItMatters.trim(),
+        bookImages: content.bookImages.map(img => img.trim()),
+        testimonials: content.testimonials.map(t => ({
+          text: t.text.trim(),
+          image: t.image.trim(),
+        })),
+        updatedAt: new Date(),
+      },
+      { merge: true }
+    );
+
+    setSuccessMessage("About page content saved successfully!");
+    setTimeout(() => setSuccessMessage(""), 3000);
+  } catch (err: any) {
+    console.error("Save error:", err);
+    setErrorMessage(err.message || "Failed to save changes.");
+  } finally {
+    setSaving(false);
+  }
+}
+
 
   // Handle input changes for text content
   const handleContentChange = (field: keyof AboutContent, value: string) => {

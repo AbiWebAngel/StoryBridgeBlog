@@ -4,6 +4,10 @@ import { useState, useEffect } from "react";
 import { db } from "@/lib/firebase";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { useAuth } from "@/context/AuthContext";
+import {
+  isNonEmptyString,
+  isNonEmptyArray,
+} from "@/lib/contentValidation";
 
 type ProgramLink = {
   programName: string;
@@ -91,39 +95,98 @@ export default function AdminHomePage() {
     loadContent();
   }, [currentAuthUser]);
 
-  // Save to Firestore
-  async function handleSave() {
-    if (!currentAuthUser) {
-      setErrorMessage("Please log in to save changes.");
-      return;
-    }
+function validateHomeContent(content: HomeContent): string | null {
+  const d = content.director;
 
-    setSaving(true);
-    setErrorMessage("");
-    setSuccessMessage("");
+  if (
+    !isNonEmptyString(d.imageSrc) ||
+    !isNonEmptyString(d.imageAlt) ||
+    !isNonEmptyString(d.message) ||
+    !isNonEmptyString(d.name) ||
+    !isNonEmptyString(d.buttonText) ||
+    !isNonEmptyString(d.buttonLink)
+  ) {
+    return "All Director fields must be filled.";
+  }
 
-    try {
-      const token = await currentAuthUser.getIdTokenResult();
-      
-      // Check if user has admin or author role
-      if (token.claims.role !== "admin" && token.claims.role !== "author") {
-        throw new Error("Insufficient permissions. Admin or author role required.");
-      }
+  if (!isNonEmptyArray(content.programLinks)) {
+    return "Please add at least one program link.";
+  }
 
-      const ref = doc(db, "siteContent", "home");
-      await setDoc(ref, content, { merge: true });
+  for (let i = 0; i < content.programLinks.length; i++) {
+    const p = content.programLinks[i];
 
-      setSuccessMessage("Home page content saved successfully!");
-      
-      // Clear success message after 3 seconds
-      setTimeout(() => setSuccessMessage(""), 3000);
-    } catch (err: any) {
-      console.error("Save error:", err);
-      setErrorMessage(err.message || "Failed to save changes. Please try again.");
-    } finally {
-      setSaving(false);
+    if (
+      !isNonEmptyString(p.programName) ||
+      !isNonEmptyString(p.link) ||
+      !isNonEmptyString(p.svgPath)
+    ) {
+      return `Program link #${i + 1} has empty fields.`;
     }
   }
+
+  return null; // ✅ valid
+}
+
+
+  // Save to Firestore
+async function handleSave() {
+  if (!currentAuthUser) {
+    setErrorMessage("Please log in to save changes.");
+    return;
+  }
+
+  // 🔎 Validate BEFORE saving
+  const validationError = validateHomeContent(content);
+  if (validationError) {
+    setErrorMessage(validationError);
+    return;
+  }
+
+  setSaving(true);
+  setErrorMessage("");
+  setSuccessMessage("");
+
+  try {
+    const token = await currentAuthUser.getIdTokenResult();
+
+    if (token.claims.role !== "admin" && token.claims.role !== "author") {
+      throw new Error("Insufficient permissions. Admin or author role required.");
+    }
+
+    const ref = doc(db, "siteContent", "home");
+
+    await setDoc(
+      ref,
+      {
+        director: {
+          imageSrc: content.director.imageSrc.trim(),
+          imageAlt: content.director.imageAlt.trim(),
+          message: content.director.message.trim(),
+          name: content.director.name.trim(),
+          buttonText: content.director.buttonText.trim(),
+          buttonLink: content.director.buttonLink.trim(),
+        },
+        programLinks: content.programLinks.map(p => ({
+          programName: p.programName.trim(),
+          link: p.link.trim(),
+          svgPath: p.svgPath.trim(),
+        })),
+        updatedAt: new Date(),
+      },
+      { merge: true }
+    );
+
+    setSuccessMessage("Home page content saved successfully!");
+    setTimeout(() => setSuccessMessage(""), 3000);
+  } catch (err: any) {
+    console.error("Save error:", err);
+    setErrorMessage(err.message || "Failed to save changes.");
+  } finally {
+    setSaving(false);
+  }
+}
+
 
   // Handle director input changes
   const handleDirectorChange = (field: keyof DirectorContent, value: string) => {
