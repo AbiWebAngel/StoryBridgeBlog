@@ -3,38 +3,25 @@
 import { useState, useEffect } from "react";
 import { db } from "@/lib/firebase";
 import { doc, getDoc, setDoc } from "firebase/firestore";
-import { getAuth } from "firebase/auth";
 import { useAuth } from "@/context/AuthContext";
 import {
   isNonEmptyString,
   isPositiveNumber,
   isNonEmptyArray,
 } from "@/lib/contentValidation";
-
-
-
-type TeamMember = {
-  id: number;
-  name: string;
-  role: string;
-  description: string;
-  image: string;
-};
-
-type TeamContent = {
-  joinTeamText: string;
-  matchesCount: number;
-  workshopsCount: number;
-  teamMembers: TeamMember[];
-};
+import { extractAssetUrlsFromTeam } from "@/lib/extractAssetUrls";
+import type { TeamMember, TeamContent } from "@/types/team";
 
 export default function AdminTeamPage() {
   const { user: currentAuthUser } = useAuth();
   
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
+  const [originalContent, setOriginalContent] = useState<TeamContent | null>(null);
+  const [teamImageUploadProgress, setTeamImageUploadProgress] = useState<Record<number, number | null>>({});
 
   const [content, setContent] = useState<TeamContent>({
     joinTeamText: "",
@@ -42,6 +29,48 @@ export default function AdminTeamPage() {
     workshopsCount: 0,
     teamMembers: [],
   });
+
+  // Upload function
+  async function uploadAsset(
+    file: File,
+    folder: string,
+    onProgress?: (p: number) => void
+  ): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+      const form = new FormData();
+
+      form.append("file", file);
+      form.append("folder", folder);
+
+      xhr.open("POST", "/api/admin/upload");
+
+      xhr.upload.onprogress = (e) => {
+        if (e.lengthComputable && onProgress) {
+          onProgress(Math.round((e.loaded / e.total) * 100));
+        }
+      };
+
+      xhr.onload = () => {
+        console.log("Upload response status:", xhr.status);
+        console.log("Upload response text:", xhr.responseText);
+
+        if (xhr.status >= 200 && xhr.status < 300) {
+          const res = JSON.parse(xhr.responseText);
+          resolve(res.url);
+        } else {
+          reject(
+            new Error(
+              `Upload failed (${xhr.status}): ${xhr.responseText || "no body"}`
+            )
+          );
+        }
+      };
+
+      xhr.onerror = () => reject(new Error("Upload error"));
+      xhr.send(form);
+    });
+  }
 
   // Load Firestore data
   useEffect(() => {
@@ -58,12 +87,14 @@ export default function AdminTeamPage() {
 
         if (snap.exists()) {
           const data = snap.data();
-          setContent({
+          const loaded: TeamContent = {
             joinTeamText: data.joinTeamText || "",
             matchesCount: data.matchesCount || 0,
             workshopsCount: data.workshopsCount || 0,
             teamMembers: data.teamMembers || [],
-          });
+          };
+          setContent(loaded);
+          setOriginalContent(structuredClone(loaded));
         }
       } catch (err) {
         console.error("Error loading content:", err);
@@ -76,95 +107,110 @@ export default function AdminTeamPage() {
     loadContent();
   }, [currentAuthUser]);
 
-
-function validateContent(content: TeamContent): string | null {
-  if (!isNonEmptyString(content.joinTeamText)) {
-    return "Join Team text cannot be empty.";
-  }
-
-  if (!isPositiveNumber(content.matchesCount)) {
-    return "Matches count must be greater than 0.";
-  }
-
-  if (!isPositiveNumber(content.workshopsCount)) {
-    return "Workshops count must be greater than 0.";
-  }
-
-  if (!isNonEmptyArray(content.teamMembers)) {
-    return "Please add at least one team member.";
-  }
-
-  for (let i = 0; i < content.teamMembers.length; i++) {
-    const member = content.teamMembers[i];
-
-    if (
-      !isNonEmptyString(member.name) ||
-      !isNonEmptyString(member.role) ||
-      !isNonEmptyString(member.description) ||
-      !isNonEmptyString(member.image)
-    ) {
-      return `Team member #${i + 1} has empty fields.`;
+  function validateContent(content: TeamContent): string | null {
+    if (!isNonEmptyString(content.joinTeamText)) {
+      return "Join Team text cannot be empty.";
     }
+
+    if (!isPositiveNumber(content.matchesCount)) {
+      return "Matches count must be greater than 0.";
+    }
+
+    if (!isPositiveNumber(content.workshopsCount)) {
+      return "Workshops count must be greater than 0.";
+    }
+
+    if (!isNonEmptyArray(content.teamMembers)) {
+      return "Please add at least one team member.";
+    }
+
+    for (let i = 0; i < content.teamMembers.length; i++) {
+      const member = content.teamMembers[i];
+
+      if (
+        !isNonEmptyString(member.name) ||
+        !isNonEmptyString(member.role) ||
+        !isNonEmptyString(member.description) ||
+        !isNonEmptyString(member.image)
+      ) {
+        return `Team member #${i + 1} has empty fields.`;
+      }
+    }
+
+    return null;
   }
-
-  return null; // ✅ valid
-}
-
 
   // Save to Firestore
- async function handleSave() {
-  if (!currentAuthUser) {
-    setErrorMessage("Please log in to save changes.");
-    return;
-  }
-
-  // 🔎 Validate BEFORE saving
-  const validationError = validateContent(content);
-  if (validationError) {
-    setErrorMessage(validationError);
-    return;
-  }
-
-  setSaving(true);
-  setErrorMessage("");
-  setSuccessMessage("");
-
-  try {
-    const token = await currentAuthUser.getIdTokenResult();
-
-    if (token.claims.role !== "admin" && token.claims.role !== "author") {
-      throw new Error("Insufficient permissions. Admin or author role required.");
+  async function handleSave() {
+    if (!currentAuthUser) {
+      setErrorMessage("Please log in to save changes.");
+      return;
     }
 
-    const ref = doc(db, "siteContent", "team");
+    const validationError = validateContent(content);
+    if (validationError) {
+      setErrorMessage(validationError);
+      return;
+    }
 
-    await setDoc(
-      ref,
-      {
-        ...content,
-        joinTeamText: content.joinTeamText.trim(),
-        teamMembers: content.teamMembers.map(m => ({
-          ...m,
-          name: m.name.trim(),
-          role: m.role.trim(),
-          description: m.description.trim(),
-          image: m.image.trim(),
-        })),
-        updatedAt: new Date(),
-      },
-      { merge: true }
-    );
+    setSaving(true);
+    setErrorMessage("");
+    setSuccessMessage("");
 
-    setSuccessMessage("Team page content saved successfully!");
-    setTimeout(() => setSuccessMessage(""), 3000);
-  } catch (err: any) {
-    console.error("Save error:", err);
-    setErrorMessage(err.message || "Failed to save changes.");
-  } finally {
-    setSaving(false);
+    try {
+      const token = await currentAuthUser.getIdTokenResult();
+
+      if (token.claims.role !== "admin" && token.claims.role !== "author") {
+        throw new Error("Insufficient permissions. Admin or author role required.");
+      }
+
+      const ref = doc(db, "siteContent", "team");
+
+      await setDoc(
+        ref,
+        {
+          ...content,
+          joinTeamText: content.joinTeamText.trim(),
+          teamMembers: content.teamMembers.map(m => ({
+            ...m,
+            name: m.name.trim(),
+            role: m.role.trim(),
+            description: m.description.trim(),
+            image: m.image.trim(),
+          })),
+          updatedAt: new Date(),
+        },
+        { merge: true }
+      );
+
+      // 🧹 Delete unused R2 assets
+      if (originalContent) {
+        const before = new Set(extractAssetUrlsFromTeam(originalContent));
+        const after = new Set(extractAssetUrlsFromTeam(content));
+
+        const unusedAssets = [...before].filter(url => !after.has(url));
+
+        await Promise.all(
+          unusedAssets.map(url =>
+            fetch("/api/admin/delete-asset", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ url }),
+            })
+          )
+        );
+      }
+
+      setSuccessMessage("Team page content saved successfully!");
+      setOriginalContent(structuredClone(content));
+      setTimeout(() => setSuccessMessage(""), 3000);
+    } catch (err: any) {
+      console.error("Save error:", err);
+      setErrorMessage(err.message || "Failed to save changes.");
+    } finally {
+      setSaving(false);
+    }
   }
-}
-
 
   // Handle input changes
   const handleContentChange = (field: keyof TeamContent, value: string | number) => {
@@ -179,7 +225,7 @@ function validateContent(content: TeamContent): string | null {
     setContent(prev => ({
       ...prev,
       teamMembers: [...prev.teamMembers, { 
-        id: Date.now(), // Use timestamp as temporary ID
+        id: Date.now(),
         name: "", 
         role: "", 
         description: "", 
@@ -226,6 +272,41 @@ function validateContent(content: TeamContent): string | null {
       updatedMembers[index + 1] = temp;
       return { ...prev, teamMembers: updatedMembers };
     });
+  };
+
+  // Handle team member image upload
+  const handleTeamImageUpload = async (index: number, file: File) => {
+    const previousImage = content.teamMembers[index]?.image;
+    
+    setTeamImageUploadProgress(prev => ({ ...prev, [index]: 0 }));
+    setUploading(true);
+
+    try {
+      const url = await uploadAsset(
+        file,
+        "team/members",
+        (p) => setTeamImageUploadProgress(prev => ({ ...prev, [index]: p }))
+      );
+
+      updateTeamMember(index, "image", url);
+
+      // Delete old image if it exists and is different
+      if (previousImage && previousImage !== url) {
+        await fetch("/api/admin/delete-asset", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ url: previousImage }),
+        });
+      }
+    } catch (err) {
+      console.error("Upload error:", err);
+      setErrorMessage(
+        err instanceof Error ? err.message : "Image upload failed"
+      );
+    } finally {
+      setTeamImageUploadProgress(prev => ({ ...prev, [index]: null }));
+      setUploading(false);
+    }
   };
 
   // Guest state when not logged in
@@ -402,17 +483,67 @@ function validateContent(content: TeamContent): string | null {
                               placeholder="Enter team member role"
                             />
                           </div>
+                          
+                          {/* Image Upload Section */}
                           <div>
                             <label className="block text-sm font-medium text-[#4A3820] mb-2">
-                              Image URL
+                              Image
                             </label>
+                            
                             <input
-                              type="text"
-                              value={member.image}
-                              onChange={(e) => updateTeamMember(index, "image", e.target.value)}
-                              className="w-full px-4 py-2 rounded-lg border-2 border-[#805C2C] bg-white text-[#4A3820] placeholder-[#4A3820]/60 focus:outline-none focus:ring-2 focus:ring-[#805C2C]/50"
-                              placeholder="https://example.com/image.jpg"
+                              id={`team-image-upload-${index}`}
+                              type="file"
+                              accept="image/*"
+                              className="hidden"
+                              onChange={async (e) => {
+                                if (!e.target.files?.[0]) return;
+                                await handleTeamImageUpload(index, e.target.files[0]);
+                              }}
                             />
+
+                            <label
+                              htmlFor={`team-image-upload-${index}`}
+                              className="
+                                flex items-center justify-center
+                                w-full px-4 py-6
+                                border-2 border-dashed border-[#805C2C]
+                                rounded-lg
+                                bg-white
+                                text-[#4A3820]
+                                font-medium
+                                cursor-pointer
+                                hover:bg-[#F0E8DB]
+                                hover:border-[#6B4C24]
+                                transition-colors
+                              "
+                            >
+                              Click to choose team member image
+                            </label>
+
+                            {typeof teamImageUploadProgress[index] === "number" && (
+                              <div className="mt-2">
+                                <div className="h-2 w-full bg-gray-200 rounded">
+                                  <div
+                                    className="h-2 bg-[#805C2C] rounded transition-all"
+                                    style={{ width: `${teamImageUploadProgress[index]}%` }}
+                                  />
+                                </div>
+                                <p className="text-xs mt-1 text-[#4A3820]">
+                                  Uploading… {teamImageUploadProgress[index]}%
+                                </p>
+                              </div>
+                            )}
+
+                            {member.image && (
+                              <div className="mt-4">
+                                <p className="text-sm mb-2 text-[#4A3820]">Preview</p>
+                                <img
+                                  src={member.image}
+                                  alt={`${member.name} preview`}
+                                  className="max-h-48 rounded-lg border"
+                                />
+                              </div>
+                            )}
                           </div>
                         </div>
                         <div>
@@ -445,7 +576,7 @@ function validateContent(content: TeamContent): string | null {
         <div className="flex justify-center">
           <button
             onClick={handleSave}
-            disabled={saving || !currentAuthUser}
+            disabled={saving || uploading || !currentAuthUser}
             className="px-8 py-3 rounded-lg bg-[#805C2C] text-white font-bold text-lg hover:bg-[#6B4C24] transition-colors disabled:opacity-60 disabled:cursor-not-allowed !font-sans"
           >
             {saving ? "Saving..." : "Save All Changes"}

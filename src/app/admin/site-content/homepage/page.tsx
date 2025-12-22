@@ -9,7 +9,7 @@ import {
   isNonEmptyArray,
 } from "@/lib/contentValidation";
 import type { HomeContent, ProgramLink, DirectorContent } from "@/types/home";
-import { extractAssetUrls } from "@/lib/extractAssetUrls";
+import { extractAssetUrlsFromHome } from "@/lib/extractAssetUrls";
 
 
 
@@ -218,14 +218,14 @@ async function handleSave() {
 
      // 🧹 Delete unused R2 assets
     if (originalContent) {
-      const before = new Set(extractAssetUrls(originalContent));
-      const after = new Set(extractAssetUrls(content));
+      const before = new Set(extractAssetUrlsFromHome(originalContent));
+      const after = new Set(extractAssetUrlsFromHome(content));
 
       const unusedAssets = [...before].filter(url => !after.has(url));
 
       await Promise.all(
         unusedAssets.map(url =>
-          fetch("/api/delete-asset", {
+          fetch("/api/admin/delete-asset", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ url }),
@@ -358,30 +358,44 @@ async function handleSave() {
                     type="file"
                     accept="image/*"
                     className="hidden"
-                    onChange={async (e) => {
-                      if (!e.target.files?.[0]) return;
+                   onChange={async (e) => {
+                    if (!e.target.files?.[0]) return;
 
-                      setDirectorUploadProgress(0);
-                      setSaving(true);
-                      setUploading(true);
-                      try {
-                        const url = await uploadAsset(
-                          e.target.files[0],
-                          "home/director",
-                          setDirectorUploadProgress
-                        );
-                        handleDirectorChange("imageSrc", url);
-                      } catch (err) {
-                        console.error("Upload error:", err);
-                        setErrorMessage(
-                          err instanceof Error ? err.message : "Image upload failed"
-                        );
-                      } finally {
-                        setDirectorUploadProgress(null);
-                        setSaving(false);
-                        setUploading(false);
+                    const previousImage = content.director.imageSrc; // 👈 capture old
+
+                    setDirectorUploadProgress(0);
+                    setSaving(true);
+                    setUploading(true);
+
+                    try {
+                      const url = await uploadAsset(
+                        e.target.files[0],
+                        "home/director",
+                        setDirectorUploadProgress
+                      );
+
+                      handleDirectorChange("imageSrc", url);
+
+                      // 🧹 delete old director image (safe)
+                      if (previousImage && previousImage !== url) {
+                        await fetch("/api/admin/delete-asset", {
+                          method: "POST",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({ url: previousImage }),
+                        });
                       }
-                    }}
+                    } catch (err) {
+                      console.error("Upload error:", err);
+                      setErrorMessage(
+                        err instanceof Error ? err.message : "Image upload failed"
+                      );
+                    } finally {
+                      setDirectorUploadProgress(null);
+                      setSaving(false);
+                      setUploading(false);
+                    }
+                  }}
+
                   />
 
                   <label

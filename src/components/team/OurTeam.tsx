@@ -23,17 +23,18 @@ export default function OurTeam({ teamData }: OurTeamProps) {
             key={member.id}
             className="flex w-full h-[280px] sm:h-[320px] rounded-l-[30px] overflow-hidden shadow-xl"
           >
-            {/* Image Section - 1/4 of card with curved left side */}
-            <div className="w-1/4 relative">
-              <div className="rounded-l-[30px] overflow-hidden h-full">
-                <Image
-                  src={member.image}
-                  alt={member.name}
-                  fill
-                  className="object-cover"
-                />
-              </div>
+        
+            {/* Image Section - 1/4 of card */}
+            <div className="w-1/4 relative h-full">
+              <Image
+                src={member.image}
+                alt={member.name}
+                fill
+                sizes="25vw"
+                className="object-cover rounded-l-[30px]"
+              />
             </div>
+
 
             {/* Text Section - 3/4 of card with straight right side */}
             <div className="w-3/4 bg-[#EDE5D8] p-6 sm:p-8 flex flex-col">

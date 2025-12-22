@@ -55,3 +55,15 @@ export async function POST(req: Request) {
     url: `${process.env.CLOUDFLARE_R2_PUBLIC_URL}/${key}`,
   });
 }
+
+export async function deleteAsset(url: string) {
+  const key = url.split(".r2.dev/")[1];
+  if (!key) return;
+
+  await fetch("/api/admin/delete-asset", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ key }),
+  });
+}
+

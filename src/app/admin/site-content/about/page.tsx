@@ -3,27 +3,14 @@
 import { useState, useEffect } from "react";
 import { db } from "@/lib/firebase";
 import { doc, getDoc, setDoc } from "firebase/firestore";
-import { getAuth } from "firebase/auth";
 import { useAuth } from "@/context/AuthContext";
 import {
   isNonEmptyString,
   isNonEmptyArray,
 } from "@/lib/contentValidation";
+import { extractAssetUrlsFromAbout } from "@/lib/extractAssetUrls";
+import type { Testimonial, AboutContent} from "@/types/about";
 
-
-type Testimonial = {
-  text: string;
-  image: string;
-};
-
-type AboutContent = {
-  missionStatement: string;
-  whoWeAre: string;
-  whatWeDo: string;
-  whyItMatters: string;
-  testimonials: Testimonial[];
-  bookImages: string[]; // Added this line
-};
 
 export default function AdminAboutPage() {
   const { user: currentAuthUser } = useAuth();
@@ -32,6 +19,12 @@ export default function AdminAboutPage() {
   const [saving, setSaving] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
+  const [uploading, setUploading] = useState(false);
+  const [originalContent, setOriginalContent] = useState<AboutContent | null>(null);
+  
+  // Upload progress states
+  const [bookImageUploadProgress, setBookImageUploadProgress] = useState<Record<number, number | null>>({});
+  const [testimonialImageUploadProgress, setTestimonialImageUploadProgress] = useState<Record<number, number | null>>({});
 
   const [content, setContent] = useState<AboutContent>({
     missionStatement: "",
@@ -39,8 +32,50 @@ export default function AdminAboutPage() {
     whatWeDo: "",
     whyItMatters: "",
     testimonials: [],
-    bookImages: [], // Added this line
+    bookImages: [],
   });
+
+  // Upload function (same as home)
+  async function uploadAsset(
+    file: File,
+    folder: string,
+    onProgress?: (p: number) => void
+  ): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+      const form = new FormData();
+
+      form.append("file", file);
+      form.append("folder", folder);
+
+      xhr.open("POST", "/api/admin/upload");
+
+      xhr.upload.onprogress = (e) => {
+        if (e.lengthComputable && onProgress) {
+          onProgress(Math.round((e.loaded / e.total) * 100));
+        }
+      };
+
+      xhr.onload = () => {
+        console.log("Upload response status:", xhr.status);
+        console.log("Upload response text:", xhr.responseText);
+
+        if (xhr.status >= 200 && xhr.status < 300) {
+          const res = JSON.parse(xhr.responseText);
+          resolve(res.url);
+        } else {
+          reject(
+            new Error(
+              `Upload failed (${xhr.status}): ${xhr.responseText || "no body"}`
+            )
+          );
+        }
+      };
+
+      xhr.onerror = () => reject(new Error("Upload error"));
+      xhr.send(form);
+    });
+  }
 
   // Load Firestore data
   useEffect(() => {
@@ -57,14 +92,16 @@ export default function AdminAboutPage() {
 
         if (snap.exists()) {
           const data = snap.data();
-          setContent({
+          const loaded: AboutContent = {
             missionStatement: data.missionStatement || "",
             whoWeAre: data.whoWeAre || "",
             whatWeDo: data.whatWeDo || "",
             whyItMatters: data.whyItMatters || "",
             testimonials: data.testimonials || [],
-            bookImages: data.bookImages || [], // Added this line
-          });
+            bookImages: data.bookImages || [],
+          };
+          setContent(loaded);
+          setOriginalContent(structuredClone(loaded));
         }
       } catch (err) {
         console.error("Error loading content:", err);
@@ -77,99 +114,115 @@ export default function AdminAboutPage() {
     loadContent();
   }, [currentAuthUser]);
 
-function validateAboutContent(content: AboutContent): string | null {
-  if (
-    !isNonEmptyString(content.missionStatement) ||
-    !isNonEmptyString(content.whoWeAre) ||
-    !isNonEmptyString(content.whatWeDo) ||
-    !isNonEmptyString(content.whyItMatters)
-  ) {
-    return "All About page text sections must be filled.";
-  }
-
-  if (!isNonEmptyArray(content.bookImages)) {
-    return "Please add at least one book image.";
-  }
-
-  for (let i = 0; i < content.bookImages.length; i++) {
-    if (!isNonEmptyString(content.bookImages[i])) {
-      return `Book image #${i + 1} URL cannot be empty.`;
-    }
-  }
-
-  if (!isNonEmptyArray(content.testimonials)) {
-    return "Please add at least one testimonial.";
-  }
-
-  for (let i = 0; i < content.testimonials.length; i++) {
-    const t = content.testimonials[i];
-
+  function validateAboutContent(content: AboutContent): string | null {
     if (
-      !isNonEmptyString(t.text) ||
-      !isNonEmptyString(t.image)
+      !isNonEmptyString(content.missionStatement) ||
+      !isNonEmptyString(content.whoWeAre) ||
+      !isNonEmptyString(content.whatWeDo) ||
+      !isNonEmptyString(content.whyItMatters)
     ) {
-      return `Testimonial #${i + 1} has empty fields.`;
+      return "All About page text sections must be filled.";
     }
+
+    if (!isNonEmptyArray(content.bookImages)) {
+      return "Please add at least one book image.";
+    }
+
+    for (let i = 0; i < content.bookImages.length; i++) {
+      if (!isNonEmptyString(content.bookImages[i])) {
+        return `Book image #${i + 1} URL cannot be empty.`;
+      }
+    }
+
+    if (!isNonEmptyArray(content.testimonials)) {
+      return "Please add at least one testimonial.";
+    }
+
+    for (let i = 0; i < content.testimonials.length; i++) {
+      const t = content.testimonials[i];
+
+      if (
+        !isNonEmptyString(t.text) ||
+        !isNonEmptyString(t.image)
+      ) {
+        return `Testimonial #${i + 1} has empty fields.`;
+      }
+    }
+
+    return null;
   }
-
-  return null; // ✅ valid
-}
-
 
   // Save to Firestore
- async function handleSave() {
-  if (!currentAuthUser) {
-    setErrorMessage("Please log in to save changes.");
-    return;
-  }
-
-  // 🔎 Validate BEFORE saving
-  const validationError = validateAboutContent(content);
-  if (validationError) {
-    setErrorMessage(validationError);
-    return;
-  }
-
-  setSaving(true);
-  setErrorMessage("");
-  setSuccessMessage("");
-
-  try {
-    const token = await currentAuthUser.getIdTokenResult();
-
-    if (token.claims.role !== "admin" && token.claims.role !== "author") {
-      throw new Error("Insufficient permissions. Admin or author role required.");
+  async function handleSave() {
+    if (!currentAuthUser) {
+      setErrorMessage("Please log in to save changes.");
+      return;
     }
 
-    const ref = doc(db, "siteContent", "about");
+    const validationError = validateAboutContent(content);
+    if (validationError) {
+      setErrorMessage(validationError);
+      return;
+    }
 
-    await setDoc(
-      ref,
-      {
-        missionStatement: content.missionStatement.trim(),
-        whoWeAre: content.whoWeAre.trim(),
-        whatWeDo: content.whatWeDo.trim(),
-        whyItMatters: content.whyItMatters.trim(),
-        bookImages: content.bookImages.map(img => img.trim()),
-        testimonials: content.testimonials.map(t => ({
-          text: t.text.trim(),
-          image: t.image.trim(),
-        })),
-        updatedAt: new Date(),
-      },
-      { merge: true }
-    );
+    setSaving(true);
+    setErrorMessage("");
+    setSuccessMessage("");
 
-    setSuccessMessage("About page content saved successfully!");
-    setTimeout(() => setSuccessMessage(""), 3000);
-  } catch (err: any) {
-    console.error("Save error:", err);
-    setErrorMessage(err.message || "Failed to save changes.");
-  } finally {
-    setSaving(false);
+    try {
+      const token = await currentAuthUser.getIdTokenResult();
+
+      if (token.claims.role !== "admin" && token.claims.role !== "author") {
+        throw new Error("Insufficient permissions. Admin or author role required.");
+      }
+
+      const ref = doc(db, "siteContent", "about");
+
+      await setDoc(
+        ref,
+        {
+          missionStatement: content.missionStatement.trim(),
+          whoWeAre: content.whoWeAre.trim(),
+          whatWeDo: content.whatWeDo.trim(),
+          whyItMatters: content.whyItMatters.trim(),
+          bookImages: content.bookImages.map(img => img.trim()),
+          testimonials: content.testimonials.map(t => ({
+            text: t.text.trim(),
+            image: t.image.trim(),
+          })),
+          updatedAt: new Date(),
+        },
+        { merge: true }
+      );
+
+      // 🧹 Delete unused R2 assets (same as home)
+      if (originalContent) {
+        const before = new Set(extractAssetUrlsFromAbout(originalContent));
+        const after = new Set(extractAssetUrlsFromAbout(content));
+
+        const unusedAssets = [...before].filter(url => !after.has(url));
+
+        await Promise.all(
+          unusedAssets.map(url =>
+            fetch("/api/admin/delete-asset", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ url }),
+            })
+          )
+        );
+      }
+
+      setSuccessMessage("About page content saved successfully!");
+      setOriginalContent(structuredClone(content));
+      setTimeout(() => setSuccessMessage(""), 3000);
+    } catch (err: any) {
+      console.error("Save error:", err);
+      setErrorMessage(err.message || "Failed to save changes.");
+    } finally {
+      setSaving(false);
+    }
   }
-}
-
 
   // Handle input changes for text content
   const handleContentChange = (field: keyof AboutContent, value: string) => {
@@ -179,7 +232,64 @@ function validateAboutContent(content: AboutContent): string | null {
     }));
   };
 
-  // Testimonial functions
+  // Book Images functions with upload
+  const addBookImage = () => {
+    setContent(prev => ({
+      ...prev,
+      bookImages: [...prev.bookImages, ""]
+    }));
+  };
+
+  const updateBookImage = (index: number, value: string) => {
+    setContent(prev => {
+      const updatedBookImages = [...prev.bookImages];
+      updatedBookImages[index] = value;
+      return { ...prev, bookImages: updatedBookImages };
+    });
+  };
+
+  const removeBookImage = (index: number) => {
+    setContent(prev => ({
+      ...prev,
+      bookImages: prev.bookImages.filter((_, i) => i !== index)
+    }));
+  };
+
+  const handleBookImageUpload = async (index: number, file: File) => {
+    const previousImage = content.bookImages[index];
+    
+    setBookImageUploadProgress(prev => ({ ...prev, [index]: 0 }));
+    setUploading(true);
+
+    try {
+      const url = await uploadAsset(
+        file,
+        "about/book-images",
+        (p) => setBookImageUploadProgress(prev => ({ ...prev, [index]: p }))
+      );
+
+      updateBookImage(index, url);
+
+      // Delete old image if it exists and is different
+      if (previousImage && previousImage !== url) {
+        await fetch("/api/admin/delete-asset", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ url: previousImage }),
+        });
+      }
+    } catch (err) {
+      console.error("Upload error:", err);
+      setErrorMessage(
+        err instanceof Error ? err.message : "Image upload failed"
+      );
+    } finally {
+      setBookImageUploadProgress(prev => ({ ...prev, [index]: null }));
+      setUploading(false);
+    }
+  };
+
+  // Testimonial functions with upload
   const addTestimonial = () => {
     setContent(prev => ({
       ...prev,
@@ -205,27 +315,38 @@ function validateAboutContent(content: AboutContent): string | null {
     }));
   };
 
-  // Book Images functions
-  const addBookImage = () => {
-    setContent(prev => ({
-      ...prev,
-      bookImages: [...prev.bookImages, ""]
-    }));
-  };
+  const handleTestimonialImageUpload = async (index: number, file: File) => {
+    const previousImage = content.testimonials[index]?.image;
+    
+    setTestimonialImageUploadProgress(prev => ({ ...prev, [index]: 0 }));
+    setUploading(true);
 
-  const updateBookImage = (index: number, value: string) => {
-    setContent(prev => {
-      const updatedBookImages = [...prev.bookImages];
-      updatedBookImages[index] = value;
-      return { ...prev, bookImages: updatedBookImages };
-    });
-  };
+    try {
+      const url = await uploadAsset(
+        file,
+        "about/testimonials",
+        (p) => setTestimonialImageUploadProgress(prev => ({ ...prev, [index]: p }))
+      );
 
-  const removeBookImage = (index: number) => {
-    setContent(prev => ({
-      ...prev,
-      bookImages: prev.bookImages.filter((_, i) => i !== index)
-    }));
+      updateTestimonial(index, "image", url);
+
+      // Delete old image if it exists and is different
+      if (previousImage && previousImage !== url) {
+        await fetch("/api/admin/delete-asset", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ url: previousImage }),
+        });
+      }
+    } catch (err) {
+      console.error("Upload error:", err);
+      setErrorMessage(
+        err instanceof Error ? err.message : "Image upload failed"
+      );
+    } finally {
+      setTestimonialImageUploadProgress(prev => ({ ...prev, [index]: null }));
+      setUploading(false);
+    }
   };
 
   // Guest state when not logged in
@@ -335,7 +456,7 @@ function validateAboutContent(content: AboutContent): string | null {
                 />
               </div>
 
-              {/* Book Images Section - Added this new section */}
+              {/* Book Images Section */}
               <div className="bg-white rounded-lg border border-[#D8CDBE] p-5 shadow-md">
                 <div className="flex justify-between items-center mb-6">
                   <h3 className="text-xl font-bold text-[#4A3820] !font-sans">
@@ -349,27 +470,80 @@ function validateAboutContent(content: AboutContent): string | null {
                   </button>
                 </div>
 
-                <div className="space-y-4">
+                <div className="space-y-6">
                   {content.bookImages.map((imageUrl, index) => (
-                    <div key={index} className="flex items-center gap-4 border-2 border-[#D8CDBE] rounded-lg p-4 bg-[#F9F5F0]">
-                      <div className="flex-1">
-                        <label className="block text-sm font-medium text-[#4A3820] mb-2">
-                          Book Image #{index + 1} URL
-                        </label>
-                        <input
-                          type="text"
-                          value={imageUrl}
-                          onChange={(e) => updateBookImage(index, e.target.value)}
-                          className="w-full px-4 py-2 rounded-lg border-2 border-[#805C2C] bg-white text-[#4A3820] placeholder-[#4A3820]/60 focus:outline-none focus:ring-2 focus:ring-[#805C2C]/50"
-                          placeholder="/assets/images/about/book1.png or https://..."
-                        />
+                    <div key={index} className="border-2 border-[#D8CDBE] rounded-lg p-5 bg-[#F9F5F0]">
+                      <div className="flex justify-between items-start mb-4">
+                        <h4 className="font-bold text-[#4A3820] !font-sans">
+                          Book Image #{index + 1}
+                        </h4>
+                        <button
+                          onClick={() => removeBookImage(index)}
+                          className="px-3 py-1 rounded-lg border-2 border-red-500 text-red-500 text-sm hover:bg-red-50 transition-colors !font-sans"
+                        >
+                          Remove
+                        </button>
                       </div>
-                      <button
-                        onClick={() => removeBookImage(index)}
-                        className="px-3 py-2 rounded-lg border-2 border-red-500 text-red-500 text-sm hover:bg-red-50 transition-colors !font-sans whitespace-nowrap"
-                      >
-                        Remove
-                      </button>
+
+                      <div className="space-y-4">
+                        {/* File upload input */}
+                        <div>
+                          <input
+                            id={`book-image-upload-${index}`}
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={async (e) => {
+                              if (!e.target.files?.[0]) return;
+                              await handleBookImageUpload(index, e.target.files[0]);
+                            }}
+                          />
+
+                          <label
+                            htmlFor={`book-image-upload-${index}`}
+                            className="
+                              flex items-center justify-center
+                              w-full px-4 py-6
+                              border-2 border-dashed border-[#805C2C]
+                              rounded-lg
+                              bg-white
+                              text-[#4A3820]
+                              font-medium
+                              cursor-pointer
+                              hover:bg-[#F0E8DB]
+                              hover:border-[#6B4C24]
+                              transition-colors
+                            "
+                          >
+                            Click to choose book image
+                          </label>
+
+                          {typeof bookImageUploadProgress[index] === "number" && (
+                            <div className="mt-2">
+                              <div className="h-2 w-full bg-gray-200 rounded">
+                                <div
+                                  className="h-2 bg-[#805C2C] rounded transition-all"
+                                  style={{ width: `${bookImageUploadProgress[index]}%` }}
+                                />
+                              </div>
+                              <p className="text-xs mt-1 text-[#4A3820]">
+                                Uploading… {bookImageUploadProgress[index]}%
+                              </p>
+                            </div>
+                          )}
+
+                          {imageUrl && (
+                            <div className="mt-4">
+                              <p className="text-sm mb-2 text-[#4A3820]">Preview</p>
+                              <img
+                                src={imageUrl}
+                                alt={`Book ${index + 1} preview`}
+                                className="max-h-48 rounded-lg border"
+                              />
+                            </div>
+                          )}
+                        </div>
+                      </div>
                     </div>
                   ))}
 
@@ -428,15 +602,63 @@ function validateAboutContent(content: AboutContent): string | null {
 
                         <div>
                           <label className="block text-sm font-medium text-[#4A3820] mb-2">
-                            Image URL
+                            Image
                           </label>
+                          
                           <input
-                            type="text"
-                            value={testimonial.image}
-                            onChange={(e) => updateTestimonial(index, "image", e.target.value)}
-                            className="w-full px-4 py-2 rounded-lg border-2 border-[#805C2C] bg-white text-[#4A3820] placeholder-[#4A3820]/60 focus:outline-none focus:ring-2 focus:ring-[#805C2C]/50"
-                            placeholder="https://example.com/image.jpg"
+                            id={`testimonial-image-upload-${index}`}
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={async (e) => {
+                              if (!e.target.files?.[0]) return;
+                              await handleTestimonialImageUpload(index, e.target.files[0]);
+                            }}
                           />
+
+                          <label
+                            htmlFor={`testimonial-image-upload-${index}`}
+                            className="
+                              flex items-center justify-center
+                              w-full px-4 py-6
+                              border-2 border-dashed border-[#805C2C]
+                              rounded-lg
+                              bg-white
+                              text-[#4A3820]
+                              font-medium
+                              cursor-pointer
+                              hover:bg-[#F0E8DB]
+                              hover:border-[#6B4C24]
+                              transition-colors
+                            "
+                          >
+                            Click to choose testimonial image
+                          </label>
+
+                          {typeof testimonialImageUploadProgress[index] === "number" && (
+                            <div className="mt-2">
+                              <div className="h-2 w-full bg-gray-200 rounded">
+                                <div
+                                  className="h-2 bg-[#805C2C] rounded transition-all"
+                                  style={{ width: `${testimonialImageUploadProgress[index]}%` }}
+                                />
+                              </div>
+                              <p className="text-xs mt-1 text-[#4A3820]">
+                                Uploading… {testimonialImageUploadProgress[index]}%
+                              </p>
+                            </div>
+                          )}
+
+                          {testimonial.image && (
+                            <div className="mt-4">
+                              <p className="text-sm mb-2 text-[#4A3820]">Preview</p>
+                              <img
+                                src={testimonial.image}
+                                alt={`Testimonial ${index + 1} preview`}
+                                className="max-h-48 rounded-lg border"
+                              />
+                            </div>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -457,7 +679,7 @@ function validateAboutContent(content: AboutContent): string | null {
         <div className="flex justify-center">
           <button
             onClick={handleSave}
-            disabled={saving || !currentAuthUser}
+            disabled={saving || uploading || !currentAuthUser}
             className="px-8 py-3 rounded-lg bg-[#805C2C] text-white font-bold text-lg hover:bg-[#6B4C24] transition-colors disabled:opacity-60 disabled:cursor-not-allowed !font-sans"
           >
             {saving ? "Saving..." : "Save All Changes"}
