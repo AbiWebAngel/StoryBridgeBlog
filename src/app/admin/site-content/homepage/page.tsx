@@ -8,26 +8,10 @@ import {
   isNonEmptyString,
   isNonEmptyArray,
 } from "@/lib/contentValidation";
+import type { HomeContent, ProgramLink, DirectorContent } from "@/types/home";
+import { extractAssetUrls } from "@/lib/extractAssetUrls";
 
-type ProgramLink = {
-  programName: string;
-  link: string;
-  svgPath: string;
-};
 
-type DirectorContent = {
-  imageSrc: string;
-  imageAlt: string;
-  message: string;
-  name: string;
-  buttonText: string;
-  buttonLink: string;
-};
-
-type HomeContent = {
-  director: DirectorContent;
-  programLinks: ProgramLink[];
-};
 
 export default function AdminHomePage() {
   const { user: currentAuthUser } = useAuth();
@@ -36,6 +20,15 @@ export default function AdminHomePage() {
   const [saving, setSaving] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
+  const [directorUploadProgress, setDirectorUploadProgress] =
+  useState<number | null>(null);
+
+const [svgUploadProgress, setSvgUploadProgress] =
+  useState<Record<number, number | null>>({});
+
+  const [originalContent, setOriginalContent] = useState<HomeContent | null>(null);
+  const [uploading, setUploading] = useState(false);
+
 
   const [content, setContent] = useState<HomeContent>({
     director: {
@@ -68,21 +61,21 @@ export default function AdminHomePage() {
 
         if (snap.exists()) {
           const data = snap.data();
-          setContent({
-            director: data.director || {
-              imageSrc: "",
-              imageAlt: "",
-              message: "",
-              name: "",
-              buttonText: "",
-              buttonLink: ""
-            },
-            programLinks: data.programLinks || [
-              { programName: "Program 1", link: "", svgPath: "" },
-              { programName: "Program 2", link: "", svgPath: "" },
-              { programName: "Program 3", link: "", svgPath: "" }
-            ]
-          });
+          const loaded: HomeContent = {
+          director: data.director || {
+            imageSrc: "",
+            imageAlt: "",
+            message: "",
+            name: "",
+            buttonText: "",
+            buttonLink: ""
+          },
+          programLinks: data.programLinks || []
+        };
+
+        setContent(loaded);
+        setOriginalContent(structuredClone(loaded));
+
         }
       } catch (err) {
         console.error("Error loading content:", err);
@@ -93,7 +86,52 @@ export default function AdminHomePage() {
     }
 
     loadContent();
+    
   }, [currentAuthUser]);
+
+async function uploadAsset(
+  file: File,
+  folder: string,
+  onProgress?: (p: number) => void
+): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    const form = new FormData();
+
+    form.append("file", file);
+    form.append("folder", folder);
+
+    xhr.open("POST", "/api/admin/upload");
+
+    xhr.upload.onprogress = (e) => {
+      if (e.lengthComputable && onProgress) {
+        onProgress(Math.round((e.loaded / e.total) * 100));
+      }
+    };
+
+   xhr.onload = () => {
+  console.log("Upload response status:", xhr.status);
+  console.log("Upload response text:", xhr.responseText);
+
+  if (xhr.status >= 200 && xhr.status < 300) {
+    const res = JSON.parse(xhr.responseText);
+    resolve(res.url);
+  } else {
+    reject(
+      new Error(
+        `Upload failed (${xhr.status}): ${xhr.responseText || "no body"}`
+      )
+    );
+  }
+};
+
+
+    xhr.onerror = () => reject(new Error("Upload error"));
+
+    xhr.send(form);
+  });
+}
+
 
 function validateHomeContent(content: HomeContent): string | null {
   const d = content.director;
@@ -155,6 +193,7 @@ async function handleSave() {
     }
 
     const ref = doc(db, "siteContent", "home");
+   
 
     await setDoc(
       ref,
@@ -177,7 +216,27 @@ async function handleSave() {
       { merge: true }
     );
 
+     // 🧹 Delete unused R2 assets
+    if (originalContent) {
+      const before = new Set(extractAssetUrls(originalContent));
+      const after = new Set(extractAssetUrls(content));
+
+      const unusedAssets = [...before].filter(url => !after.has(url));
+
+      await Promise.all(
+        unusedAssets.map(url =>
+          fetch("/api/delete-asset", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ url }),
+          })
+        )
+      );
+    }
+
     setSuccessMessage("Home page content saved successfully!");
+    setOriginalContent(structuredClone(content));
+
     setTimeout(() => setSuccessMessage(""), 3000);
   } catch (err: any) {
     console.error("Save error:", err);
@@ -294,13 +353,80 @@ async function handleSave() {
                     <label className="block text-sm font-medium text-[#4A3820] mb-2">
                       Director Image URL
                     </label>
-                    <input
-                      type="text"
-                      value={content.director.imageSrc}
-                      onChange={(e) => handleDirectorChange("imageSrc", e.target.value)}
-                      className="w-full px-4 py-2 rounded-lg border-2 border-[#805C2C] bg-white text-[#4A3820] placeholder-[#4A3820]/60 focus:outline-none focus:ring-2 focus:ring-[#805C2C]/50"
-                      placeholder="https://example.com/director-image.jpg"
-                    />
+                  <input
+                    id="director-image-upload"
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={async (e) => {
+                      if (!e.target.files?.[0]) return;
+
+                      setDirectorUploadProgress(0);
+                      setSaving(true);
+                      setUploading(true);
+                      try {
+                        const url = await uploadAsset(
+                          e.target.files[0],
+                          "home/director",
+                          setDirectorUploadProgress
+                        );
+                        handleDirectorChange("imageSrc", url);
+                      } catch (err) {
+                        console.error("Upload error:", err);
+                        setErrorMessage(
+                          err instanceof Error ? err.message : "Image upload failed"
+                        );
+                      } finally {
+                        setDirectorUploadProgress(null);
+                        setSaving(false);
+                        setUploading(false);
+                      }
+                    }}
+                  />
+
+                  <label
+                    htmlFor="director-image-upload"
+                    className="
+                      flex items-center justify-center
+                      w-full px-4 py-6
+                      border-2 border-dashed border-[#805C2C]
+                      rounded-lg
+                      bg-[#F9F5F0]
+                      text-[#4A3820]
+                      font-medium
+                      cursor-pointer
+                      hover:bg-[#F0E8DB]
+                      hover:border-[#6B4C24]
+                      transition-colors
+                    "
+                  >
+                    Click to choose director image
+                  </label>
+
+                    {directorUploadProgress !== null && (
+                        <div className="mt-2">
+                          <div className="h-2 w-full bg-gray-200 rounded">
+                            <div
+                              className="h-2 bg-[#805C2C] rounded transition-all"
+                              style={{ width: `${directorUploadProgress}%` }}
+                            />
+                          </div>
+                          <p className="text-xs mt-1 text-[#4A3820]">
+                            Uploading… {directorUploadProgress}%
+                          </p>
+                        </div>
+                      )}
+                      {content.director.imageSrc && (
+                        <div className="mt-4">
+                          <p className="text-sm mb-2 text-[#4A3820]">Preview</p>
+                          <img
+                            src={content.director.imageSrc}
+                            alt="Director preview"
+                            className="max-h-48 rounded-lg border"
+                          />
+                        </div>
+                      )}
+
                   </div>
 
                   <div>
@@ -422,12 +548,75 @@ async function handleSave() {
                             SVG Icon Path
                           </label>
                           <input
-                            type="text"
-                            value={programLink.svgPath}
-                            onChange={(e) => handleProgramLinkChange(index, "svgPath", e.target.value)}
-                            className="w-full px-4 py-2 rounded-lg border-2 border-[#805C2C] bg-white text-[#4A3820] placeholder-[#4A3820]/60 focus:outline-none focus:ring-2 focus:ring-[#805C2C]/50"
-                            placeholder="/assets/icons/home/program-icon.svg"
+                            id={`svg-upload-${index}`}
+                            type="file"
+                            accept="image/svg+xml"
+                            className="hidden"
+                            onChange={async (e) => {
+                              if (!e.target.files?.[0]) return;
+
+                              setUploading(true);
+                              try {
+                                setSvgUploadProgress(prev => ({ ...prev, [index]: 0 }));
+
+                                const url = await uploadAsset(
+                                  e.target.files[0],
+                                  "home/program-icons",
+                                  (p) =>
+                                    setSvgUploadProgress(prev => ({ ...prev, [index]: p }))
+                                );
+
+                                handleProgramLinkChange(index, "svgPath", url);
+                              } catch {
+                                setErrorMessage("SVG upload failed");
+                              } finally {
+                                setSvgUploadProgress(prev => ({ ...prev, [index]: null }));
+                                setUploading(false);
+                              }
+                            }}
                           />
+
+                          <label
+                            htmlFor={`svg-upload-${index}`}
+                            className="
+                              flex items-center justify-center
+                              w-full px-4 py-4
+                              border-2 border-dashed border-[#805C2C]
+                              rounded-lg
+                              bg-white
+                              text-[#4A3820]
+                              font-medium
+                              cursor-pointer
+                              hover:bg-[#F0E8DB]
+                              hover:border-[#6B4C24]
+                              transition-colors
+                            "
+                          >
+                            Click to choose SVG icon
+                          </label>
+
+                          {typeof svgUploadProgress[index] === "number" && (
+                          <div className="mt-2">
+                            <div className="h-2 w-full bg-gray-200 rounded">
+                              <div
+                                className="h-2 bg-[#805C2C] rounded transition-all"
+                                style={{ width: `${svgUploadProgress[index]}%` }}
+                              />
+                            </div>
+                            <p className="text-xs mt-1 text-[#4A3820]">
+                              Uploading… {svgUploadProgress[index]}%
+                            </p>
+                          </div>
+                        )}
+                          {programLink.svgPath && (
+                            <img
+                              src={programLink.svgPath}
+                              alt="Icon preview"
+                              className="h-10 mt-2"
+                            />
+                          )}
+
+
                         </div>
 
                         <div>
@@ -461,7 +650,7 @@ async function handleSave() {
         <div className="flex justify-center">
           <button
             onClick={handleSave}
-            disabled={saving || !currentAuthUser}
+            disabled={saving || uploading || !currentAuthUser}
             className="px-8 py-3 rounded-lg bg-[#805C2C] text-white font-bold text-lg hover:bg-[#6B4C24] transition-colors disabled:opacity-60 disabled:cursor-not-allowed !font-sans"
           >
             {saving ? "Saving..." : "Save All Changes"}
