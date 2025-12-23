@@ -501,6 +501,32 @@ export default function AdminTeamPage() {
                               }}
                             />
 
+                         {/* DRAG & DROP WRAPPER */}
+                          <div
+                            onDragOver={(e) => e.preventDefault()}
+                            onDragEnter={(e) => {
+                              e.preventDefault();
+                              e.currentTarget.classList.add("ring-2", "ring-[#805C2C]");
+                            }}
+                            onDragLeave={(e) => {
+                              e.preventDefault();
+                              e.currentTarget.classList.remove("ring-2", "ring-[#805C2C]");
+                            }}
+                            onDrop={async (e) => {
+                              e.preventDefault();
+                              e.currentTarget.classList.remove("ring-2", "ring-[#805C2C]");
+
+                              const file = e.dataTransfer.files?.[0];
+                              if (!file) return;
+
+                              if (!file.type.startsWith("image/")) {
+                                setErrorMessage("Only image files allowed.");
+                                return;
+                              }
+
+                              await handleTeamImageUpload(index, file);
+                            }}
+                          >
                             <label
                               htmlFor={`team-image-upload-${index}`}
                               className="
@@ -517,8 +543,10 @@ export default function AdminTeamPage() {
                                 transition-colors
                               "
                             >
-                              Click to choose team member image
+                              Click or drag a team member image here
                             </label>
+                          </div>
+
 
                             {typeof teamImageUploadProgress[index] === "number" && (
                               <div className="mt-2">

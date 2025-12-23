@@ -398,24 +398,80 @@ async function handleSave() {
 
                   />
 
-                  <label
-                    htmlFor="director-image-upload"
-                    className="
-                      flex items-center justify-center
-                      w-full px-4 py-6
-                      border-2 border-dashed border-[#805C2C]
-                      rounded-lg
-                      bg-[#F9F5F0]
-                      text-[#4A3820]
-                      font-medium
-                      cursor-pointer
-                      hover:bg-[#F0E8DB]
-                      hover:border-[#6B4C24]
-                      transition-colors
-                    "
-                  >
-                    Click to choose director image
-                  </label>
+             {/* DRAG & DROP WRAPPER */}
+              <div
+                onDragOver={(e) => e.preventDefault()}
+                onDragEnter={(e) => {
+                  e.preventDefault();
+                  e.currentTarget.classList.add("ring-2", "ring-[#805C2C]");
+                }}
+                onDragLeave={(e) => {
+                  e.preventDefault();
+                  e.currentTarget.classList.remove("ring-2", "ring-[#805C2C]");
+                }}
+                onDrop={async (e) => {
+                  e.preventDefault();
+                  e.currentTarget.classList.remove("ring-2", "ring-[#805C2C]");
+
+                  const file = e.dataTransfer.files?.[0];
+                  if (!file) return;
+
+                  if (!file.type.startsWith("image/")) {
+                    setErrorMessage("Only image files are allowed.");
+                    return;
+                  }
+
+                  const previousImage = content.director.imageSrc;
+
+                  setDirectorUploadProgress(0);
+                  setSaving(true);
+                  setUploading(true);
+
+                  try {
+                    const url = await uploadAsset(
+                      file,
+                      "home/director",
+                      setDirectorUploadProgress
+                    );
+
+                    handleDirectorChange("imageSrc", url);
+
+                    if (previousImage && previousImage !== url) {
+                      await fetch("/api/admin/delete-asset", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ url: previousImage }),
+                      });
+                    }
+                  } catch (err) {
+                    setErrorMessage("Drag-drop upload failed");
+                  } finally {
+                    setDirectorUploadProgress(null);
+                    setSaving(false);
+                    setUploading(false);
+                  }
+                }}
+              >
+                <label
+                  htmlFor="director-image-upload"
+                  className="
+                    flex items-center justify-center
+                    w-full px-4 py-6
+                    border-2 border-dashed border-[#805C2C]
+                    rounded-lg
+                    bg-[#F9F5F0]
+                    text-[#4A3820]
+                    font-medium
+                    cursor-pointer
+                    hover:bg-[#F0E8DB]
+                    hover:border-[#6B4C24]
+                    transition-colors
+                  "
+                >
+                  Click or drag an image here
+                </label>
+              </div>
+
 
                     {directorUploadProgress !== null && (
                         <div className="mt-2">
@@ -590,6 +646,40 @@ async function handleSave() {
                             }}
                           />
 
+                       {/* DRAG & DROP FOR SVG */}
+                        <div
+                          onDragOver={(e) => e.preventDefault()}
+                          onDrop={async (e) => {
+                            e.preventDefault();
+
+                            const file = e.dataTransfer.files?.[0];
+                            if (!file) return;
+
+                            if (file.type !== "image/svg+xml") {
+                              setErrorMessage("Only SVG files allowed.");
+                              return;
+                            }
+
+                            setSvgUploadProgress((prev) => ({ ...prev, [index]: 0 }));
+                            setUploading(true);
+
+                            try {
+                              const url = await uploadAsset(
+                                file,
+                                "home/program-icons",
+                                (p) =>
+                                  setSvgUploadProgress((prev) => ({ ...prev, [index]: p }))
+                              );
+
+                              handleProgramLinkChange(index, "svgPath", url);
+                            } catch {
+                              setErrorMessage("SVG drag-drop failed");
+                            } finally {
+                              setSvgUploadProgress((prev) => ({ ...prev, [index]: null }));
+                              setUploading(false);
+                            }
+                          }}
+                        >
                           <label
                             htmlFor={`svg-upload-${index}`}
                             className="
@@ -597,17 +687,17 @@ async function handleSave() {
                               w-full px-4 py-4
                               border-2 border-dashed border-[#805C2C]
                               rounded-lg
-                              bg-white
+                              bg-[#F9F5F0]
                               text-[#4A3820]
-                              font-medium
                               cursor-pointer
                               hover:bg-[#F0E8DB]
-                              hover:border-[#6B4C24]
                               transition-colors
                             "
                           >
-                            Click to choose SVG icon
+                            Click or drag SVG here
                           </label>
+                        </div>
+
 
                           {typeof svgUploadProgress[index] === "number" && (
                           <div className="mt-2">

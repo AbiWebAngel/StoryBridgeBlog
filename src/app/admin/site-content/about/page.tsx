@@ -499,6 +499,32 @@ export default function AdminAboutPage() {
                             }}
                           />
 
+                     {/* DRAG & DROP WRAPPER */}
+                        <div
+                          onDragOver={(e) => e.preventDefault()}
+                          onDragEnter={(e) => {
+                            e.preventDefault();
+                            e.currentTarget.classList.add("ring-2", "ring-[#805C2C]");
+                          }}
+                          onDragLeave={(e) => {
+                            e.preventDefault();
+                            e.currentTarget.classList.remove("ring-2", "ring-[#805C2C]");
+                          }}
+                          onDrop={async (e) => {
+                            e.preventDefault();
+                            e.currentTarget.classList.remove("ring-2", "ring-[#805C2C]");
+
+                            const file = e.dataTransfer.files?.[0];
+                            if (!file) return;
+
+                            if (!file.type.startsWith("image/")) {
+                              setErrorMessage("Only image files allowed.");
+                              return;
+                            }
+
+                            await handleBookImageUpload(index, file);
+                          }}
+                        >
                           <label
                             htmlFor={`book-image-upload-${index}`}
                             className="
@@ -515,8 +541,10 @@ export default function AdminAboutPage() {
                               transition-colors
                             "
                           >
-                            Click to choose book image
+                            Click or drag a book image here
                           </label>
+                        </div>
+
 
                           {typeof bookImageUploadProgress[index] === "number" && (
                             <div className="mt-2">
@@ -616,6 +644,32 @@ export default function AdminAboutPage() {
                             }}
                           />
 
+                       {/* DRAG & DROP WRAPPER */}
+                        <div
+                          onDragOver={(e) => e.preventDefault()}
+                          onDragEnter={(e) => {
+                            e.preventDefault();
+                            e.currentTarget.classList.add("ring-2", "ring-[#805C2C]");
+                          }}
+                          onDragLeave={(e) => {
+                            e.preventDefault();
+                            e.currentTarget.classList.remove("ring-2", "ring-[#805C2C]");
+                          }}
+                          onDrop={async (e) => {
+                            e.preventDefault();
+                            e.currentTarget.classList.remove("ring-2", "ring-[#805C2C]");
+
+                            const file = e.dataTransfer.files?.[0];
+                            if (!file) return;
+
+                            if (!file.type.startsWith("image/")) {
+                              setErrorMessage("Only image files allowed.");
+                              return;
+                            }
+
+                            await handleTestimonialImageUpload(index, file);
+                          }}
+                        >
                           <label
                             htmlFor={`testimonial-image-upload-${index}`}
                             className="
@@ -632,8 +686,10 @@ export default function AdminAboutPage() {
                               transition-colors
                             "
                           >
-                            Click to choose testimonial image
+                            Click or drag a testimonial image here
                           </label>
+                        </div>
+
 
                           {typeof testimonialImageUploadProgress[index] === "number" && (
                             <div className="mt-2">
