@@ -11,37 +11,68 @@ const r2 = new S3Client({
   },
 });
 
+//-------------------------------------
+// Upload Route
+//-------------------------------------
 export async function POST(req: Request) {
   const formData = await req.formData();
   const file = formData.get("file") as File;
   const folder = (formData.get("folder") as string) || "misc";
 
   if (!file) {
-    return NextResponse.json({ error: "No file" }, { status: 400 });
+    return NextResponse.json({ error: "No file provided" }, { status: 400 });
   }
 
-  const buffer = Buffer.from(await file.arrayBuffer());
+  const originalBuffer = Buffer.from(await file.arrayBuffer());
   const isSvg = file.type === "image/svg+xml";
+  const MAX_SIZE_BYTES = 1 * 1024 * 1024; // 1MB
+  const isLarge = originalBuffer.length > MAX_SIZE_BYTES;
 
   let body: Buffer;
   let contentType: string;
   let extension: string;
 
+  //-------------------------------------
+  // Handle SVG files (no compression)
+  //-------------------------------------
   if (isSvg) {
-    body = buffer;
+    body = originalBuffer;
     contentType = "image/svg+xml";
     extension = "svg";
   } else {
-    body = await sharp(buffer)
-      .webp({ quality: 80 }) // ✅ WebP
+    //-------------------------------------
+    // Handle Raster Images (JPEG/PNG/WebP)
+    //-------------------------------------
+    let transformer = sharp(originalBuffer, { animated: true })
+      .rotate(); // auto-fix orientation (important for iPhone images)
+
+    if (isLarge) {
+      transformer = transformer.resize({
+        width: 1600,
+        height: 1600,
+        fit: "inside",
+        withoutEnlargement: true,
+      });
+    }
+
+    body = await transformer
+      .webp({
+        quality: isLarge ? 75 : 85, // compress more if it's a big image
+      })
       .toBuffer();
 
     contentType = "image/webp";
     extension = "webp";
   }
 
+  //-------------------------------------
+  // Generate R2 key
+  //-------------------------------------
   const key = `${folder}/${crypto.randomUUID()}.${extension}`;
 
+  //-------------------------------------
+  // Upload to Cloudflare R2
+  //-------------------------------------
   await r2.send(
     new PutObjectCommand({
       Bucket: process.env.CLOUDFLARE_R2_BUCKET!,
@@ -51,11 +82,17 @@ export async function POST(req: Request) {
     })
   );
 
+  //-------------------------------------
+  // Return public URL
+  //-------------------------------------
   return NextResponse.json({
     url: `${process.env.CLOUDFLARE_R2_PUBLIC_URL}/${key}`,
   });
 }
 
+//-------------------------------------
+// Delete Asset Helper (optional)
+//-------------------------------------
 export async function deleteAsset(url: string) {
   const key = url.split(".r2.dev/")[1];
   if (!key) return;
@@ -66,4 +103,3 @@ export async function deleteAsset(url: string) {
     body: JSON.stringify({ key }),
   });
 }
-
