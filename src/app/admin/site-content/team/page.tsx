@@ -11,6 +11,7 @@ import {
 } from "@/lib/contentValidation";
 import { extractAssetUrlsFromTeam } from "@/lib/extractAssetUrls";
 import type { TeamMember, TeamContent } from "@/types/team";
+import FloatingSaveBar from "@/components/admin/FloatingSaveBar";
 
 export default function AdminTeamPage() {
   const { user: currentAuthUser } = useAuth();
@@ -601,15 +602,12 @@ export default function AdminTeamPage() {
         </div>
 
         {/* Save Button */}
-        <div className="flex justify-center">
-          <button
-            onClick={handleSave}
-            disabled={saving || uploading || !currentAuthUser}
-            className="px-8 py-3 rounded-lg bg-[#805C2C] text-white font-bold text-lg hover:bg-[#6B4C24] transition-colors disabled:opacity-60 disabled:cursor-not-allowed !font-sans"
-          >
-            {saving ? "Saving..." : "Save All Changes"}
-          </button>
-        </div>
+        <FloatingSaveBar
+        onClick={handleSave}
+        saving={saving || uploading}
+        label="Save All Changes"
+      />
+      
       </div>
     </div>
   );

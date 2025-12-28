@@ -10,6 +10,7 @@ import {
 } from "@/lib/contentValidation";
 import { extractAssetUrlsFromAbout } from "@/lib/extractAssetUrls";
 import type { Testimonial, AboutContent} from "@/types/about";
+import FloatingSaveBar from "@/components/admin/FloatingSaveBar";
 
 
 export default function AdminAboutPage() {
@@ -732,15 +733,11 @@ export default function AdminAboutPage() {
         </div>
 
         {/* Save Button */}
-        <div className="flex justify-center">
-          <button
-            onClick={handleSave}
-            disabled={saving || uploading || !currentAuthUser}
-            className="px-8 py-3 rounded-lg bg-[#805C2C] text-white font-bold text-lg hover:bg-[#6B4C24] transition-colors disabled:opacity-60 disabled:cursor-not-allowed !font-sans"
-          >
-            {saving ? "Saving..." : "Save All Changes"}
-          </button>
-        </div>
+       <FloatingSaveBar
+        onClick={handleSave}
+        saving={saving || uploading}
+        label="Save All Changes"
+      />
       </div>
     </div>
   );

@@ -6,6 +6,7 @@ import { IconType } from "react-icons";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
+import FloatingSaveBar from "@/components/admin/FloatingSaveBar";
 
 interface Option {
   label: string;
