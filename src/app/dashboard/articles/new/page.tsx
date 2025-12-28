@@ -11,6 +11,8 @@ import { validateArticle } from "@/lib/articles/validateArticle";
 import { extractArticleAssets } from "@/lib/articles/extractArticleAssets";
 import { useAuth } from "@/context/AuthContext";
 
+import { X } from "lucide-react";
+
 export default function NewArticlePage() {
   const { user: currentAuthUser } = useAuth();
   
@@ -23,6 +25,7 @@ export default function NewArticlePage() {
   const [body, setBody] = useState<any>(null); // TipTap JSON
   const [tags, setTags] = useState<string[]>([]);
   const [status, setStatus] = useState<"draft" | "published">("draft");
+  const [isFloating, setIsFloating] = useState(false);
 
   // Errors + UI
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -135,10 +138,29 @@ export default function NewArticlePage() {
     }
   };
 
+  useEffect(() => {
+  const handleScroll = () => {
+    const scrollPos = window.scrollY + window.innerHeight;
+    const pageHeight = document.body.offsetHeight;
+
+    // If user is at the bottom (within 40px), stop floating
+    if (scrollPos >= pageHeight - 40) {
+      setIsFloating(false);
+    } else {
+      setIsFloating(true);
+    }
+  };
+
+  window.addEventListener("scroll", handleScroll);
+  handleScroll(); // Run once on mount
+
+  return () => window.removeEventListener("scroll", handleScroll);
+}, []);
+
   // Guest state when not logged in
   if (!currentAuthUser) {
     return (
-      <div className="px-6 min-h-screen font-sans">
+    <div className="px-6 min-h-screen pb-32 font-sans">
         <div className="max-w-3xl mx-auto">
           <h1 className="text-3xl font-extrabold text-[#4A3820] mb-6 text-center !font-sans">
             Create New Article
@@ -164,7 +186,7 @@ export default function NewArticlePage() {
   // UI - Matched Design
   // -------------------------
   return (
-    <div className="px-6 min-h-screen font-sans">
+    <div className="px-6 min-h-screen pb-32 font-sans">
       <div className="max-w-6xl mx-auto">
         <h1 className="text-3xl font-extrabold text-[#4A3820] mb-6 text-center !font-sans">
           Create New Article
@@ -269,15 +291,16 @@ export default function NewArticlePage() {
                   {tags.map((t) => (
                     <span
                       key={t}
-                      className="px-3 py-2 bg-[#F0E8DB] border border-[#D8CDBE] text-[#4A3820] rounded-lg flex items-center gap-2 font-medium"
+                      className="px-4 py-1.5 bg-[#F0E8DB] border border-[#D8CDBE] text-[#4A3820] rounded-full flex items-center gap-2 font-medium"
                     >
                       {t}
-                      <button
-                        className="text-sm text-red-600 hover:text-red-800 transition-colors"
+                     <button
                         onClick={() => handleRemoveTag(t)}
+                        className="p-1 rounded-full hover:bg-red-100 hover:text-red-700 transition flex items-center justify-center"
                       >
-                        ✕
+                        <X size={16} strokeWidth={3} />
                       </button>
+
                     </span>
                   ))}
                 </div>
@@ -305,16 +328,44 @@ export default function NewArticlePage() {
           </div>
         </div>
 
-        {/* Save Button */}
-        <div className="flex justify-center">
-          <button
-            onClick={handleSave}
-            disabled={saving}
-            className="px-8 py-3 rounded-lg bg-[#805C2C] text-white font-bold text-lg hover:bg-[#6B4C24] transition-colors disabled:opacity-60 disabled:cursor-not-allowed !font-sans"
-          >
-            {saving ? "Saving..." : "Save Article"}
-          </button>
-        </div>
+ {/* Static Save Bar (shows when at bottom) */}
+<div className="h-20">
+  {!isFloating && (
+    <div className="w-full bg-transparent">
+      <div className="max-w-6xl mx-auto p-4 flex justify-end">
+        <button
+          onClick={handleSave}
+          disabled={saving}
+          className="px-8 py-3 rounded-lg bg-[#805C2C] text-white font-bold text-lg hover:bg-[#6B4C24] transition-colors disabled:opacity-60 disabled:cursor-not-allowed !font-sans"
+        >
+          {saving ? "Saving..." : "Save Article"}
+        </button>
+      </div>
+    </div>
+  )}
+</div>
+
+{/* Floating Save Bar */}
+<div
+  className={`
+    fixed bottom-0 left-0 w-full
+    transition-all duration-300
+    ${isFloating ? "opacity-100 bg-transparent" : "opacity-0 pointer-events-none"}
+  `}
+>
+  <div className="max-w-6xl mx-auto p-4 flex justify-end">
+    <button
+      onClick={handleSave}
+      disabled={saving}
+      className="px-8 py-3 rounded-lg bg-[#805C2C] text-white font-bold text-lg hover:bg-[#6B4C24] transition-colors disabled:opacity-60 disabled:cursor-not-allowed !font-sans"
+    >
+      {saving ? "Saving..." : "Save Article"}
+    </button>
+  </div>
+</div>
+
+
+
       </div>
     </div>
   );

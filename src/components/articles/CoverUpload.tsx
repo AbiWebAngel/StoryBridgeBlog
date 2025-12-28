@@ -94,31 +94,55 @@ export default function CoverUpload({ value, onChange }: CoverUploadProps) {
   // -------------------------
   return (
     <div className="space-y-3">
+ {/* DRAG & DROP WRAPPER */}
       <div
-        onDrop={handleDrop}
-        onDragOver={handleDragOver}
-        className="border-2 border-dashed rounded-lg p-6 text-center cursor-pointer
-                   hover:border-blue-400 transition"
+        onDragOver={(e) => e.preventDefault()}
+        onDragEnter={(e) => {
+          e.preventDefault();
+          e.currentTarget.classList.add("ring-2", "ring-[#805C2C]");
+        }}
+        onDragLeave={(e) => {
+          e.preventDefault();
+          e.currentTarget.classList.remove("ring-2", "ring-[#805C2C]");
+        }}
+        onDrop={(e) => {
+          e.preventDefault();
+          e.currentTarget.classList.remove("ring-2", "ring-[#805C2C]");
+          handleDrop(e);
+        }}
         onClick={handleBrowse}
+        className="cursor-pointer"
       >
-        {!value ? (
-          <div className="text-gray-600">
-            <p className="font-medium">Drag & drop your cover image here</p>
-            <p className="text-sm mt-1">or click to browse</p>
-          </div>
-        ) : (
-          <div className="space-y-2">
-            <img
-              src={value}
-              alt="Cover"
-              className="max-h-64 object-cover mx-auto rounded"
-            />
-            <p className="text-sm text-gray-600">
-              Click to replace image
-            </p>
-          </div>
-        )}
+        <label
+          className="
+            flex items-center justify-center
+            w-full px-4 py-6
+            border-2 border-dashed border-[#805C2C]
+            rounded-lg
+            bg-[#F9F5F0]
+            text-[#4A3820]
+            font-medium
+            cursor-pointer
+            hover:bg-[#F0E8DB]
+            hover:border-[#6B4C24]
+            transition-colors
+          "
+        >
+          {!value ? (
+            <span>Click or drag an image here</span>
+          ) : (
+            <div className="space-y-2">
+              <img
+                src={value}
+                alt="Cover"
+                className="max-h-64 object-cover mx-auto rounded"
+              />
+              <p className="text-sm text-[#4A3820]/70">Click to replace image</p>
+            </div>
+          )}
+        </label>
       </div>
+
 
       {/* HIDDEN INPUT */}
       <input
@@ -133,7 +157,7 @@ export default function CoverUpload({ value, onChange }: CoverUploadProps) {
       {uploading && (
         <div className="w-full bg-gray-200 rounded h-2">
           <div
-            className="bg-blue-600 h-2 rounded"
+            className="bg-[#805C2C] h-2 rounded"
             style={{ width: `${progress}%` }}
           ></div>
         </div>
