@@ -716,7 +716,7 @@ async function handleSave() {
                             <img
                               src={programLink.svgPath}
                               alt="Icon preview"
-                              className="h-10 mt-2"
+                              className="h-30 mt-4"
                             />
                           )}
 
