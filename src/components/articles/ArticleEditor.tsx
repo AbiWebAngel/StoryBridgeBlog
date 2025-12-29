@@ -6,9 +6,6 @@ import Underline from "@tiptap/extension-underline";
 import Image from "@tiptap/extension-image";
 import { useCallback } from "react";
 
-// -------------------------
-// Upload image to R2 helper
-// -------------------------
 async function uploadImageToR2(file: File): Promise<string> {
   const formData = new FormData();
   formData.append("file", file);
@@ -26,12 +23,14 @@ async function uploadImageToR2(file: File): Promise<string> {
 interface ArticleEditorProps {
   value: any;
   onChange: (json: any) => void;
+  onImageUploaded?: (url: string) => void; // NEW callback
 }
 
-export default function ArticleEditor({ value, onChange }: ArticleEditorProps) {
-  // -------------------------
-  // Editor Instance
-  // -------------------------
+export default function ArticleEditor({
+  value,
+  onChange,
+  onImageUploaded,
+}: ArticleEditorProps) {
   const editor = useEditor({
     immediatelyRender: false,
     extensions: [
@@ -48,68 +47,77 @@ export default function ArticleEditor({ value, onChange }: ArticleEditorProps) {
       onChange(json);
     },
     editorProps: {
-    handlePaste(view, event) {
-    const items = event.clipboardData?.items;
-    if (!items) return false;
+      handlePaste(view, event) {
+        const items = event.clipboardData?.items;
+        if (!items) return false;
 
-    (async () => {
-        for (const item of items) {
-        if (item.type.startsWith("image/")) {
-            const file = item.getAsFile();
-            if (file) {
+        (async () => {
+          for (const item of items) {
+            try {
+              if (item.type.startsWith("image/")) {
+                const file = item.getAsFile();
+                if (file) {
+                  const url = await uploadImageToR2(file);
+                  editor?.chain().focus().setImage({ src: url }).run();
+                  onImageUploaded?.(url);
+                }
+              }
+            } catch (err) {
+              console.error("Image paste upload failed:", err);
+            }
+          }
+        })();
+
+        return false;
+      },
+
+      handleDrop(view, event, _slice, moved) {
+        if (moved) return false;
+        const files = event.dataTransfer?.files;
+        if (!files?.length) return false;
+
+        event.preventDefault();
+        (async () => {
+          try {
+            const file = files[0];
+            if (!file.type.startsWith("image/")) return;
             const url = await uploadImageToR2(file);
             editor?.chain().focus().setImage({ src: url }).run();
-            }
-        }
-        }
-    })();
+            onImageUploaded?.(url);
+          } catch (err) {
+            console.error("Image drop upload failed:", err);
+          }
+        })();
 
-    return false;
+        return true;
+      },
     },
-
-    handleDrop(view, event, _slice, moved) {
-    if (moved) return false;
-    const files = event.dataTransfer?.files;
-    if (!files?.length) return false;
-
-    event.preventDefault();
-    const file = files[0];
-    if (!file.type.startsWith("image/")) return false;
-
-    (async () => {
-        const url = await uploadImageToR2(file);
-        editor?.chain().focus().setImage({ src: url }).run();
-    })();
-
-    return true;
-    }
-,
-    },
-
   });
 
- const addImage = useCallback(() => {
-  const input = document.createElement("input");
-  input.type = "file";
-  input.accept = "image/*";
+  const addImage = useCallback(() => {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = "image/*";
 
-  input.onchange = () => {
-    if (!input.files?.length) return;
+    input.onchange = () => {
+      if (!input.files?.length) return;
+      const file = input.files[0];
 
-    const file = input.files[0];
+      (async () => {
+        try {
+          const url = await uploadImageToR2(file);
+          editor?.chain().focus().setImage({ src: url }).run();
+          onImageUploaded?.(url);
+        } catch (err) {
+          console.error("Image picker upload failed:", err);
+        }
+      })();
+    };
 
-    (async () => {
-      const url = await uploadImageToR2(file);
-      editor?.chain().focus().setImage({ src: url }).run();
-    })();
-  };
+    input.click();
+  }, [editor, onImageUploaded]);
 
-  input.click();
-}, [editor]);
-
-if (!editor) return null;
-
-
+  if (!editor) return null;
 
   return (
     <div className="space-y-3">

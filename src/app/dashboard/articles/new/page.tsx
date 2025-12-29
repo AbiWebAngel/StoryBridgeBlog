@@ -9,6 +9,7 @@ import ArticleEditor from "@/components/articles/ArticleEditor";
 
 import { validateArticle } from "@/lib/articles/validateArticle";
 import { extractArticleAssets } from "@/lib/articles/extractArticleAssets";
+import { findUnusedAssets } from "@/lib/articles/findUnusedAssets"; // 🔥 NEW
 import { useAuth } from "@/context/AuthContext";
 
 import { X } from "lucide-react";
@@ -16,17 +17,20 @@ import FloatingSaveBar from "@/components/admin/FloatingSaveBar";
 
 export default function NewArticlePage() {
   const { user: currentAuthUser } = useAuth();
-  
+
   // -------------------------
   // FORM STATE
   // -------------------------
   const [title, setTitle] = useState("");
   const [slug, setSlug] = useState("");
   const [coverImage, setCoverImage] = useState<string | null>(null);
-  const [body, setBody] = useState<any>(null); // TipTap JSON
+  const [body, setBody] = useState<any>(null);
   const [tags, setTags] = useState<string[]>([]);
   const [status, setStatus] = useState<"draft" | "published">("draft");
+  const [editorKey, setEditorKey] = useState(Date.now());
 
+  // 🔥 NEW: Track ALL uploaded asset URLs
+  const [uploadedAssets, setUploadedAssets] = useState<string[]>([]);
 
   // Errors + UI
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -34,7 +38,7 @@ export default function NewArticlePage() {
   const [successMessage, setSuccessMessage] = useState("");
 
   // -------------------------
-  // AUTO GENERATE SLUG FROM TITLE
+  // AUTO GENERATE SLUG
   // -------------------------
   useEffect(() => {
     if (!title) return;
@@ -43,13 +47,12 @@ export default function NewArticlePage() {
       .trim()
       .replace(/[^a-z0-9]+/g, "-")
       .replace(/^-+|-+$/g, "");
-
     setSlug(newSlug);
   }, [title]);
 
   // -------------------------
-  // TAGS INPUT HELPERS
-  //--------------------------
+  // TAG HELPERS
+  // -------------------------
   const handleAddTag = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
       e.preventDefault();
@@ -63,11 +66,22 @@ export default function NewArticlePage() {
   };
 
   const handleRemoveTag = (tag: string) => {
-    setTags(tags.filter(t => t !== tag));
+    setTags(tags.filter((t) => t !== tag));
   };
 
+  function resetForm() {
+    setTitle("");
+    setSlug("");
+    setCoverImage(null);
+    setBody(null);
+    setTags([]);
+    setStatus("draft");
+    setEditorKey(Date.now());
+    setUploadedAssets([]); // 🔥 NEW
+  }
+
   // -------------------------
-  // SUBMIT
+  // SAVE ARTICLE
   // -------------------------
   const handleSave = async () => {
     if (!currentAuthUser) {
@@ -79,7 +93,7 @@ export default function NewArticlePage() {
     setSaving(true);
     setSuccessMessage("");
 
-    // Validate
+    // Validate fields
     const validation = validateArticle({
       title,
       slug,
@@ -96,18 +110,21 @@ export default function NewArticlePage() {
     }
 
     try {
-      // Check user role
+      // Auth check
       const token = await currentAuthUser.getIdTokenResult();
       if (token.claims.role !== "admin" && token.claims.role !== "author") {
         throw new Error("Insufficient permissions. Admin or author role required.");
       }
 
-      const articleId = slug; // using slug as stable doc ID
+      const articleId = slug;
 
-      // Extract assets for cleanup
-      const allAssets = extractArticleAssets({ coverImage, body });
+      // Extract assets that are in use
+      const usedAssets = extractArticleAssets({ coverImage, body });
 
-      // Save to Firestore
+      // 🔥 Compute unused temp uploads
+      const unusedAssets = findUnusedAssets(uploadedAssets, usedAssets);
+
+      // Save article
       await setDoc(doc(db, "articles", articleId), {
         title,
         slug,
@@ -120,30 +137,44 @@ export default function NewArticlePage() {
         updatedAt: serverTimestamp(),
       });
 
+      // 🔥 Cleanup unused R2 objects
+      if (unusedAssets.length > 0) {
+        await Promise.all(
+          unusedAssets.map(async (url) => {
+            try {
+              await fetch("/api/admin/delete-asset", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ url }),
+              });
+            } catch (err) {
+              console.warn("Failed to delete unused asset", url, err);
+            }
+          })
+        );
+      }
+
+      // Success
       setSuccessMessage("Article created successfully!");
       setSaving(false);
 
-      // Clear form for new article creation
-      setTitle("");
-      setSlug("");
-      setCoverImage(null);
-      setBody(null);
-      setTags([]);
-      setStatus("draft");
+      // Reset form
+      resetForm();
 
       setTimeout(() => setSuccessMessage(""), 2500);
     } catch (err: any) {
       console.error("Error saving article:", err);
-      setErrors({ general: err.message || "Failed to save article. Check console." });
+      setErrors({ general: err.message || "Failed to save article." });
       setSaving(false);
     }
   };
 
-
-  // Guest state when not logged in
+  // -------------------------
+  // GUEST UI
+  // -------------------------
   if (!currentAuthUser) {
     return (
-    <div className="px-6 min-h-screen pb-32 font-sans">
+      <div className="px-6 min-h-screen pb-32 font-sans">
         <div className="max-w-3xl mx-auto">
           <h1 className="text-3xl font-extrabold text-[#4A3820] mb-6 text-center !font-sans">
             Create New Article
@@ -153,11 +184,9 @@ export default function NewArticlePage() {
               <h2 className="text-2xl font-extrabold text-[#4A3820] mb-6 text-center !font-sans">
                 Please Log In
               </h2>
-              <div className="text-center">
-                <p className="text-lg text-[#4A3820] mb-6">
-                  Log in as an administrator or author to create new articles
-                </p>
-              </div>
+              <p className="text-center text-lg text-[#4A3820] mb-6">
+                Log in as an administrator or author to create new articles.
+              </p>
             </div>
           </div>
         </div>
@@ -166,7 +195,7 @@ export default function NewArticlePage() {
   }
 
   // -------------------------
-  // UI - Matched Design
+  // MAIN UI
   // -------------------------
   return (
     <div className="px-6 min-h-screen pb-32 font-sans">
@@ -175,7 +204,6 @@ export default function NewArticlePage() {
           Create New Article
         </h1>
 
-        {/* Messages */}
         {successMessage && (
           <div className="mb-6 p-4 bg-green-100 border border-green-400 text-green-700 rounded-lg">
             {successMessage}
@@ -188,21 +216,20 @@ export default function NewArticlePage() {
           </div>
         )}
 
-        {/* Main Content Card */}
         <div className="bg-[#F0E8DB] border border-[#D8CDBE] rounded-lg shadow-md p-6 sm:p-8 mb-8">
           <h2 className="text-2xl font-medium text-[#4A3820] mb-8 !font-sans">
             Article Details
           </h2>
 
           <div className="space-y-8">
-            {/* Title */}
+            {/* TITLE */}
             <div className="bg-white rounded-lg border border-[#D8CDBE] p-5 shadow-md">
               <label className="block text-lg font-bold text-[#4A3820] mb-3 !font-sans">
                 Title
               </label>
               <input
                 type="text"
-                className="w-full px-4 py-3 rounded-lg border-2 border-[#805C2C] bg-white text-[#4A3820] placeholder-[#4A3820]/60 focus:outline-none focus:ring-2 focus:ring-[#805C2C]/50"
+                className="w-full px-4 py-3 rounded-lg border-2 border-[#805C2C]"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder="Enter article title"
@@ -212,97 +239,98 @@ export default function NewArticlePage() {
               )}
             </div>
 
-            {/* Slug */}
+            {/* SLUG */}
             <div className="bg-white rounded-lg border border-[#D8CDBE] p-5 shadow-md">
               <label className="block text-lg font-bold text-[#4A3820] mb-3 !font-sans">
                 Slug (URL)
               </label>
               <input
                 type="text"
-                className="w-full px-4 py-3 rounded-lg border-2 border-[#805C2C] bg-white text-[#4A3820] placeholder-[#4A3820]/60 focus:outline-none focus:ring-2 focus:ring-[#805C2C]/50"
+                className="w-full px-4 py-3 rounded-lg border-2 border-[#805C2C]"
                 value={slug}
                 onChange={(e) => setSlug(e.target.value)}
                 placeholder="Article URL slug"
               />
-              <p className="mt-2 text-sm text-[#4A3820]/70">
-                This will be used in the article URL: /articles/{slug || "your-slug"}
-              </p>
               {errors.slug && (
                 <p className="mt-2 text-red-600 font-medium">{errors.slug}</p>
               )}
             </div>
 
-            {/* Cover Image Upload */}
+            {/* COVER IMAGE */}
             <div className="bg-white rounded-lg border border-[#D8CDBE] p-5 shadow-md">
               <label className="block text-lg font-bold text-[#4A3820] mb-3 !font-sans">
                 Cover Image
               </label>
-              <CoverUpload
-                value={coverImage}
-                onChange={(url) => setCoverImage(url)}
-              />
+            <CoverUpload
+              value={coverImage}
+              onChange={setCoverImage}        // ← REQUIRED
+              onUploaded={(url) => {         // ← OPTIONAL (for cleanup tracking)
+                setUploadedAssets((prev) => [...prev, url]);
+                setCoverImage(url);
+              }}
+            />
+
               {errors.coverImage && (
                 <p className="mt-2 text-red-600 font-medium">{errors.coverImage}</p>
               )}
             </div>
 
-            {/* Body - TipTap */}
+            {/* BODY EDITOR */}
             <div className="bg-white rounded-lg border border-[#D8CDBE] p-5 shadow-md">
               <label className="block text-lg font-bold text-[#4A3820] mb-3 !font-sans">
                 Article Content
               </label>
-              <ArticleEditor value={body} onChange={setBody} />
+              <ArticleEditor
+                key={editorKey}
+                value={body}
+                onChange={setBody}
+                onImageUploaded={(url) =>
+                  setUploadedAssets((prev) => [...prev, url]) // 🔥 NEW
+                }
+              />
               {errors.body && (
                 <p className="mt-2 text-red-600 font-medium">{errors.body}</p>
               )}
             </div>
 
-            {/* Tags */}
+            {/* TAGS */}
             <div className="bg-white rounded-lg border border-[#D8CDBE] p-5 shadow-md">
               <label className="block text-lg font-bold text-[#4A3820] mb-3 !font-sans">
                 Tags
               </label>
-              <div className="space-y-4">
-                <input
-                  type="text"
-                  placeholder="Type a tag and press Enter to add"
-                  className="w-full px-4 py-3 rounded-lg border-2 border-[#805C2C] bg-white text-[#4A3820] placeholder-[#4A3820]/60 focus:outline-none focus:ring-2 focus:ring-[#805C2C]/50"
-                  onKeyDown={handleAddTag}
-                />
-
-                <div className="flex gap-2 flex-wrap">
-                  {tags.map((t) => (
-                    <span
-                      key={t}
-                      className="px-4 py-1.5 bg-[#F0E8DB] border border-[#D8CDBE] text-[#4A3820] rounded-full flex items-center gap-2 font-medium"
+              <input
+                type="text"
+                placeholder="Type a tag and press Enter"
+                onKeyDown={handleAddTag}
+                className="w-full px-4 py-3 rounded-lg border-2 border-[#805C2C]"
+              />
+              <div className="flex gap-2 flex-wrap mt-3">
+                {tags.map((t) => (
+                  <span
+                    key={t}
+                    className="px-4 py-1.5 bg-[#F0E8DB] border border-[#D8CDBE] rounded-full flex items-center gap-2"
+                  >
+                    {t}
+                    <button
+                      onClick={() => handleRemoveTag(t)}
+                      className="p-1 rounded-full hover:bg-red-100"
                     >
-                      {t}
-                     <button
-                        onClick={() => handleRemoveTag(t)}
-                        className="p-1 rounded-full hover:bg-red-100 hover:text-red-700 transition flex items-center justify-center"
-                      >
-                        <X size={16} strokeWidth={3} />
-                      </button>
-
-                    </span>
-                  ))}
-                </div>
-                
-                {tags.length === 0 && (
-                  <p className="text-[#4A3820]/70 italic">No tags added yet.</p>
-                )}
+                      <X size={14} />
+                    </button>
+                  </span>
+                ))}
               </div>
             </div>
 
-            {/* Status */}
+            {/* STATUS */}
             <div className="bg-white rounded-lg border border-[#D8CDBE] p-5 shadow-md">
               <label className="block text-lg font-bold text-[#4A3820] mb-3 !font-sans">
                 Publish Status
               </label>
               <select
-                className="w-full px-4 py-3 rounded-lg border-2 border-[#805C2C] bg-white text-[#4A3820] focus:outline-none focus:ring-2 focus:ring-[#805C2C]/50"
                 value={status}
                 onChange={(e) => setStatus(e.target.value as "draft" | "published")}
+                className="w-full px-4 py-3 rounded-lg border-2 border-[#805C2C]"
               >
                 <option value="draft">Draft</option>
                 <option value="published">Published</option>
@@ -311,14 +339,7 @@ export default function NewArticlePage() {
           </div>
         </div>
 
-    
-      <FloatingSaveBar
-        onClick={handleSave}
-        saving={saving}
-        label="Save Article"
-      />
-
-
+        <FloatingSaveBar onClick={handleSave} saving={saving} label="Save Article" />
       </div>
     </div>
   );

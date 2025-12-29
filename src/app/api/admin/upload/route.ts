@@ -26,7 +26,12 @@ export async function POST(req: Request) {
   const originalBuffer = Buffer.from(await file.arrayBuffer());
   const isSvg = file.type === "image/svg+xml";
   const MAX_SIZE_BYTES = 1 * 1024 * 1024; // 1MB
-  const isLarge = originalBuffer.length > MAX_SIZE_BYTES;
+ 
+
+  const metadata = await sharp(originalBuffer).metadata();
+  const tooLarge =
+    (metadata.width ?? 0) > 1600 || (metadata.height ?? 0) > 1600;
+
 
   let body: Buffer;
   let contentType: string;
@@ -46,7 +51,7 @@ export async function POST(req: Request) {
     let transformer = sharp(originalBuffer, { animated: true })
       .rotate(); // auto-fix orientation (important for iPhone images)
 
-    if (isLarge) {
+  if (tooLarge) {
       transformer = transformer.resize({
         width: 1600,
         height: 1600,
@@ -57,7 +62,7 @@ export async function POST(req: Request) {
 
     body = await transformer
       .webp({
-        quality: isLarge ? 75 : 85, // compress more if it's a big image
+        quality: tooLarge ? 75 : 85, // compress more if it's a big image
       })
       .toBuffer();
 

@@ -5,16 +5,18 @@ import { useState, useRef } from "react";
 interface CoverUploadProps {
   value: string | null;
   onChange: (url: string | null) => void;
+  onUploaded?: (url: string) => void; // NEW callback
 }
 
-export default function CoverUpload({ value, onChange }: CoverUploadProps) {
+export default function CoverUpload({
+  value,
+  onChange,
+  onUploaded,
+}: CoverUploadProps) {
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // -------------------------
-  // DRAG & DROP
-  // -------------------------
   const handleDrop = async (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     if (!e.dataTransfer.files?.length) return;
@@ -25,27 +27,20 @@ export default function CoverUpload({ value, onChange }: CoverUploadProps) {
     e.preventDefault();
   };
 
-  // -------------------------
-  // MANUAL BROWSE
-  // -------------------------
   const handleBrowse = () => {
     fileInputRef.current?.click();
   };
 
-  const handleFileSelect = async (
-    e: React.ChangeEvent<HTMLInputElement>
-  ) => {
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files?.length) return;
     await uploadFile(e.target.files[0]);
   };
 
-  // -------------------------
-  // DELETE OLD ASSET
-  // -------------------------
   const deleteOldAsset = async (url: string) => {
     try {
       await fetch("/api/admin/delete-asset", {
         method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ url }),
       });
     } catch (err) {
@@ -53,9 +48,6 @@ export default function CoverUpload({ value, onChange }: CoverUploadProps) {
     }
   };
 
-  // -------------------------
-  // UPLOAD
-  // -------------------------
   const uploadFile = async (file: File) => {
     const formData = new FormData();
     formData.append("file", file);
@@ -75,12 +67,18 @@ export default function CoverUpload({ value, onChange }: CoverUploadProps) {
 
       const data = await res.json();
 
-      // Delete previous asset
+      // Delete previous asset (best-effort)
       if (value) {
-        deleteOldAsset(value);
+        // don't await so we don't block UI, but we do attempt it
+        deleteOldAsset(value).catch((err) =>
+          console.warn("Failed to delete previous cover asset", err)
+        );
       }
 
+      // Notify parent: update model and let them also record uploadedAssets
       onChange(data.url);
+      onUploaded?.(data.url);
+
       setUploading(false);
       setProgress(100);
     } catch (err) {
@@ -89,12 +87,8 @@ export default function CoverUpload({ value, onChange }: CoverUploadProps) {
     }
   };
 
-  // -------------------------
-  // UI
-  // -------------------------
   return (
     <div className="space-y-3">
- {/* DRAG & DROP WRAPPER */}
       <div
         onDragOver={(e) => e.preventDefault()}
         onDragEnter={(e) => {
@@ -143,8 +137,6 @@ export default function CoverUpload({ value, onChange }: CoverUploadProps) {
         </label>
       </div>
 
-
-      {/* HIDDEN INPUT */}
       <input
         type="file"
         ref={fileInputRef}
@@ -153,7 +145,6 @@ export default function CoverUpload({ value, onChange }: CoverUploadProps) {
         onChange={handleFileSelect}
       />
 
-      {/* PROGRESS BAR */}
       {uploading && (
         <div className="w-full bg-gray-200 rounded h-2">
           <div
@@ -163,12 +154,16 @@ export default function CoverUpload({ value, onChange }: CoverUploadProps) {
         </div>
       )}
 
-      {/* DELETE BUTTON */}
       {value && !uploading && (
         <button
-          className="text-red-600 text-sm underline"
-          onClick={() => {
-            deleteOldAsset(value);
+          className="text-red-600 text-sm underline !font-sans"
+          onClick={async () => {
+            // try to delete remote asset
+            try {
+              await deleteOldAsset(value);
+            } catch (err) {
+              console.warn("Failed to delete cover on remove:", err);
+            }
             onChange(null);
           }}
         >
