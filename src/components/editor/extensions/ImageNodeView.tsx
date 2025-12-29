@@ -12,11 +12,11 @@ export default function ImageNodeView({ node, editor, getPos }: any) {
       .deleteRange({ from: pos, to: pos + node.nodeSize })
       .run();
 
-  editor.storage.imageWithRemove?.onImageRemoved?.(src);
+    editor.storage.imageWithRemove?.onImageRemoved?.(src);
   };
 
   return (
-    <NodeViewWrapper className="relative inline-block group">
+    <NodeViewWrapper className="group w-full flex justify-center relative my-4">
       <img src={src} className="max-w-full rounded" />
 
       <button
