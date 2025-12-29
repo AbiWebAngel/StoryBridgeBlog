@@ -3,8 +3,8 @@
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Underline from "@tiptap/extension-underline";
-import Image from "@tiptap/extension-image";
 import { useCallback } from "react";
+import { ImageWithRemove } from "../editor/extensions/ImageWithRemove";
 
 async function uploadImageToR2(file: File): Promise<string> {
   const formData = new FormData();
@@ -23,7 +23,7 @@ async function uploadImageToR2(file: File): Promise<string> {
 interface ArticleEditorProps {
   value: any;
   onChange: (json: any) => void;
-  onImageUploaded?: (url: string) => void; // NEW callback
+  onImageUploaded?: (url: string) => void;
 }
 
 export default function ArticleEditor({
@@ -36,15 +36,26 @@ export default function ArticleEditor({
     extensions: [
       StarterKit,
       Underline,
-      Image.configure({
+      ImageWithRemove.configure({
         inline: false,
         allowBase64: false,
+        onImageRemoved: async (url: string) => {
+          try {
+            await fetch("/api/admin/delete-asset", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ url }),
+            });
+            console.log("Deleted from R2:", url);
+          } catch (err) {
+            console.error("Failed to delete from R2:", err);
+          }
+        },
       }),
     ],
     content: value || "",
     onUpdate: ({ editor }) => {
-      const json = editor.getJSON();
-      onChange(json);
+      onChange(editor.getJSON());
     },
     editorProps: {
       handlePaste(view, event) {
@@ -53,17 +64,21 @@ export default function ArticleEditor({
 
         (async () => {
           for (const item of items) {
-            try {
-              if (item.type.startsWith("image/")) {
-                const file = item.getAsFile();
-                if (file) {
-                  const url = await uploadImageToR2(file);
-                  editor?.chain().focus().setImage({ src: url }).run();
-                  onImageUploaded?.(url);
-                }
+            if (item.type.startsWith("image/")) {
+              const file = item.getAsFile();
+              if (!file) continue;
+
+              try {
+                const url = await uploadImageToR2(file);
+                editor
+                  ?.chain()
+                  .focus()
+                  .insertContent({ type: "imageWithRemove", attrs: { src: url } })
+                  .run();
+                onImageUploaded?.(url);
+              } catch (err) {
+                console.error("Image paste upload failed:", err);
               }
-            } catch (err) {
-              console.error("Image paste upload failed:", err);
             }
           }
         })();
@@ -73,16 +88,23 @@ export default function ArticleEditor({
 
       handleDrop(view, event, _slice, moved) {
         if (moved) return false;
+
         const files = event.dataTransfer?.files;
         if (!files?.length) return false;
 
         event.preventDefault();
+
         (async () => {
+          const file = files[0];
+          if (!file.type.startsWith("image/")) return;
+
           try {
-            const file = files[0];
-            if (!file.type.startsWith("image/")) return;
             const url = await uploadImageToR2(file);
-            editor?.chain().focus().setImage({ src: url }).run();
+            editor
+              ?.chain()
+              .focus()
+              .insertContent({ type: "imageWithRemove", attrs: { src: url } })
+              .run();
             onImageUploaded?.(url);
           } catch (err) {
             console.error("Image drop upload failed:", err);
@@ -106,7 +128,11 @@ export default function ArticleEditor({
       (async () => {
         try {
           const url = await uploadImageToR2(file);
-          editor?.chain().focus().setImage({ src: url }).run();
+          editor
+            ?.chain()
+            .focus()
+            .insertContent({ type: "imageWithRemove", attrs: { src: url } })
+            .run();
           onImageUploaded?.(url);
         } catch (err) {
           console.error("Image picker upload failed:", err);
