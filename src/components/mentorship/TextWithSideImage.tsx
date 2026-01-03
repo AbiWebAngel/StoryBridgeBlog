@@ -23,6 +23,7 @@ interface TextSectionProps {
   responsiveCenter?: boolean;
   centerAll?: boolean;
   reverse?: boolean; // New prop to reverse the order on desktop
+  listType?: "unordered" | "ordered"; // New prop to specify list type
 }
 
 export default function TextSectionWithSideImage({
@@ -32,6 +33,7 @@ export default function TextSectionWithSideImage({
   responsiveCenter = true,
   centerAll = false,
   reverse = false, // Default: text on left, image on right
+  listType = "unordered", // Default to unordered list
 }: TextSectionProps) {
   const isList = Array.isArray(text);
 
@@ -49,13 +51,24 @@ export default function TextSectionWithSideImage({
         {/* Text Content - 2/3 width on desktop */}
         <div className="lg:w-2/3">
           {isList ? (
-            <ul className="list-disc pl-6 space-y-3 text-left lg:text-left">
-              {text.map((item, index) => (
-                <li key={index} className="leading-[2.2]">
-                  {item}
-                </li>
-              ))}
-            </ul>
+            // Conditionally render ordered or unordered list
+            listType === "ordered" ? (
+              <ol className="list-decimal pl-6 space-y-3 text-left lg:text-left">
+                {text.map((item, index) => (
+                  <li key={index} className="leading-[2.2]">
+                    {item}
+                  </li>
+                ))}
+              </ol>
+            ) : (
+              <ul className="list-disc pl-6 space-y-3 text-left lg:text-left">
+                {text.map((item, index) => (
+                  <li key={index} className="leading-[2.2]">
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            )
           ) : (
             <p className="text-center lg:text-left leading-[2.2]">
               {text}

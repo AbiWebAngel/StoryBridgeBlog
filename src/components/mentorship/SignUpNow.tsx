@@ -1,10 +1,37 @@
+// components/mentorship/SignUpNow.tsx
 import Image from "next/image";
 import MentorshipButton from "./MentorshipButton.client";
 
-export default function SignUpNow() {
-  // NOTE: Removed all client-side event handlers
-  // The button logic is now in the client component
+// Define the interface for props
+interface SignUpNowProps {
+  menteeSection: {
+    title: string;
+    description: string;
+    buttonText: string;
+    image: {
+      src: string;
+      alt: string;
+      width: number;
+      height: number;
+    };
+  };
+  mentorSection: {
+    title: string;
+    description: string;
+    buttonText: string;
+    image: {
+      src: string;
+      alt: string;
+      width: number;
+      height: number;
+    };
+  };
+}
 
+export default function SignUpNow({ 
+  menteeSection, 
+  mentorSection 
+}: SignUpNowProps) {
   return (
     <div className="relative mb-[80px] group">
       <div className="w-full bg-[#D1BDA1] flex flex-col items-center justify-center px-4 sm:px-10 lg:px-20 py-10 gap-8 relative shadow-[0_4px_6px_rgba(0,0,0,0.25)] z-20">
@@ -13,18 +40,16 @@ export default function SignUpNow() {
           <div className="flex flex-col lg:flex-row items-center gap-8 w-full">
             {/* Content column */}
             <div className="lg:w-1/2">
-              <h1 className="text-[24px] text-[#000000] text-left mb-4">Finding a Mentor</h1>
+              <h1 className="text-[24px] text-[#000000] text-left mb-4">
+                {menteeSection.title}
+              </h1>
               <p className="text-[16px] sm:text-[18px] text-[#403727]">
-                The Mentorship Program gives young writers the guidance they need to grow without stumbling 
-                through every mistake alone. Writing takes time, effort, and plenty of &quot;Why did I write that?&quot; 
-                moments, but having a mentor means you&apos;ve got someone who&apos;s already been through the chaos and 
-                can help you sharpen your voice faster. Together, you&apos;ll explore new ideas, build confidence in 
-                your craft, and turn your stories into something you&apos;re proud to share.
+                {menteeSection.description}
               </p>
               <div className="relative mt-4">
                 <MentorshipButton 
                   type="mentee"
-                  buttonText="Get Started"
+                  buttonText={menteeSection.buttonText}
                 />
               </div>
             </div>
@@ -33,10 +58,10 @@ export default function SignUpNow() {
             <div className="lg:w-1/2 flex items-center justify-center">
               <div className="w-full max-w-md">
                 <Image
-                  src="/assets/images/mentorship/imageMentee.svg" 
-                  alt="Young writer working with mentor"
-                  width={350}
-                  height={320}
+                  src={menteeSection.image.src}
+                  alt={menteeSection.image.alt}
+                  width={menteeSection.image.width}
+                  height={menteeSection.image.height}
                   className="rounded-lg object-cover h-auto"
                 />
               </div>
@@ -49,18 +74,16 @@ export default function SignUpNow() {
           <div className="flex flex-col lg:flex-row items-center gap-8 w-full">
             {/* Content column - order changes with lg:order-2 */}
             <div className="lg:w-1/2 lg:order-2">
-              <h1 className="text-[24px] text-[#000000] text-left mb-4">Becoming a Mentor</h1>
+              <h1 className="text-[24px] text-[#000000] text-left mb-4">
+                {mentorSection.title}
+              </h1>
               <p className="text-[16px] sm:text-[18px] text-[#403727]">
-                Becoming a mentor means guiding young writers through the messy, magical process 
-                of finding their voice. You&apos;ve already survived the late-night rewrites and plot 
-                twists that made no sense, and now you get to help someone else skip the pitfalls 
-                you learned the hard way. It&apos;s a chance to share your experience, encourage real 
-                growth, and watch a new generation of storytellers turn their ideas into something powerful.
+                {mentorSection.description}
               </p>
               <div className="relative mt-4">
                 <MentorshipButton 
                   type="mentor"
-                  buttonText="Get Started"
+                  buttonText={mentorSection.buttonText}
                 />
               </div>
             </div>
@@ -69,10 +92,10 @@ export default function SignUpNow() {
             <div className="lg:w-1/2 flex items-center justify-center lg:order-1">
               <div className="w-full max-w-md">
                 <Image
-                  src="/assets/images/mentorship/imageMentor.svg" 
-                  alt="Experienced writer mentoring someone"
-                  width={300}
-                  height={320}
+                  src={mentorSection.image.src}
+                  alt={mentorSection.image.alt}
+                  width={mentorSection.image.width}
+                  height={mentorSection.image.height}
                   className="rounded-lg object-cover h-auto"
                 />
               </div>

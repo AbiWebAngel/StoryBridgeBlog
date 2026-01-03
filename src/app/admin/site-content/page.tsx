@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { FiFileText, FiUsers, FiHome, FiHelpCircle } from "react-icons/fi";
+import { FiFileText, FiUsers, FiHome, FiAward      } from "react-icons/fi";
 import { IconType } from "react-icons";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
@@ -26,24 +26,28 @@ export default function SiteContentDashboard() {
   }, [role, router]);
 
   // Content management cards
-  const contentOptions: Option[] = [
-     {
-      label: "Edit Homepage",
-      href: "/admin/site-content/homepage",
-      icon: FiHome,
-    },
-    {
-      label: "Edit About Page",
-      href: "/admin/site-content/about",
-      icon: FiFileText,
-    },
-    {
-      label: "Edit Team Page",
-      href: "/admin/site-content/team",
-      icon: FiUsers,
-    },
-   
-  ];
+ const contentOptions: Option[] = [
+  {
+    label: "Edit Homepage",
+    href: "/admin/site-content/homepage",
+    icon: FiHome,
+  },
+  {
+    label: "Edit About Page",
+    href: "/admin/site-content/about",
+    icon: FiFileText,
+  },
+  {
+    label: "Edit Team Page",
+    href: "/admin/site-content/team",
+    icon: FiUsers,
+  },
+  {
+    label: "Edit Mentorship",
+    href: "/admin/site-content/mentorship",
+    icon: FiAward     , // Clear differentiation from Team
+  },
+];
 
   const renderCard = (option: Option) => {
     const Icon = option.icon;
