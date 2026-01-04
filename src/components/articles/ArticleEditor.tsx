@@ -10,7 +10,7 @@ async function uploadImageToR2(file: File): Promise<string> {
   const formData = new FormData();
   formData.append("file", file);
 
-  const res = await fetch("/api/admin/upload", {
+  const res = await fetch("/api/upload", {
     method: "POST",
     body: formData,
   });
@@ -41,7 +41,7 @@ export default function ArticleEditor({
         allowBase64: false,
         onImageRemoved: async (url: string) => {
           try {
-            await fetch("/api/admin/delete-asset", {
+            await fetch("/api/delete-asset", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({ url }),

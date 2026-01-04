@@ -142,7 +142,7 @@ export default function NewArticlePage() {
         await Promise.all(
           unusedAssets.map(async (url) => {
             try {
-              await fetch("/api/admin/delete-asset", {
+              await fetch("/api/delete-asset", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ url }),

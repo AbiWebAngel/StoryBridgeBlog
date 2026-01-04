@@ -180,7 +180,7 @@ export default function AdminMentorshipPage() {
       form.append("file", file);
       form.append("folder", folder);
 
-      xhr.open("POST", "/api/admin/upload");
+      xhr.open("POST", "/api/upload");
 
       xhr.upload.onprogress = (e) => {
         if (e.lengthComputable && onProgress) {
@@ -349,7 +349,7 @@ export default function AdminMentorshipPage() {
 
         await Promise.all(
           unusedAssets.map((url) =>
-            fetch("/api/admin/delete-asset", {
+            fetch("/api/delete-asset", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({ url }),
@@ -640,7 +640,7 @@ export default function AdminMentorshipPage() {
                           },
                         }));
                         if (previousImage && previousImage !== url) {
-                          await fetch("/api/admin/delete-asset", {
+                          await fetch("/api/delete-asset", {
                             method: "POST",
                             headers: { "Content-Type": "application/json" },
                             body: JSON.stringify({ url: previousImage }),
@@ -792,7 +792,7 @@ export default function AdminMentorshipPage() {
                             },
                           }));
                           if (previousImage && previousImage !== url) {
-                            await fetch("/api/admin/delete-asset", {
+                            await fetch("/api/delete-asset", {
                               method: "POST",
                               headers: { "Content-Type": "application/json" },
                               body: JSON.stringify({ url: previousImage }),
@@ -940,7 +940,7 @@ export default function AdminMentorshipPage() {
                             },
                           }));
                           if (previousImage && previousImage !== url) {
-                            await fetch("/api/admin/delete-asset", {
+                            await fetch("/api/delete-asset", {
                               method: "POST",
                               headers: { "Content-Type": "application/json" },
                               body: JSON.stringify({ url: previousImage }),
@@ -1052,7 +1052,7 @@ export default function AdminMentorshipPage() {
                                 );
                                 handleTestimonialChange(index, "image", url);
                                 if (previousImage && previousImage !== url) {
-                                  await fetch("/api/admin/delete-asset", {
+                                  await fetch("/api/delete-asset", {
                                     method: "POST",
                                     headers: { "Content-Type": "application/json" },
                                     body: JSON.stringify({ url: previousImage }),
@@ -1083,7 +1083,7 @@ export default function AdminMentorshipPage() {
                                 );
                                 handleTestimonialChange(index, "image", url);
                                 if (previousImage && previousImage !== url) {
-                                  await fetch("/api/admin/delete-asset", {
+                                  await fetch("/api/delete-asset", {
                                     method: "POST",
                                     headers: { "Content-Type": "application/json" },
                                     body: JSON.stringify({ url: previousImage }),

@@ -38,7 +38,7 @@ export default function CoverUpload({
 
   const deleteOldAsset = async (url: string) => {
     try {
-      await fetch("/api/admin/delete-asset", {
+      await fetch("/api/delete-asset", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ url }),
@@ -56,7 +56,7 @@ export default function CoverUpload({
       setUploading(true);
       setProgress(0);
 
-      const res = await fetch("/api/admin/upload", {
+      const res = await fetch("/api/upload", {
         method: "POST",
         body: formData,
       });
