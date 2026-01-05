@@ -6,9 +6,15 @@ import Underline from "@tiptap/extension-underline";
 import { useCallback } from "react";
 import { ImageWithRemove } from "../editor/extensions/ImageWithRemove";
 
-async function uploadImageToR2(file: File): Promise<string> {
+async function uploadImageToR2(
+  file: File,
+  articleId: string
+): Promise<string> {
   const formData = new FormData();
   formData.append("file", file);
+  formData.append("articleId", articleId);
+  formData.append("assetType", "content");
+
 
   const res = await fetch("/api/upload", {
     method: "POST",
@@ -22,15 +28,19 @@ async function uploadImageToR2(file: File): Promise<string> {
 
 interface ArticleEditorProps {
   value: any;
+  articleId: string;        // 👈 ADD
   onChange: (json: any) => void;
   onImageUploaded?: (url: string) => void;
 }
 
+
 export default function ArticleEditor({
   value,
+  articleId,    // 👈 ADD
   onChange,
   onImageUploaded,
 }: ArticleEditorProps) {
+
   const editor = useEditor({
     immediatelyRender: false,
     extensions: [
@@ -69,7 +79,7 @@ export default function ArticleEditor({
               if (!file) continue;
 
               try {
-                const url = await uploadImageToR2(file);
+                const url = await uploadImageToR2(file, articleId);
                 editor
                   ?.chain()
                   .focus()
@@ -99,7 +109,7 @@ export default function ArticleEditor({
           if (!file.type.startsWith("image/")) return;
 
           try {
-            const url = await uploadImageToR2(file);
+            const url = await uploadImageToR2(file, articleId);
             editor
               ?.chain()
               .focus()
@@ -127,7 +137,7 @@ export default function ArticleEditor({
 
       (async () => {
         try {
-          const url = await uploadImageToR2(file);
+          const url = await uploadImageToR2(file, articleId);
           editor
             ?.chain()
             .focus()

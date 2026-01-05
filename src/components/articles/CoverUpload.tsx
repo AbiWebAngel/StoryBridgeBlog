@@ -4,12 +4,15 @@ import { useState, useRef } from "react";
 
 interface CoverUploadProps {
   value: string | null;
+  articleId: string;          // 👈 ADD
   onChange: (url: string | null) => void;
-  onUploaded?: (url: string) => void; // NEW callback
+  onUploaded?: (url: string) => void;
 }
+
 
 export default function CoverUpload({
   value,
+  articleId,   // 👈 ADD
   onChange,
   onUploaded,
 }: CoverUploadProps) {
@@ -51,6 +54,8 @@ export default function CoverUpload({
   const uploadFile = async (file: File) => {
     const formData = new FormData();
     formData.append("file", file);
+    formData.append("articleId", articleId);
+    formData.append("assetType", "cover");
 
     try {
       setUploading(true);

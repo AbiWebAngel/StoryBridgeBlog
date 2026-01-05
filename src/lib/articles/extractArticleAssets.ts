@@ -11,18 +11,20 @@ export function extractArticleAssets(article: {
     urls.add(article.coverImage);
   }
 
-  // Scan TipTap JSON for images
   function scan(node: any) {
     if (!node) return;
 
-    // Image nodes
-    if (node.type === "image" && node.attrs?.src) {
+    // ✅ Handle TipTap image extensions
+    if (
+      (node.type === "image" || node.type === "imageWithRemove") &&
+      node.attrs?.src
+    ) {
       urls.add(node.attrs.src);
     }
 
-    // Recurse through children
-    if (node.content && Array.isArray(node.content)) {
-      node.content.forEach((child: any) => scan(child));
+    // Recurse children
+    if (Array.isArray(node.content)) {
+      node.content.forEach(scan);
     }
   }
 

@@ -14,6 +14,7 @@ import { useAuth } from "@/context/AuthContext";
 
 import { X } from "lucide-react";
 import FloatingSaveBar from "@/components/admin/FloatingSaveBar";
+import { useRef } from "react";
 
 export default function NewArticlePage() {
   const { user: currentAuthUser } = useAuth();
@@ -36,6 +37,9 @@ export default function NewArticlePage() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
+  const articleIdRef = useRef<string>(crypto.randomUUID());
+  const articleId = articleIdRef.current;
+  const hasSavedOnceRef = useRef(false);
 
   // -------------------------
   // AUTO GENERATE SLUG
@@ -77,7 +81,9 @@ export default function NewArticlePage() {
     setTags([]);
     setStatus("draft");
     setEditorKey(Date.now());
-    setUploadedAssets([]); // 🔥 NEW
+    setUploadedAssets([]); 
+
+    hasSavedOnceRef.current = false; 
   }
 
   // -------------------------
@@ -116,46 +122,83 @@ export default function NewArticlePage() {
         throw new Error("Insufficient permissions. Admin or author role required.");
       }
 
-      const articleId = slug;
 
-      // Extract assets that are in use
+
+      // 🧯 Safety: body must be valid before cleanup
+      let unusedAssets: string[] = [];
+
+    if (body && typeof body === "object") {
       const usedAssets = extractArticleAssets({ coverImage, body });
-
-      // 🔥 Compute unused temp uploads
-      const unusedAssets = findUnusedAssets(uploadedAssets, usedAssets);
+      unusedAssets = findUnusedAssets(uploadedAssets, usedAssets);
+    }
 
       // Save article
-      await setDoc(doc(db, "articles", articleId), {
-        title,
-        slug,
-        coverImage,
-        body,
-        tags,
-        status,
-        authorId: currentAuthUser.uid,
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp(),
-      });
+      await setDoc(
+        doc(db, "articles", articleId),
+        {
+          articleId,
+          slug,
+          title,
+          coverImage,
+          body,
+          tags,
+          status,
+          authorId: currentAuthUser.uid,
+          updatedAt: serverTimestamp(),
+        },
+        { merge: true }
+      );
 
-      // 🔥 Cleanup unused R2 objects
-      if (unusedAssets.length > 0) {
-        await Promise.all(
-          unusedAssets.map(async (url) => {
-            try {
-              await fetch("/api/delete-asset", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ url }),
-              });
-            } catch (err) {
-              console.warn("Failed to delete unused asset", url, err);
-            }
-          })
-        );
+      const shouldCleanup = hasSavedOnceRef.current;
+      if (!hasSavedOnceRef.current) {
+        hasSavedOnceRef.current = true;
+        console.log("First save — skipping asset cleanup");
       }
 
+    if (shouldCleanup) {
+  let canCleanup = true;
+
+  // 1️⃣ Nothing uploaded → nothing to clean
+  if (!uploadedAssets.length) {
+    console.log("No uploaded assets — skipping cleanup");
+    canCleanup = false;
+  }
+
+  // 2️⃣ Everything looks unused → abort
+  if (unusedAssets.length === uploadedAssets.length) {
+    console.warn("Asset cleanup aborted: all assets appear unused", {
+      uploadedAssets,
+      unusedAssets,
+    });
+    canCleanup = false;
+  }
+
+  // 🔥 Safe cleanup
+  if (canCleanup && unusedAssets.length > 0) {
+    await Promise.all(
+      unusedAssets.map(async (url) => {
+        try {
+          await fetch("/api/delete-asset", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ url }),
+          });
+        } catch (err) {
+          console.warn("Failed to delete unused asset", url, err);
+        }
+      })
+    );
+  }
+}
+
+
+
+
       // Success
-      setSuccessMessage("Article created successfully!");
+     setSuccessMessage(
+      hasSavedOnceRef.current ? "Article updated successfully!" : "Article created successfully!"
+    );
+
       setSaving(false);
 
       // Reset form
@@ -261,14 +304,19 @@ export default function NewArticlePage() {
               <label className="block text-lg font-bold text-[#4A3820] mb-3 !font-sans">
                 Cover Image
               </label>
-            <CoverUpload
+           <CoverUpload
               value={coverImage}
-              onChange={setCoverImage}        // ← REQUIRED
-              onUploaded={(url) => {         // ← OPTIONAL (for cleanup tracking)
-                setUploadedAssets((prev) => [...prev, url]);
-                setCoverImage(url);
-              }}
+              articleId={articleId}   // 👈 ADD THIS
+              onChange={setCoverImage}
+             onUploaded={(url) => {
+              setUploadedAssets((prev) =>
+                prev.includes(url) ? prev : [...prev, url]
+              );
+              setCoverImage(url);
+            }}
+
             />
+
 
               {errors.coverImage && (
                 <p className="mt-2 text-red-600 font-medium">{errors.coverImage}</p>
@@ -280,14 +328,18 @@ export default function NewArticlePage() {
               <label className="block text-lg font-bold text-[#4A3820] mb-3 !font-sans">
                 Article Content
               </label>
-              <ArticleEditor
-                key={editorKey}
-                value={body}
-                onChange={setBody}
-                onImageUploaded={(url) =>
-                  setUploadedAssets((prev) => [...prev, url]) // 🔥 NEW
-                }
-              />
+             <ArticleEditor
+              key={editorKey}
+              value={body}
+              articleId={articleId}   // 👈 ADD
+              onChange={setBody}
+              onImageUploaded={(url) =>
+              setUploadedAssets((prev) =>
+                prev.includes(url) ? prev : [...prev, url]
+              )
+            }
+            />
+
               {errors.body && (
                 <p className="mt-2 text-red-600 font-medium">{errors.body}</p>
               )}

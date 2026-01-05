@@ -17,7 +17,9 @@ const r2 = new S3Client({
 export async function POST(req: Request) {
   const formData = await req.formData();
   const file = formData.get("file") as File;
-  const folder = (formData.get("folder") as string) || "misc";
+  const articleId = formData.get("articleId") as string | null;
+  const assetType = (formData.get("assetType") as string) || "content";
+  const folder = formData.get("folder") as string | null;
 
   if (!file) {
     return NextResponse.json({ error: "No file provided" }, { status: 400 });
@@ -25,13 +27,10 @@ export async function POST(req: Request) {
 
   const originalBuffer = Buffer.from(await file.arrayBuffer());
   const isSvg = file.type === "image/svg+xml";
-  const MAX_SIZE_BYTES = 1 * 1024 * 1024; // 1MB
- 
 
   const metadata = await sharp(originalBuffer).metadata();
   const tooLarge =
     (metadata.width ?? 0) > 1600 || (metadata.height ?? 0) > 1600;
-
 
   let body: Buffer;
   let contentType: string;
@@ -45,13 +44,9 @@ export async function POST(req: Request) {
     contentType = "image/svg+xml";
     extension = "svg";
   } else {
-    //-------------------------------------
-    // Handle Raster Images (JPEG/PNG/WebP)
-    //-------------------------------------
-    let transformer = sharp(originalBuffer, { animated: true })
-      .rotate(); // auto-fix orientation (important for iPhone images)
+    let transformer = sharp(originalBuffer, { animated: true }).rotate();
 
-  if (tooLarge) {
+    if (tooLarge) {
       transformer = transformer.resize({
         width: 1600,
         height: 1600,
@@ -61,9 +56,7 @@ export async function POST(req: Request) {
     }
 
     body = await transformer
-      .webp({
-        quality: tooLarge ? 75 : 85, // compress more if it's a big image
-      })
+      .webp({ quality: tooLarge ? 75 : 85 })
       .toBuffer();
 
     contentType = "image/webp";
@@ -71,9 +64,20 @@ export async function POST(req: Request) {
   }
 
   //-------------------------------------
-  // Generate R2 key
+  // Generate R2 key (AFTER extension exists)
   //-------------------------------------
-  const key = `${folder}/${crypto.randomUUID()}.${extension}`;
+  let key: string;
+
+  if (articleId) {
+    key = `articles/${articleId}/${assetType}/${crypto.randomUUID()}.${extension}`;
+  } else if (folder) {
+    key = `site/${folder}/${crypto.randomUUID()}.${extension}`;
+  } else {
+    return NextResponse.json(
+      { error: "Missing articleId or folder" },
+      { status: 400 }
+    );
+  }
 
   //-------------------------------------
   // Upload to Cloudflare R2
@@ -87,24 +91,8 @@ export async function POST(req: Request) {
     })
   );
 
-  //-------------------------------------
-  // Return public URL
-  //-------------------------------------
   return NextResponse.json({
     url: `${process.env.CLOUDFLARE_R2_PUBLIC_URL}/${key}`,
   });
 }
 
-//-------------------------------------
-// Delete Asset Helper (optional)
-//-------------------------------------
-export async function deleteAsset(url: string) {
-  const key = url.split(".r2.dev/")[1];
-  if (!key) return;
-
-  await fetch("/api/delete-asset", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ key }),
-  });
-}
