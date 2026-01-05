@@ -192,8 +192,6 @@ export default function NewArticlePage() {
 }
 
 
-
-
       // Success
      setSuccessMessage(
       hasSavedOnceRef.current ? "Article updated successfully!" : "Article created successfully!"

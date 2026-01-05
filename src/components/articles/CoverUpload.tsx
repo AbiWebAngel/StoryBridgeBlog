@@ -131,11 +131,12 @@ export default function CoverUpload({
             <span>Click or drag an image here</span>
           ) : (
             <div className="space-y-2">
-              <img
-                src={value}
-                alt="Cover"
-                className="max-h-64 object-cover mx-auto rounded"
-              />
+             <img
+  src={value}
+  alt="Cover"
+  className="w-full max-h-96 object-cover mx-auto rounded"
+/>
+
               <p className="text-sm text-[#4A3820]/70">Click to replace image</p>
             </div>
           )}
