@@ -57,34 +57,45 @@ export default function NewArticlePage() {
   // -------------------------
   // TAG HELPERS
   // -------------------------
-  const handleAddTag = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter") {
-      e.preventDefault();
-      const value = e.currentTarget.value.trim();
-      if (!value) return;
-      if (!tags.includes(value)) {
-        setTags([...tags, value]);
-      }
-      e.currentTarget.value = "";
+const handleAddTag = (e: React.KeyboardEvent<HTMLInputElement>) => {
+  if (e.key === "Enter") {
+    e.preventDefault();
+
+    // normalize & strip invalid chars (allow only a-z, 0-9, and hyphens)
+    let value = e.currentTarget.value.trim().toLowerCase().replace(/[^a-z0-9-]/g, "");
+
+    if (!value) return;
+
+    // prevent duplicates
+    if (!tags.includes(value)) {
+      setTags([...tags, value]);
     }
-  };
+
+    e.currentTarget.value = "";
+  }
+};
+
+
 
   const handleRemoveTag = (tag: string) => {
     setTags(tags.filter((t) => t !== tag));
   };
 
-  function resetForm() {
-    setTitle("");
-    setSlug("");
-    setCoverImage(null);
-    setBody(null);
-    setTags([]);
-    setStatus("draft");
-    setEditorKey(Date.now());
-    setUploadedAssets([]); 
+ function resetForm() {
+  setTitle("");
+  setSlug("");
+  setCoverImage(null);
+  setBody(null);
+  setTags([]);
+  setStatus("draft");
+  setEditorKey(Date.now());
+  setUploadedAssets([]);
 
-    hasSavedOnceRef.current = false; 
-  }
+  // 🔥 REGENERATE ARTICLE ID AFTER SAVE
+  articleIdRef.current = crypto.randomUUID();
+
+  hasSavedOnceRef.current = false;
+}
 
   // -------------------------
   // SAVE ARTICLE
@@ -190,8 +201,6 @@ export default function NewArticlePage() {
     );
   }
 }
-
-
       // Success
      setSuccessMessage(
       hasSavedOnceRef.current ? "Article updated successfully!" : "Article created successfully!"
@@ -370,8 +379,12 @@ export default function NewArticlePage() {
                   </span>
                 ))}
               </div>
-            </div>
+               {errors.tags && (
+              <p className="mt-2 text-red-600 font-medium">{errors.tags}</p>
+            )}
 
+            </div>
+           
             {/* STATUS */}
             <div className="bg-white rounded-lg border border-[#D8CDBE] p-5 shadow-md">
               <label className="block text-lg font-bold text-[#4A3820] mb-3 !font-sans">
