@@ -103,7 +103,7 @@ export default function ArticleEditor({ value, articleId, onChange, onImageUploa
   const addImage = useCallback(() => {
     const input = document.createElement("input");
     input.type = "file";
-    input.accept = "image/*";
+    input.accept = ".png, .jpg, .jpeg, .webp, .gif";
 
     input.onchange = () => {
       if (!input.files?.length) return;

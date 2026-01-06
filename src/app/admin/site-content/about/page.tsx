@@ -492,7 +492,7 @@ export default function AdminAboutPage() {
                           <input
                             id={`book-image-upload-${index}`}
                             type="file"
-                            accept="image/*"
+                            accept=".png, .jpg, .jpeg, .webp"
                             className="hidden"
                             onChange={async (e) => {
                               if (!e.target.files?.[0]) return;
@@ -637,7 +637,7 @@ export default function AdminAboutPage() {
                           <input
                             id={`testimonial-image-upload-${index}`}
                             type="file"
-                            accept="image/*"
+                            accept=".png, .jpg, .jpeg, .webp"
                             className="hidden"
                             onChange={async (e) => {
                               if (!e.target.files?.[0]) return;

@@ -71,7 +71,8 @@ export async function POST(req: Request) {
   if (articleId) {
     key = `articles/${articleId}/${assetType}/${crypto.randomUUID()}.${extension}`;
   } else if (folder) {
-    key = `site/${folder}/${crypto.randomUUID()}.${extension}`;
+  // Allow full folder paths (e.g., "site-assets/about/book-images")
+  key = `${folder}/${crypto.randomUUID()}.${extension}`;      
   } else {
     return NextResponse.json(
       { error: "Missing articleId or folder" },

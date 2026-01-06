@@ -464,7 +464,7 @@ export default function AdminMentorshipPage() {
       </label>
       <input
         type="file"
-        accept="image/*"
+        accept=".png, .jpg, .jpeg, .webp"
         className="hidden"
         id={`upload-${label.replace(/\s+/g, "-")}`}
         onChange={async (e) => {
@@ -1036,7 +1036,7 @@ export default function AdminMentorshipPage() {
                           </label>
                           <input
                             type="file"
-                            accept="image/*"
+                            accept=".png, .jpg, .jpeg, .webp"
                             className="hidden"
                             id={`testimonial-upload-${index}`}
                             onChange={async (e) => {

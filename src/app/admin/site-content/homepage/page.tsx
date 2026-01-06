@@ -357,7 +357,7 @@ async function handleSave() {
                   <input
                     id="director-image-upload"
                     type="file"
-                    accept="image/*"
+                    accept=".png, .jpg, .jpeg, .webp"
                     className="hidden"
                    onChange={async (e) => {
                     if (!e.target.files?.[0]) return;

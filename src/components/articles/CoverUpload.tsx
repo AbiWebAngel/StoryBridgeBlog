@@ -132,10 +132,10 @@ export default function CoverUpload({
           ) : (
             <div className="space-y-2">
              <img
-  src={value}
-  alt="Cover"
-  className="w-full max-h-96 object-cover mx-auto rounded"
-/>
+          src={value}
+          alt="Cover"
+          className="w-full max-h-96 object-cover mx-auto rounded"
+        />
 
               <p className="text-sm text-[#4A3820]/70">Click to replace image</p>
             </div>
@@ -146,7 +146,7 @@ export default function CoverUpload({
       <input
         type="file"
         ref={fileInputRef}
-        accept="image/*"
+        accept=".png, .jpg, .jpeg, .webp, .gif"
         className="hidden"
         onChange={handleFileSelect}
       />

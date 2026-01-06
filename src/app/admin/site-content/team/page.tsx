@@ -494,7 +494,7 @@ export default function AdminTeamPage() {
                             <input
                               id={`team-image-upload-${index}`}
                               type="file"
-                              accept="image/*"
+                              accept=".png, .jpg, .jpeg, .webp"
                               className="hidden"
                               onChange={async (e) => {
                                 if (!e.target.files?.[0]) return;
