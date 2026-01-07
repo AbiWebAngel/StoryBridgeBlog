@@ -51,7 +51,7 @@ export default function LatestBlogs() {
             {/* Image */}
             <div className="flex justify-center items-center lg:flex-[1_1_30%]">
               <Image
-                src={item.image}
+                src={item.coverImage}
                 alt={item.title}
                 width={280}
                 height={160}

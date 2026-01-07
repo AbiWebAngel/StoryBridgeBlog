@@ -134,3 +134,21 @@ textarea.scrollable-description::-webkit-scrollbar-thumb:hover {
   font-family: var(--font-inter), sans-serif;
   font-size: 20px;
 }
+
+/* TipTap list fix */
+.editor-content ul {
+  list-style-type: disc !important;
+  margin-left: 1.5rem;
+  padding-left: 1.5rem;
+}
+
+.editor-content ol {
+  list-style-type: decimal !important;
+  margin-left: 1.5rem;
+  padding-left: 1.5rem;
+}
+
+.editor-content li {
+  margin: 0.25rem 0;
+}
+
