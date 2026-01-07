@@ -1,11 +1,14 @@
 @import "tailwindcss";
 
 :root {
- --background: #ECE1CF;
+  --background: #ECE1CF;
   --foreground: #171717;
+
+  /* font variables defined by next/font (from layout.tsx) */
   --font-cinzel: var(--font-cinzel);
   --font-body: var(--font-jacques-francois);
-  --font-inter: var(--font-inter);
+  --font-inter: var(--font-inter); /* REMOVE THIS LINE if you want it cleaner */
+  
   --color-brand-light: #805C2C;
   --color-brand-dark: #403727;
 }
@@ -31,7 +34,7 @@
 .footer-brand-dark {
   background-color: var(--color-brand-dark); 
   color: white;
-  font-family: 'Cinzel', serif; /* default font for brand text */
+  font-family: 'Cinzel', serif;
 }
 
 .footer-contact {
@@ -42,7 +45,6 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-body);
-  
 }
 
 h1, h2, h3, h4, h5, h6, button {
@@ -50,53 +52,29 @@ h1, h2, h3, h4, h5, h6, button {
   font-weight: 700;
 }
 
-p,ul,li,span,a {
-  font-size: 18px; /* mobile default, smaller than 20px */
+p, ul, li, span, a {
+  font-size: 18px;
 }
 
-/* Small screens (≥640px) */
-@media (min-width: 640px) {
-  p {
-    font-size: 18.5px;
-  }
-}
-
-/* Medium screens (≥768px) */
-@media (min-width: 768px) {
-  p {
-    font-size: 19px;
-  }
-}
-
-/* Large screens (≥1024px) */
-@media (min-width: 1024px) {
-  p {
-    font-size: 19.5px;
-  }
-}
-
-/* Extra large screens (≥1280px) */
-@media (min-width: 1280px) {
-  p {
-    font-size: 20px;
-  }
-}
-
+/* Responsive text sizes */
+@media (min-width: 640px) { p { font-size: 18.5px; } }
+@media (min-width: 768px) { p { font-size: 19px; } }
+@media (min-width: 1024px) { p { font-size: 19.5px; } }
+@media (min-width: 1280px) { p { font-size: 20px; } }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-
 }
+
 .two-column-grid {
   display: grid;
   grid-template-columns: minmax(0,1fr) minmax(0,1fr);
-  column-gap: 4px;   /* <- tighten horizontally */
-  row-gap: 10px;     /* keep vertical spacing */
+  column-gap: 4px;
+  row-gap: 10px;
 }
 
-
-/* Custom scrollbar for team cards AND textareas */
+/* Custom scrollbar */
 .scrollable-description::-webkit-scrollbar,
 textarea.scrollable-description::-webkit-scrollbar {
   width: 6px;
@@ -128,6 +106,31 @@ textarea.scrollable-description::-webkit-scrollbar-thumb:hover {
   );
   mask-size: 100% 100%;
   mask-repeat: no-repeat;
-  transition: none; /* animation handled via JS */
+  transition: none;
 }
 
+/* Editor font + sizes */
+.editor-content {
+  font-family: var(--font-inter), sans-serif;
+  font-size: 20px;
+  line-height: 1.7;
+}
+
+.editor-content h1 {
+  font-family: var(--font-inter), sans-serif;
+  font-size: 28px;
+  font-weight: 700;
+}
+
+.editor-content h2 {
+  font-family: var(--font-inter), sans-serif;
+  font-size: 24px;
+  font-weight: 600;
+}
+
+.editor-content p,
+.editor-content li,
+.editor-content span {
+  font-family: var(--font-inter), sans-serif;
+  font-size: 20px;
+}

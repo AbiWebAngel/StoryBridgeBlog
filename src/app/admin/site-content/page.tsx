@@ -15,15 +15,17 @@ interface Option {
 }
 
 export default function SiteContentDashboard() {
-  const { user, role } = useAuth();
+  const { user, role, loading } = useAuth();
   const router = useRouter();
-
+ 
   // Redirect non-admins (proxy also catches this, but this prevents UI flash)
-  useEffect(() => {
-    if (role !== "admin") {
-      router.replace("/dashboard");
-    }
-  }, [role, router]);
+ useEffect(() => {
+  if (loading) return;         // ⬅ Wait until Firebase resolves
+  if (role !== "admin") {
+    router.replace("/dashboard");
+  }
+}, [role, loading, router]);
+
 
   // Content management cards
  const contentOptions: Option[] = [
@@ -67,6 +69,21 @@ export default function SiteContentDashboard() {
       </Link>
     );
   };
+
+if (loading) {
+  return (
+    <div className="min-h-screen flex flex-col items-center justify-center bg-[#F0E8DB]">
+      {/* Loading Bar */}
+      <div className="w-48 h-2 bg-[#E0D6C7] rounded-full overflow-hidden">
+        <div className="h-full w-full animate-pulse bg-[#4A3820]"></div>
+      </div>
+
+      <p className="mt-4 text-[#4A3820] font-medium text-lg">
+        Loading dashboard…
+      </p>
+    </div>
+  );
+}
 
   return (
     <div className="min-h-screen px-4 sm:px-6 lg:px-8 !font-sans">

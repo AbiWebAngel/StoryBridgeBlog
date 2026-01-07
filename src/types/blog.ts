@@ -4,7 +4,7 @@ export interface BlogPost {
   id: number;
   title: string;
   slug: string;
-  image: string;
+  coverImage: string;
   excerpt: ReactNode;
   fullContent: ReactNode;
   date: string;

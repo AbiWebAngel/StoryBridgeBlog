@@ -79,13 +79,15 @@ export default function BlogPostPage() {
 
           {/* Featured Image */}
          <div className="mb-8 flex justify-center">
-            <Image
-              src={post.image}
-              alt={post.title}
-              width={600}
-              height={300}
-              className="w-full md:w-2/3 lg:w-1/2 xl:w-1/3 max-w-2/3 h-auto rounded-[30px] object-cover"
-            />
+         <Image
+          src={post.coverImage}
+          alt={post.title}
+          width={1200}
+          height={600}
+          className="w-full h-[250px] sm:h-[350px] lg:h-[450px] object-cover rounded-[20px]"
+          priority
+        />
+
           </div>
           {/* Article Content */}
           <article className="max-w-none font-inter text-[#413320]">

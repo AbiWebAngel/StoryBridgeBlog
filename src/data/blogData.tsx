@@ -5,7 +5,7 @@ export const blogData: BlogPost[] = [
     id: 1,
     title: "Writing Motivation #1",
     slug: "writing-motivation-1",
-    image: "/assets/images/home/blog1.jpg",
+    coverImage: "/assets/images/home/blog1.jpg",
     excerpt: (
       <div className="space-y-4 text-[16px] sm:text-[17px] lg:text-[18px] font-inter">
         {`In honour of one of our bloggers turning 15, here are `}
@@ -60,7 +60,7 @@ export const blogData: BlogPost[] = [
     id: 2,
     title: "Beta reading #2: How to have a successful beta-reader/writer relationship: Building bridges",
     slug: "beta-reading-2",
-    image: "/assets/images/home/blog2.jpg",
+    coverImage: "/assets/images/home/blog2.jpg",
     excerpt: (
       <div className="space-y-4 text-[16px] sm:text-[17px] lg:text-[18px] font-inter">
         <strong>Preface:</strong>
@@ -120,7 +120,7 @@ export const blogData: BlogPost[] = [
     id: 3,
     title: "Author Interview #3: Finding your voice in a noisy world",
     slug: "author-interview-3",
-    image: "/assets/images/home/blog1.jpg",
+    coverImage: "/assets/images/home/blog1.jpg",
     excerpt: (
       <div className="space-y-4 text-[16px] sm:text-[17px] lg:text-[18px] font-inter">
         {`This week, we sit down with `}
@@ -176,7 +176,7 @@ export const blogData: BlogPost[] = [
     id: 4,
     title: "What to Write Wednesday #4: Overcoming creative blocks",
     slug: "what-to-write-wednesday-4",
-    image: "/assets/images/home/blog2.jpg",
+    coverImage: "/assets/images/home/blog2.jpg",
     excerpt: (
       <div className="space-y-4 text-[16px] sm:text-[17px] lg:text-[18px] font-inter">
         {`Stuck staring at a blinking cursor? Don't panic—every writer has been there.`}

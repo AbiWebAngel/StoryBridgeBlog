@@ -195,7 +195,7 @@ export default function ArticleEditor({ value, articleId, onChange, onImageUploa
       </div>
 
       {/* EDITOR */}
-      <div className="border rounded bg-white p-4 min-h-[300px] prose max-w-none" style={{ borderColor: "#D8CDBE" }}>
+      <div className="border rounded bg-white p-4 min-h-[300px] editor-content max-w-none" style={{ borderColor: "#D8CDBE" }}>
         <EditorContent editor={editor} />
       </div>
     </div>
