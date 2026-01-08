@@ -12,7 +12,7 @@ import { DraggableHeading } from "@/components/editor/extensions/DraggableHeadin
 import { DraggableCodeBlock } from "@/components/editor/extensions/DraggableCodeBlock";
 import { DraggableImage } from "@/components/editor/extensions/DraggableImage";
 
-import { DragHandle } from '@tiptap/extension-drag-handle' // ✅ plugin
+import DragHandle from '@tiptap/extension-drag-handle';
 
 
 async function uploadImageToR2(file: File, articleId: string): Promise<string> {
@@ -80,7 +80,15 @@ const editor = useEditor({
         }
       },
     }),
-      DragHandle, 
+DragHandle.configure({
+  render: () => {
+    const handle = document.createElement('div')
+    handle.className = 'my-drag-handle text-gray-400 cursor-grab select-none'
+    handle.textContent = '⋮⋮'
+    return handle
+  },
+}),
+
 
   ],
   content: value,

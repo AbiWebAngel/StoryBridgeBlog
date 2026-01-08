@@ -116,17 +116,8 @@ textarea.scrollable-description::-webkit-scrollbar-thumb:hover {
   line-height: 1.7;
 }
 
-.editor-content h1 {
-  font-family: var(--font-inter), sans-serif;
-  font-size: 28px;
-  font-weight: 700;
-}
-
-.editor-content h2 {
-  font-family: var(--font-inter), sans-serif;
-  font-size: 24px;
-  font-weight: 600;
-}
+.editor-content [data-level="1"] { font-size: 28px; font-weight: 700; }
+.editor-content [data-level="2"] { font-size: 24px; font-weight: 600; }
 
 .editor-content p,
 .editor-content li,
@@ -138,17 +129,26 @@ textarea.scrollable-description::-webkit-scrollbar-thumb:hover {
 /* TipTap list fix */
 .editor-content ul {
   list-style-type: disc !important;
-  margin-left: 1.5rem;
+  margin-left: 0;
   padding-left: 1.5rem;
 }
 
 .editor-content ol {
   list-style-type: decimal !important;
-  margin-left: 1.5rem;
+  margin-left: 0rem;
   padding-left: 1.5rem;
 }
 
 .editor-content li {
   margin: 0.25rem 0;
+  padding-left: 0;
 }
 
+/* Only add left margin for paragraphs not inside a list */
+.editor-content > p {
+  margin-left: 1.5rem; /* for drag handle spacing */
+}
+
+.editor-content li > p {
+  margin-left: 0; /* remove extra space inside lists */
+}
