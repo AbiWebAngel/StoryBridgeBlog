@@ -14,6 +14,10 @@ import { DraggableImage } from "@/components/editor/extensions/DraggableImage";
 import FileHandler from "@tiptap/extension-file-handler";
 import DragHandle from '@tiptap/extension-drag-handle';
 import { ImageLoading } from "@/components/editor/extensions/ImageLoading";
+import { TextStyle } from '@tiptap/extension-text-style'
+import { Color } from '@tiptap/extension-color'
+
+
 
 async function uploadImageToR2(file: File, articleId: string): Promise<string> {
   const formData = new FormData();
@@ -57,7 +61,8 @@ const editor = useEditor({
       orderedList: false,
       listItem: false,
     }),
-
+    TextStyle,   
+    Color,  
     DraggableParagraph,
     DraggableHeading,
     DraggableCodeBlock,
@@ -315,6 +320,33 @@ const addImage = useCallback(() => {
         <button onClick={addImage} className="px-2 py-1 rounded bg-white hover:bg-[#E6DCCB] !font-sans">Image</button>
         <button onClick={() => editor.chain().focus().undo().run()} className="px-2 py-1 rounded bg-white hover:bg-[#E6DCCB] !font-sans">Undo</button>
         <button onClick={() => editor.chain().focus().redo().run()} className="px-2 py-1 rounded bg-white hover:bg-[#E6DCCB] !font-sans">Redo</button>
+        
+      </div>
+      <div className="flex gap-1">
+        {[
+        '#E53935', // Red
+        '#059669', // Green
+        '#2563EB', // Blue
+        '#413320',
+        '#B26C1F', // Brown
+        '#7C3AED', // Purple
+        '#F97316', // Orange
+        '#FBBF24', // Yellow
+        '#14B8A6', // Teal
+        '#DB2777', // Pink
+        '#4B5563', // Gray
+       
+      ].map(color => (
+          <button
+            key={color}
+            onClick={() => editor.chain().focus().setColor(color).run()}
+            style={{ backgroundColor: color, width: 24, height: 24, borderRadius: 4 }}
+            className={`border ${editor.isActive('textStyle', { color }) ? 'border-black' : 'border-gray-300'}`}
+          />
+        ))}
+        <button onClick={() => editor.chain().focus().unsetColor().run()} className="px-2 py-1 border rounded ml-2 !font-sans">
+          Reset
+        </button>
       </div>
 
 

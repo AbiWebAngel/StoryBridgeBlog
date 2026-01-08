@@ -15,17 +15,16 @@ export const DraggableHeading = Heading.extend({
           onMouseDown={e => e.preventDefault()}
         />
 
-        {/* This MUST be the <h1> or <h2> */}
+        {/* Render proper heading element dynamically */}
         <NodeViewContent
-          as="div"
-          className="flex-1 text-black font-bold"
+          as={`h${node.attrs.level}` as any} 
+          className="flex-1 font-bold font-inter"
           data-level={node.attrs.level}
         />
-
       </NodeViewWrapper>
+      
     ));
   },
 }).configure({
   levels: [1, 2],
 });
-
