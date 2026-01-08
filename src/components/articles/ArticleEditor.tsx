@@ -11,9 +11,9 @@ import { DraggableParagraph } from "@/components/editor/extensions/DraggablePara
 import { DraggableHeading } from "@/components/editor/extensions/DraggableHeading";
 import { DraggableCodeBlock } from "@/components/editor/extensions/DraggableCodeBlock";
 import { DraggableImage } from "@/components/editor/extensions/DraggableImage";
-
+import FileHandler from "@tiptap/extension-file-handler";
 import DragHandle from '@tiptap/extension-drag-handle';
-
+import { ImageLoading } from "@/components/editor/extensions/ImageLoading";
 
 async function uploadImageToR2(file: File, articleId: string): Promise<string> {
   const formData = new FormData();
@@ -41,6 +41,10 @@ interface ArticleEditorProps {
 export default function ArticleEditor({ value, articleId, onChange, onImageUploaded }: ArticleEditorProps) {
   // 🔹 Track uploaded images
   const uploadedImagesRef = useRef<Set<string>>(new Set());
+const getSafePos = (pos: any, editor: any) => {
+  const n = Number(pos);
+  return Number.isFinite(n) ? n : editor.state.selection.from;
+};
 
 const editor = useEditor({
   immediatelyRender: false, // SSR safe
@@ -88,6 +92,74 @@ DragHandle.configure({
     return handle
   },
 }),
+ ImageLoading, 
+FileHandler.configure({
+  allowedMimeTypes: ["image/jpeg", "image/png", "image/webp", "image/gif"],
+
+  onDrop: async (editor, files, pos) => {
+    const file = files[0];
+    if (!file) return; // nothing to handle
+
+    if (!file.type.startsWith("image/")) return; // let TipTap handle other drops
+
+    const position = getSafePos(pos, editor);
+    const tempId = `temp-${Date.now()}`;
+
+    // Insert loading placeholder
+    editor.chain().insertContentAt(position, {
+      type: "imageLoading",
+      attrs: { id: tempId },
+    }).run();
+
+    try {
+      const url = await uploadImageToR2(file, articleId);
+
+      // Replace placeholder with actual image
+      const tr = editor.state.tr;
+      editor.state.doc.descendants((node, pos) => {
+        if (node.type.name === "imageLoading" && node.attrs.id === tempId) {
+          tr.replaceWith(pos, pos + node.nodeSize, editor.schema.nodes.imageWithRemove.create({ src: url }));
+        }
+      });
+      editor.view.dispatch(tr);
+
+      onImageUploaded?.(url);
+    } catch (err) {
+      console.error("Image drop upload failed:", err);
+    }
+  },
+
+  onPaste: async (editor, files, pos) => {
+    const file = files[0];
+    if (!file) return;
+    if (!file.type.startsWith("image/")) return;
+
+    const position = getSafePos(pos, editor);
+    const tempId = `temp-${Date.now()}`;
+
+    editor.chain().insertContentAt(position, {
+      type: "imageLoading",
+      attrs: { id: tempId },
+    }).run();
+
+    try {
+      const url = await uploadImageToR2(file, articleId);
+
+      const tr = editor.state.tr;
+      editor.state.doc.descendants((node, pos) => {
+        if (node.type.name === "imageLoading" && node.attrs.id === tempId) {
+          tr.replaceWith(pos, pos + node.nodeSize, editor.schema.nodes.imageWithRemove.create({ src: url }));
+        }
+      });
+      editor.view.dispatch(tr);
+
+      onImageUploaded?.(url);
+    } catch (err) {
+      console.error("Image paste upload failed:", err);
+    }
+  },
+})
+,
 
 
   ],
@@ -113,27 +185,49 @@ DragHandle.configure({
   );
 
   // 🔹 File picker
-  const addImage = useCallback(() => {
-    const input = document.createElement("input");
-    input.type = "file";
-    input.accept = ".png, .jpg, .jpeg, .webp, .gif";
+const addImage = useCallback(() => {
+  if (!editor) return;
 
-    input.onchange = () => {
-      if (!input.files?.length) return;
-      const file = input.files[0];
+  const input = document.createElement("input");
+  input.type = "file";
+  input.accept = ".png, .jpg, .jpeg, .webp, .gif";
 
-      (async () => {
-        try {
-          const url = await uploadImageToR2(file, articleId);
-          await insertImage(url);
-        } catch (err) {
-          console.error("Image picker upload failed:", err);
+  input.onchange = async () => {
+    if (!input.files?.length) return;
+    const file = input.files[0];
+
+    const position = editor.state.selection.from; // insert at cursor
+    const tempId = `temp-${Date.now()}`;
+
+    // Insert loading placeholder
+    editor.chain().insertContentAt(position, {
+      type: "imageLoading",
+      attrs: { id: tempId },
+    }).run();
+
+    try {
+      const url = await uploadImageToR2(file, articleId);
+
+      // Replace loading placeholder with real image
+      const tr = editor.state.tr;
+      editor.state.doc.descendants((node, pos) => {
+        if (node.type.name === "imageLoading" && node.attrs.id === tempId) {
+          tr.replaceWith(pos, pos + node.nodeSize, editor.schema.nodes.imageWithRemove.create({ src: url }));
         }
-      })();
-    };
+      });
+      editor.view.dispatch(tr);
 
-    input.click();
-  }, [insertImage, articleId]);
+      // Track uploaded image
+      uploadedImagesRef.current.add(url);
+      onImageUploaded?.(url);
+    } catch (err) {
+      console.error("Image picker upload failed:", err);
+    }
+  };
+
+  input.click();
+}, [editor, articleId, onImageUploaded]);
+
 
   // 🔹 Paste handler
   const handlePaste = useCallback(

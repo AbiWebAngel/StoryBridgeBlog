@@ -7,6 +7,8 @@ import JoinOurPrograms from "../components/home/JoinOurPrograms";
 import MessageFromDirector from "../components/home/MessageFromDirector";
 import { getHomeContent } from "@/lib/getHomeContent";
 
+
+
 export default async function HomePage() {
   // Fetch home content from Firestore
   const homeContent = await getHomeContent();

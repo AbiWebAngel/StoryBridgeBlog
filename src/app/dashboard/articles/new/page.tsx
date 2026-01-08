@@ -16,6 +16,7 @@ import { X } from "lucide-react";
 import FloatingSaveBar from "@/components/admin/FloatingSaveBar";
 import { useRef } from "react";
 
+
 export default function NewArticlePage() {
   const { user: currentAuthUser } = useAuth();
 
