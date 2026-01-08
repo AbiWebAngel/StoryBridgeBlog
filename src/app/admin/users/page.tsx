@@ -293,10 +293,11 @@ useEffect(() => {
   return (
   <>
     <div className="px-6 min-h-screen font-sans">
-      <div className="max-w-3xl mx-auto">
+      <div className="max-w-5xl mx-auto">
         <h1 className="text-3xl font-extrabold text-[#4A3820] mb-6 text-center !font-sans">
           User Management
-        </h1>
+        </h1> 
+        <div className="h-px bg-[#E6DED1] my-6"></div>
 
         {/* Guest State - When user is not logged in */}
         {!currentAuthUser && (
@@ -332,7 +333,7 @@ useEffect(() => {
             )}
 
             <div className="bg-[#F0E8DB] border border-[#D8CDBE] rounded-lg shadow-md p-6 sm:p-8">
-             <div className="flex flex-col sm:flex-row justify-between items-start gap-4 mb-6">
+             <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-6 mb-8">
               {/* LEFT: Heading + counts */}
               <div className="flex flex-col">
                 <h2 className="text-2xl font-medium text-[#4A3820] !font-sans">
@@ -352,7 +353,9 @@ useEffect(() => {
                   placeholder="Search by name, email, role, disabled/enabled, or date (DD/MM/YYYY)..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full sm:w-96 px-4 py-2 rounded-lg border-2 border-[#805C2C] bg-white text-[#4A3820] placeholder-[#4A3820]/60 focus:outline-none focus:ring-2 focus:ring-[#805C2C]/50"
+                 className="w-full sm:w-80 px-4 py-2 rounded-xl 
+                border border-[#C9BBAA] bg-white text-[#4A3820]
+                placeholder-[#4A3820]/50 focus:ring-2 focus:ring-[#805C2C]/40"
                 />
               </div>
             </div>
@@ -364,21 +367,23 @@ useEffect(() => {
                   </div>
                 ) : (
                 // ADDED: Scrollable container with max height
-                <div 
-                  className="space-y-4 max-h-[60vh] overflow-y-auto pr-2 scrollable-description"
-                >
+               <div className="space-y-6 max-h-[65vh] overflow-y-auto pr-2 scrollable-description">
                   {filteredUsers.map((u) => {
                     const isSuperAdmin = u.uid === "z2Vhrt7WiBSBDLlvnNuJ3PMtsvk2";
                     const isCurrentUser = u.uid === currentAuthUser?.uid;
                     return (
                       <div
                         key={u.uid}
-                        className={`rounded-lg bg-white border border-[#D8CDBE] p-4 shadow-md ${
-                          isCurrentUser ? "border-l-4 border-l-[#805C2C]" : ""
-                        } ${u.disabled ? "opacity-80" : ""}`}
+                        className={`
+                          rounded-xl bg-white border border-[#E6DED1] 
+                          p-5 shadow-sm hover:shadow-md transition-shadow
+                          ${isCurrentUser ? "border-l-4 border-l-[#805C2C]" : ""}
+                          ${u.disabled ? "opacity-70" : ""}
+                        `}
+
                       >
                         {/* UPPER SECTION: User Info */}
-                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
                           {/* User Details */}
                           <div className="min-w-0 flex-1">
                             <div className="flex items-center flex-wrap gap-2 mb-1">
@@ -417,16 +422,18 @@ useEffect(() => {
                         </div>
 
                         {/* LOWER SECTION: Controls - Stack on mobile */}
-                        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pt-3 border-t border-gray-100">
+                       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 
+                        pt-4 border-t border-[#EDE7DD]">
+
                           {/* Role Selector */}
                           <div className="flex items-center gap-2">
                             <select
-                              className={`px-3 py-2 rounded-lg border-2 ${
-                                isCurrentUser 
-                                  ? 'border-gray-400 bg-gray-100 text-gray-500' 
-                                  : 'border-[#805C2C] bg-[#F0E8DB] text-[#4A3820]'
-                              } font-inter min-w-[120px] disabled:opacity-60 disabled:cursor-not-allowed`}
-                              value={u.role || "reader"}
+                           className={`px-3 py-2 rounded-lg border 
+                          bg-[#F7F2EB] text-[#4A3820] 
+                          focus:ring-2 focus:ring-[#805C2C]/40
+                          disabled:bg-gray-100 disabled:border-gray-300 disabled:text-gray-500
+                          `}
+
                               disabled={isSuperAdmin || isCurrentUser || updatingUid === u.uid}
                               onChange={(e) => handleRoleChange(u.uid, e.target.value, u)}
                             >
