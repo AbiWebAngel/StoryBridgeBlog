@@ -40,6 +40,7 @@ export default function NewArticlePage() {
   const articleIdRef = useRef<string>(crypto.randomUUID());
   const articleId = articleIdRef.current;
   const hasSavedOnceRef = useRef(false);
+  const [pageReady, setPageReady] = useState(false);
 
   // -------------------------
   // AUTO GENERATE SLUG
@@ -53,6 +54,11 @@ export default function NewArticlePage() {
       .replace(/^-+|-+$/g, "");
     setSlug(newSlug);
   }, [title]);
+
+  useEffect(() => {
+  const timer = setTimeout(() => setPageReady(true), 50); // tiny delay
+  return () => clearTimeout(timer);
+}, []);
 
   // -------------------------
   // TAG HELPERS
@@ -219,30 +225,19 @@ const handleAddTag = (e: React.KeyboardEvent<HTMLInputElement>) => {
     }
   };
 
-  // -------------------------
-  // GUEST UI
-  // -------------------------
-  if (!currentAuthUser) {
-    return (
-      <div className="px-6 min-h-screen pb-32 font-sans">
-        <div className="max-w-3xl mx-auto">
-          <h1 className="text-3xl font-extrabold text-[#4A3820] mb-6 text-center !font-sans">
-            Create New Article
-          </h1>
-          <div className="space-y-6 mt-8">
-            <div className="bg-[#F0E8DB] border border-[#D8CDBE] rounded-lg shadow-md p-6 sm:p-8">
-              <h2 className="text-2xl font-extrabold text-[#4A3820] mb-6 text-center !font-sans">
-                Please Log In
-              </h2>
-              <p className="text-center text-lg text-[#4A3820] mb-6">
-                Log in as an administrator or author to create new articles.
-              </p>
-            </div>
-          </div>
-        </div>
+if (!pageReady) {
+  return (
+    <div className="min-h-screen flex flex-col items-center justify-center bg-[#F0E8DB]">
+      <div className="w-48 h-2 bg-[#E0D6C7] rounded-full overflow-hidden">
+        <div className="h-full w-full animate-pulse bg-[#4A3820]"></div>
       </div>
-    );
-  }
+
+      <p className="mt-4 text-[#4A3820] font-medium text-lg !font-sans">
+        Loading editor…
+      </p>
+    </div>
+  );
+}
 
   // -------------------------
   // MAIN UI

@@ -14,9 +14,9 @@ type UserRecord = {
 };
 
 export default function AdminUsersPage() {
-  const { 
-    user: currentAuthUser, 
-  } = useAuth(); // Get auth functions from context
+  
+const { user: currentAuthUser, authReady } = useAuth();
+// Get auth functions from context
   
   const [users, setUsers] = useState<UserRecord[]>([]);
   const [filteredUsers, setFilteredUsers] = useState<UserRecord[]>([]);
@@ -101,13 +101,19 @@ export default function AdminUsersPage() {
     }
   };
 
-  useEffect(() => {
-    if (currentAuthUser) {
-      fetchUsers();
-    } else {
-      setLoading(false);
-    }
-  }, [currentAuthUser]); // Refetch when current user changes
+useEffect(() => {
+  // Only fetch when Firebase auth is ready
+  if (!authReady) return;
+
+  if (currentAuthUser) {
+    fetchUsers();
+  } else {
+    setUsers([]);
+    setFilteredUsers([]);
+    setLoading(false);
+  }
+}, [authReady, currentAuthUser]);
+
 
   // Filter users based on search query
   useEffect(() => {
@@ -269,6 +275,20 @@ export default function AdminUsersPage() {
     setUserToUpdate(null);
     setUserToDisable(null);
   };
+  // Show loading until Firebase has finished initializing
+  if (!authReady || loading) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-[#F0E8DB]">
+        <div className="w-48 h-2 bg-[#E0D6C7] rounded-full overflow-hidden">
+          <div className="h-full w-full animate-pulse bg-[#4A3820]"></div>
+        </div>
+        <p className="mt-4 text-[#4A3820] font-medium text-lg !font-sans">
+          Loading users...
+        </p>
+      </div>
+    );
+  }
+
 
   return (
   <>
@@ -338,13 +358,11 @@ export default function AdminUsersPage() {
             </div>
 
 
-              {loading ? (
-                <p className="text-center text-[#4A3820]">Loading users...</p>
-              ) : filteredUsers.length === 0 ? (
-                <div className="text-center text-[#4A3820] p-4">
-                  {searchQuery ? "No users match your search." : "No users found."}
-                </div>
-              ) : (
+              {!loading && filteredUsers.length === 0 ? (
+                  <div className="text-center text-[#4A3820] p-4">
+                    {searchQuery ? "No users match your search." : "No users found."}
+                  </div>
+                ) : (
                 // ADDED: Scrollable container with max height
                 <div 
                   className="space-y-4 max-h-[60vh] overflow-y-auto pr-2 scrollable-description"

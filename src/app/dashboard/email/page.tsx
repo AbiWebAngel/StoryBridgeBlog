@@ -42,35 +42,28 @@ export default function EmailPage() {
   const MAX_REAUTH_ATTEMPTS = 3;
   const REAUTH_ATTEMPT_RESET_MS = 15 * 60 * 1000; // 15 minutes
   const [cooldown, setCooldown] = useState(0); 
-
+  const [fetching, setfetching] = useState(true);
 
   // Check if user is from a provider (Google, etc.) and populate data
-  useEffect(() => {
-    if (user) {
-      setCurrentEmail(user.email || "");
-      
-      // Check if user has provider data
-      if (user.providerData && user.providerData.length > 0) {
-        const providerId = user.providerData[0]?.providerId;
-        const isProvider = providerId !== "password";
-        
-        setIsProviderUser(isProvider);
-        
-        // Set provider name for display
-        if (providerId === "google.com") {
-          setProviderName("Google");
-        } else if (providerId === "facebook.com") {
-          setProviderName("Facebook");
-        } else if (providerId === "github.com") {
-          setProviderName("GitHub");
-        } else if (providerId === "apple.com") {
-          setProviderName("Apple");
-        } else if (isProvider) {
-          setProviderName("Social Provider");
-        }
-      }
+useEffect(() => {
+  if (user) {
+    setCurrentEmail(user.email || "");
+    setfetching(false);
+    
+    // Check provider info...
+    if (user.providerData && user.providerData.length > 0) {
+      const providerId = user.providerData[0]?.providerId;
+      const isProvider = providerId !== "password";
+      setIsProviderUser(isProvider);
+
+      if (providerId === "google.com") setProviderName("Google");
+      else if (providerId === "facebook.com") setProviderName("Facebook");
+      else if (providerId === "github.com") setProviderName("GitHub");
+      else if (providerId === "apple.com") setProviderName("Apple");
+      else if (isProvider) setProviderName("Social Provider");
     }
-  }, [user]);
+  }
+}, [user]);
 
 
 
@@ -410,14 +403,21 @@ const handleChangeEmail = async (e: React.FormEvent) => {
     setErrorMessage("");
   };
 
-  if (!user) {
-    return (
-      <div className="min-h-screen flex items-center justify-center text-[#4A3820]">
-        Please log in to change your email.
+   // 🔹 Show loading bar while fetching
+ if (fetching) {
+  return (
+    <div className="min-h-screen flex flex-col items-center justify-center bg-[#F0E8DB]">
+      <div className="w-48 h-2 bg-[#E0D6C7] rounded-full overflow-hidden">
+        <div className="h-full w-full animate-pulse bg-[#4A3820]"></div>
       </div>
-    );
-  }
+      <p className="mt-4 text-[#4A3820] font-medium text-lg !font-sans">
+        Loading email...
+      </p>
+    </div>
+  );
+}
 
+  
   return (
     <div className="min-h-screen px-6 font-sans">
       <div className="max-w-md mx-auto">

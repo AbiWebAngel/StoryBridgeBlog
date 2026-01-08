@@ -5,10 +5,9 @@ import { IconType } from "react-icons";
 import { FiHeart, FiUser, FiLock, FiMail, FiBook, FiUsers, FiSettings, FiFileText } from "react-icons/fi";
 import { useAuth } from "@/context/AuthContext";
 import LoginModal from "@/components/LoginModal";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 
-// Define types for options
 interface Option {
   label: string;
   href?: string;
@@ -19,6 +18,7 @@ interface Option {
 export default function DashboardHome() {
   const { 
     user, 
+    authReady,
     loginModalOpen, 
     openLoginModal, 
     closeLoginModal, 
@@ -32,7 +32,7 @@ export default function DashboardHome() {
   const firstName = user?.firstName || "Unknown";
   const greetingName = firstName;
 
-  // Define options for different user roles
+  // Options for different roles
   const profileOptions: Option[] = [
     { label: "My Favourites", href: "/dashboard/favourites", icon: FiHeart },
     { label: "My Profile", href: "/dashboard/profile", icon: FiUser },
@@ -51,38 +51,10 @@ export default function DashboardHome() {
     { label: "User Management", href: "/admin/users", icon: FiUsers },
     { label: "Site Content", href: "/admin/site-content", icon: FiFileText },
     { label: "Analytics Dashboard", href: "/admin/analytics", icon: FiUsers },
-   
   ];
-
-  // Combine options based on user role
-  const getOptionsForRole = (): Option[] => {
-    switch(role) {
-      case "admin":
-        // Admin gets all options: admin + author + profile
-        return [...adminOptions, ...authorOptions, ...profileOptions];
-      case "author":
-        // Author gets author options + profile options
-        return [...authorOptions, ...profileOptions];
-      case "reader":
-        // Reader only gets profile options
-        return profileOptions;
-      default:
-        return [];
-    }
-  };
-
-  const handleSwitchToRegister = () => {
-    closeLoginModal();
-    setTimeout(() => {
-      setRegisterModalOpen(true);
-    }, 300);
-  };
-
-
 
   const renderOptionCard = (option: Option) => {
     const Icon = option.icon;
-    
     if (option.action === "forgot") {
       return (
         <div
@@ -91,10 +63,7 @@ export default function DashboardHome() {
           className="flex flex-col items-center justify-center py-6 px-8 border border-[#D8CDBE] rounded-md bg-white/40 text-[#4A3820] hover:bg-[#E6DCCB] transition-colors duration-200 text-lg font-medium group text-center cursor-pointer"
           style={{ minWidth: "200px", minHeight: "120px" }}
         >
-          <Icon
-            size={28}
-            className="mb-2 stroke-current text-[#4A3820] transition-colors duration-300 group-hover:text-[#6D4F27]"
-          />
+          <Icon size={28} className="mb-2 stroke-current text-[#4A3820] transition-colors duration-300 group-hover:text-[#6D4F27]" />
           <span className="leading-tight">{option.label}</span>
         </div>
       );
@@ -107,93 +76,75 @@ export default function DashboardHome() {
         className="flex flex-col items-center justify-center py-6 px-8 border border-[#D8CDBE] rounded-md bg-white/40 text-[#4A3820] hover:bg-[#E6DCCB] transition-colors duration-200 text-lg font-medium group text-center"
         style={{ minWidth: "200px", minHeight: "120px" }}
       >
-        <Icon
-          size={28}
-          className="mb-2 stroke-current text-[#4A3820] transition-colors duration-300 group-hover:text-[#6D4F27]"
-        />
+        <Icon size={28} className="mb-2 stroke-current text-[#4A3820] transition-colors duration-300 group-hover:text-[#6D4F27]" />
         <span className="leading-tight">{option.label}</span>
       </Link>
     );
   };
 
+  const handleSwitchToRegister = () => {
+    closeLoginModal();
+    setTimeout(() => setRegisterModalOpen(true), 300);
+  };
+
+  // --- NEW: Loading state like SiteContentDashboard ---
+  if (!authReady) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-[#F0E8DB]">
+        <div className="w-48 h-2 bg-[#E0D6C7] rounded-full overflow-hidden">
+          <div className="h-full w-full animate-pulse bg-[#4A3820]"></div>
+        </div>
+        <p className="mt-4 text-[#4A3820] font-medium text-lg !font-sans">Loading dashboard…</p>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#F0E8DB]">
+        <p className="text-[#4A3820] text-xl font-semibold">You must be logged in to access this page.</p>
+      </div>
+    );
+  }
+
   return (
     <>
       <div className="min-h-screen px-4 sm:px-6 lg:px-8 !font-sans">
         <div className="max-w-4xl mx-auto">
-          <h1 className="text-3xl font-extrabold text-[#4A3820] mb-2 text-center  !font-sans">
+          <h1 className="text-3xl font-extrabold text-[#4A3820] mb-2 text-center !font-sans">
             Welcome to Your Dashboard
           </h1>
-
           <p className="!text-3xl text-[#4A3820] mb-8 text-center">
             Hello {greetingName}, <span className="font-semibold !text-3xl capitalize">{role || "Guest"}</span>
           </p>
 
-          {/* Dashboard Sections based on role */}
-          {user && (
-            <div className="space-y-8">
-              {/* Admin Tools Section - Only for admins */}
-              {role === "admin" && (
-                <div className="space-y-6">
-                  <div className="bg-[#F0E8DB] border border-[#D8CDBE] rounded-lg shadow-md p-6 sm:p-8">
-                    <h2 className="text-2xl font-extrabold text-[#4A3820] mb-6 text-center  !font-sans">
-                      Admin Tools 
-                    </h2>
-                    <div className="flex flex-wrap justify-center gap-4">
-                      {adminOptions.map(renderOptionCard)}
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Author Tools Section - Only for authors and admins */}
-              {(role === "author" || role === "admin") && (
-                <div className="space-y-6">
-                  <div className="bg-[#F0E8DB] border border-[#D8CDBE] rounded-lg shadow-md p-6 sm:p-8">
-                    <h2 className="text-2xl font-extrabold text-[#4A3820] mb-6 text-center  !font-sans">
-                      Author Tools 
-                    </h2>
-                    <div className="flex flex-wrap justify-center gap-4">
-                      {authorOptions.map(renderOptionCard)}
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Profile Section - For all logged-in users */}
+          {/* Role-based sections */}
+          <div className="space-y-8">
+            {role === "admin" && (
               <div className="space-y-6">
                 <div className="bg-[#F0E8DB] border border-[#D8CDBE] rounded-lg shadow-md p-6 sm:p-8">
-                  <h2 className="text-2xl font-extrabold text-[#4A3820] mb-6 text-center !font-sans">
-                    My Account
-                  </h2>
-                  <div className="flex flex-wrap justify-center gap-4">
-                    {profileOptions.map(renderOptionCard)}
-                  </div>
+                  <h2 className="text-2xl font-extrabold text-[#4A3820] mb-6 text-center !font-sans">Admin Tools</h2>
+                  <div className="flex flex-wrap justify-center gap-4">{adminOptions.map(renderOptionCard)}</div>
                 </div>
               </div>
-            </div>
-          )}
+            )}
 
-          {/* Guest State - When user is not logged in */}
-          {!user && (
-            <div className="space-y-6 mt-8">
-              <div className="bg-[#F0E8DB] border border-[#D8CDBE] rounded-lg shadow-md p-6 sm:p-8">
-                <h2 className="text-2xl font-extrabold text-[#4A3820] mb-6 text-center !font-sans">
-                  Please Log In
-                </h2>
-                <div className="text-center">
-                  <p className="text-lg text-[#4A3820] mb-6">
-                    Log In to access your personalized dashboard
-                  </p>
-                  <button
-                    onClick={() => openLoginModal(false)}
-                    className="px-6 py-3 bg-[#6D4F27] text-white font-medium rounded-md hover:bg-[#5A3F20] transition-colors duration-200 !font-sans"
-                  >
-                    Log In
-                  </button>
+            {(role === "author" || role === "admin") && (
+              <div className="space-y-6">
+                <div className="bg-[#F0E8DB] border border-[#D8CDBE] rounded-lg shadow-md p-6 sm:p-8">
+                  <h2 className="text-2xl font-extrabold text-[#4A3820] mb-6 text-center !font-sans">Author Tools</h2>
+                  <div className="flex flex-wrap justify-center gap-4">{authorOptions.map(renderOptionCard)}</div>
                 </div>
               </div>
+            )}
+
+            <div className="space-y-6">
+              <div className="bg-[#F0E8DB] border border-[#D8CDBE] rounded-lg shadow-md p-6 sm:p-8">
+                <h2 className="text-2xl font-extrabold text-[#4A3820] mb-6 text-center !font-sans">My Account</h2>
+                <div className="flex flex-wrap justify-center gap-4">{profileOptions.map(renderOptionCard)}</div>
+              </div>
             </div>
-          )}
+          </div>
         </div>
       </div>
 

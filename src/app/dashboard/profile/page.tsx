@@ -3,17 +3,19 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { db } from "@/lib/firebase";
-import { doc, updateDoc } from "firebase/firestore";
+import { doc, getDoc, updateDoc } from "firebase/firestore";
 import { validateName } from "@/utils/validators";
 
 export default function ProfilePage() {
   const { user } = useAuth();
 
-
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
-  const [loading, setLoading] = useState(false);
+
+  const [fetching, setFetching] = useState(true); // 🔹 for initial load
+  const [loading, setLoading] = useState(false);  // 🔹 for save operation
+
   const [successMessage, setSuccessMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [validationErrors, setValidationErrors] = useState({
@@ -21,50 +23,63 @@ export default function ProfilePage() {
     lastName: "",
   });
 
-  // Populate fields when user loads
+  // Fetch user data on load
   useEffect(() => {
-    if (user) {
-      setFirstName(user.firstName || "");
-      setLastName(user.lastName || "");
-      setEmail(user.email || "");
-    }
+    if (!user) return;
+
+    const fetchData = async () => {
+      setFetching(true);
+      try {
+        // Fetch latest user data from Firestore
+        const userRef = doc(db, "users", user.uid);
+        const userSnap = await getDoc(userRef);
+        if (userSnap.exists()) {
+          const data = userSnap.data();
+          setFirstName(data.firstName || "");
+          setLastName(data.lastName || "");
+          setEmail(data.email || user.email || "");
+        } else {
+          // fallback if no data exists in Firestore
+          setFirstName(user.firstName || "");
+          setLastName(user.lastName || "");
+          setEmail(user.email || "");
+        }
+      } catch (err) {
+        console.error(err);
+        setErrorMessage("Failed to load profile. Please refresh.");
+      } finally {
+        setFetching(false);
+      }
+    };
+
+    fetchData();
   }, [user]);
 
-  // Clear success message after 5 seconds
+  // Clear messages after 5s
   useEffect(() => {
     if (successMessage) {
-      const timer = setTimeout(() => {
-        setSuccessMessage("");
-      }, 5000);
+      const timer = setTimeout(() => setSuccessMessage(""), 5000);
       return () => clearTimeout(timer);
     }
   }, [successMessage]);
 
-  // Clear error message after 5 seconds
   useEffect(() => {
     if (errorMessage) {
-      const timer = setTimeout(() => {
-        setErrorMessage("");
-      }, 5000);
+      const timer = setTimeout(() => setErrorMessage(""), 5000);
       return () => clearTimeout(timer);
     }
   }, [errorMessage]);
 
   const validateForm = () => {
     let isValid = true;
-    const errors = {
-      firstName: "",
-      lastName: "",
-    };
+    const errors = { firstName: "", lastName: "" };
 
-    // Validate first name
     const firstNameError = validateName(firstName);
     if (firstNameError) {
       errors.firstName = firstNameError;
       isValid = false;
     }
 
-    // Validate last name
     const lastNameError = validateName(lastName);
     if (lastNameError) {
       errors.lastName = lastNameError;
@@ -79,35 +94,26 @@ export default function ProfilePage() {
     e.preventDefault();
     if (!user) return;
 
-    // Clear previous messages
     setSuccessMessage("");
     setErrorMessage("");
 
-    // Validate form
     if (!validateForm()) {
       setErrorMessage("Please fix the errors in the form.");
       return;
     }
 
-    // Check if anything has actually changed
     if (firstName === user.firstName && lastName === user.lastName) {
       setErrorMessage("No changes detected.");
       return;
     }
 
     setLoading(true);
-
     try {
       const userRef = doc(db, "users", user.uid);
       await updateDoc(userRef, { firstName, lastName });
 
       setSuccessMessage("Profile updated successfully!");
-      
-      // Clear any existing validation errors
-      setValidationErrors({
-        firstName: "",
-        lastName: "",
-      });
+      setValidationErrors({ firstName: "", lastName: "" });
     } catch (err) {
       console.error(err);
       setErrorMessage("Error updating profile. Please try again.");
@@ -116,7 +122,6 @@ export default function ProfilePage() {
     }
   };
 
-  // Handle real-time validation on blur
   const handleFirstNameBlur = () => {
     const error = validateName(firstName);
     setValidationErrors(prev => ({ ...prev, firstName: error || "" }));
@@ -127,10 +132,16 @@ export default function ProfilePage() {
     setValidationErrors(prev => ({ ...prev, lastName: error || "" }));
   };
 
-  if (!user) {
-    return (      <div className="min-h-screen flex items-center justify-center text-[#4A3820]">
-        Please log in to view your profile.
-
+  // 🔹 Show loading bar while fetching
+  if (fetching) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-[#F0E8DB]">
+        <div className="w-48 h-2 bg-[#E0D6C7] rounded-full overflow-hidden">
+          <div className="h-full w-full animate-pulse bg-[#4A3820]"></div>
+        </div>
+        <p className="mt-4 text-[#4A3820] font-medium text-lg !font-sans">
+          Loading profile...
+        </p>
       </div>
     );
   }

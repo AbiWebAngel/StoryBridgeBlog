@@ -152,3 +152,9 @@ textarea.scrollable-description::-webkit-scrollbar-thumb:hover {
 .editor-content li > p {
   margin-left: 0; /* remove extra space inside lists */
 }
+
+
+/* Optional: remove focus outline on nodes */
+.editor-content .ProseMirror:focus {
+  outline: none;
+}
