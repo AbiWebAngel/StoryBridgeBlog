@@ -116,8 +116,19 @@ textarea.scrollable-description::-webkit-scrollbar-thumb:hover {
   line-height: 1.7;
 }
 
-.editor-content [data-level="1"] { font-size: 28px; font-weight: 700; }
-.editor-content [data-level="2"] { font-size: 24px; font-weight: 600; }
+/* ensures your font-size always applies even if NodeViewWrapper adds a div */
+.editor-content [data-level="1"],
+.editor-content [data-level="1"] h1 {
+  font-size: 28px;
+  font-weight: 700;
+}
+
+.editor-content [data-level="2"],
+.editor-content [data-level="2"] h2 {
+  font-size: 24px;
+  font-weight: 600;
+}
+
 
 .editor-content p,
 .editor-content li,

@@ -23,6 +23,7 @@
     "@tiptap/react": "^3.14.0",
     "@tiptap/starter-kit": "^3.14.0",
     "axios": "^1.11.0",
+    "clsx": "^2.1.1",
     "firebase": "^12.6.0",
     "firebase-admin": "^13.6.0",
     "keen-slider": "^6.8.6",

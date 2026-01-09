@@ -1,30 +1,24 @@
 import Heading from "@tiptap/extension-heading";
-import {
-  ReactNodeViewRenderer,
-  NodeViewWrapper,
-  NodeViewContent,
-} from "@tiptap/react";
+import { ReactNodeViewRenderer, NodeViewWrapper, NodeViewContent } from "@tiptap/react";
 
 export const DraggableHeading = Heading.extend({
+  addOptions() {
+    return {
+      ...this.parent?.(),
+      levels: [1, 2],
+      HTMLAttributes: {},
+      marks: ['textStyle', 'bold', 'italic', 'underline'], // ✅ allow marks
+    };
+  },
+
   addNodeView() {
     return ReactNodeViewRenderer(({ node }) => (
-      <NodeViewWrapper className="flex items-start group" as="div">
-        <div
-          data-drag-handle
-          className="mr-2 drag-handle opacity-0 group-hover:opacity-100 cursor-grab select-none"
-          onMouseDown={e => e.preventDefault()}
-        />
-
-        {/* Render proper heading element dynamically */}
+      <NodeViewWrapper as="div" className="group" data-level={node.attrs.level}>
         <NodeViewContent
-          as={`h${node.attrs.level}` as any} 
-          className="flex-1 font-bold font-inter"
-          data-level={node.attrs.level}
+          as={`h${node.attrs.level}` as any}
+          className="font-inter font-bold"
         />
       </NodeViewWrapper>
-      
     ));
   },
-}).configure({
-  levels: [1, 2],
 });
