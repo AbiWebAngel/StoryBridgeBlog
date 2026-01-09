@@ -169,3 +169,14 @@ textarea.scrollable-description::-webkit-scrollbar-thumb:hover {
 .editor-content .ProseMirror:focus {
   outline: none;
 }
+
+.editor-content a {
+  color: #2563EB;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  font-size: 20px;
+}
+
+.editor-content a:hover {
+  opacity: 0.85;
+}

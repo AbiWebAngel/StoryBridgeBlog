@@ -3,7 +3,7 @@
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Underline from "@tiptap/extension-underline";
-import { useCallback, useRef, useEffect } from "react";
+import { useCallback, useRef, useEffect, useState } from "react";
 import { ImageWithRemove } from "../editor/extensions/ImageWithRemove";
 import ListItem from "@tiptap/extension-list-item";
 import { ListKit } from "@tiptap/extension-list";
@@ -18,6 +18,7 @@ import { Node as ProseMirrorNode } from "prosemirror-model";
 import { TextStyleKit } from '@tiptap/extension-text-style';
 import { Plugin } from 'prosemirror-state';
 import type { EditorState, Transaction } from 'prosemirror-state';
+import Link from "@tiptap/extension-link";
 
 
 
@@ -30,6 +31,9 @@ interface ArticleEditorProps {
 
 export default function ArticleEditor({ value, articleId, onChange, onImageUploaded }: ArticleEditorProps) {
   const uploadedImagesRef = useRef<Set<string>>(new Set());
+  const [linkModalOpen, setLinkModalOpen] = useState(false);
+  const [linkUrl, setLinkUrl] = useState("");
+  const [hasSelection, setHasSelection] = useState(false);
   
   // 🔹 Safe position helper
   const getSafePos = (pos: number | undefined, editor: ReturnType<typeof useEditor>): number => {
@@ -72,6 +76,15 @@ export default function ArticleEditor({ value, articleId, onChange, onImageUploa
         orderedList: { keepMarks: true, keepAttributes: false },
       }),
       Underline,
+      Link.configure({
+        openOnClick: false,      // don't navigate while editing
+        autolink: true,          // auto-detect pasted URLs
+        linkOnPaste: true,
+        HTMLAttributes: {
+          rel: "noopener noreferrer nofollow",
+          target: "_blank",
+        },
+      }),
       DraggableImage,
       ImageWithRemove.configure({
         inline: false,
@@ -114,6 +127,9 @@ export default function ArticleEditor({ value, articleId, onChange, onImageUploa
     ],
     content: value,
     onUpdate: ({ editor }) => onChange(editor.getJSON()),
+    onSelectionUpdate: ({ editor }) => {
+    setHasSelection(!editor.state.selection.empty);
+  },
   });
 
   // 🔹 Insert image helper
@@ -173,7 +189,40 @@ export default function ArticleEditor({ value, articleId, onChange, onImageUploa
 
     input.click();
   }, [editor]);
-  
+
+  const setLink = useCallback(() => {
+  if (!editor || editor.state.selection.empty) return;
+
+  const previousUrl = editor.getAttributes("link").href ?? "";
+  setLinkUrl(previousUrl);
+  setLinkModalOpen(true);
+}, [editor]);
+
+const applyLink = () => {
+  if (!editor) return;
+
+  if (!linkUrl) {
+    editor.chain().focus().extendMarkRange("link").unsetLink().run();
+  } else {
+    const safeUrl =
+      linkUrl.startsWith("http://") || linkUrl.startsWith("https://")
+        ? linkUrl
+        : `https://${linkUrl}`;
+
+    editor.chain().focus().extendMarkRange("link").setLink({ href: safeUrl }).run();
+    setLinkModalOpen(false);
+    editor.view.focus();
+
+  }
+
+  setLinkModalOpen(false);
+};
+
+
+const unsetLink = useCallback(() => {
+  editor?.chain().focus().unsetLink().run();
+}, [editor]);
+
 useEffect(() => {
   if (!editor) return;
 
@@ -210,20 +259,107 @@ const isHeading = editor?.isActive('heading')
       <div className="flex flex-wrap gap-2 p-2 border rounded bg-white" style={{ borderColor: "#D8CDBE" }}>
         <button onClick={() => editor.chain().focus().toggleBold().run()} className={`px-2 py-1 rounded ${editor.isActive("bold") ? "bg-[#E6DCCB]" : "bg-white"} !font-sans`}>B</button>
         <button onClick={() => editor.chain().focus().toggleItalic().run()} className={`px-2 py-1 rounded ${editor.isActive("italic") ? "bg-[#E6DCCB]" : "bg-white"} !font-sans`}>I</button>
+        <button
+        onClick={setLink}
+        disabled={!hasSelection}
+        className="px-2 py-1 rounded bg-white disabled:opacity-50"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          height="24px"
+          viewBox="0 -960 960 960"
+          width="24px"
+          fill="black"
+        >
+          <path d="M432.31-298.46H281.54q-75.34 0-128.44-53.1Q100-404.65 100-479.98q0-75.33 53.1-128.44 53.1-53.12 128.44-53.12h150.77v60H281.54q-50.39 0-85.96 35.58Q160-530.38 160-480q0 50.38 35.58 85.96 35.57 35.58 85.96 35.58h150.77v60ZM330-450v-60h300v60H330Zm197.69 151.54v-60h150.77q50.39 0 85.96-35.58Q800-429.62 800-480q0-50.38-35.58-85.96-35.57-35.58-85.96-35.58H527.69v-60h150.77q75.34 0 128.44 53.1Q860-555.35 860-480.02q0 75.33-53.1 128.44-53.1 53.12-128.44 53.12H527.69Z"/>
+        </svg>
+      </button>
+      <button
+      onClick={unsetLink}
+      disabled={!hasSelection}
+      className="px-2 py-1 rounded bg-white  disabled:opacity-50"
+    >
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        height="24px"
+        viewBox="0 -960 960 960"
+        width="24px"
+        fill="red"
+      >
+        <path d="M256-213.85 213.85-256l224-224-224-224L256-746.15l224 224 224-224L746.15-704l-224 224 224 224L704-213.85l-224-224-224 224Z"/>
+      </svg>
+    </button>
+
         <button onClick={() => editor.chain().focus().toggleUnderline().run()} className={`px-2 py-1 rounded ${editor.isActive("underline") ? "bg-[#E6DCCB]" : "bg-white"} !font-sans`}>U</button>
         <button onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()} className={`px-2 py-1 rounded ${editor.isActive("heading", { level: 1 }) ? "bg-[#E6DCCB]" : "bg-white"} !font-sans`}>H1</button>
         <button onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()} className={`px-2 py-1 rounded ${editor.isActive("heading", { level: 2 }) ? "bg-[#E6DCCB]" : "bg-white"} !font-sans`}>H2</button>
         <button onClick={() => editor.chain().focus().toggleList('bulletList','listItem').run()} className={`px-2 py-1 rounded ${editor.isActive('list',{ type: 'bulletList'}) ? "bg-[#E6DCCB]":"bg-white"} !font-sans`}>• List</button>
         <button onClick={() => editor.chain().focus().toggleList('orderedList','listItem').run()} className={`px-2 py-1 rounded ${editor.isActive('list',{ type: 'orderedList'}) ? "bg-[#E6DCCB]":"bg-white"} !font-sans`}>1. List</button>
         <button onClick={() => editor.chain().focus().toggleCodeBlock().run()} className={`px-2 py-1 rounded ${editor.isActive("codeBlock") ? "bg-[#E6DCCB]":"bg-white"} !font-sans`}>{"</>"}</button>
-        <button onClick={addImage} className="px-2 py-1 rounded bg-white hover:bg-[#E6DCCB] !font-sans">Image</button>
-        <button onClick={() => editor.chain().focus().undo().run()} className="px-2 py-1 rounded bg-white hover:bg-[#E6DCCB] !font-sans">Undo</button>
-        <button onClick={() => editor.chain().focus().redo().run()} className="px-2 py-1 rounded bg-white hover:bg-[#E6DCCB] !font-sans">Redo</button>
+        <button
+          onClick={addImage}
+          className="px-2 py-1 rounded bg-white hover:bg-[#E6DCCB] disabled:opacity-50"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            height="24px"
+            viewBox="0 -960 960 960"
+            width="24px"
+            fill="black"
+          >
+            <path d="M212.31-140Q182-140 161-161q-21-21-21-51.31v-535.38Q140-778 161-799q21-21 51.31-21h535.38Q778-820 799-799q21 21 21 51.31v535.38Q820-182 799-161q-21 21-51.31 21H212.31Zm0-60h535.38q4.62 0 8.46-3.85 3.85-3.84 3.85-8.46v-535.38q0-4.62-3.85-8.46-3.84-3.85-8.46-3.85H212.31q-4.62 0-8.46 3.85-3.85 3.84-3.85 8.46v535.38q0 4.62 3.85 8.46 3.84 3.85 8.46 3.85ZM270-290h423.07L561.54-465.38 449.23-319.23l-80-102.31L270-290Zm-70 90v-560 560Z"/>
+          </svg>
+        </button>
+
+        <button
+          onClick={() => editor.chain().focus().undo().run()}
+          className="px-2 py-1 rounded bg-white hover:bg-[#E6DCCB] disabled:opacity-50"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            height="24px"
+            viewBox="0 -960 960 960"
+            width="24px"
+            fill="black"
+          >
+            <path d="M288.08-220v-60h287.07q62.62 0 107.77-41.35 45.16-41.34 45.16-102.11 0-60.77-45.16-101.93-45.15-41.15-107.77-41.15H294.31l111.3 111.31-42.15 42.15L180-596.54 363.46-780l42.15 42.15-111.3 111.31h280.84q87.77 0 150.35 58.58t62.58 144.5q0 85.92-62.58 144.69Q662.92-220 575.15-220H288.08Z"/>
+          </svg>
+        </button>
+
+        <button
+          onClick={() => editor.chain().focus().redo().run()}
+          className="px-2 py-1 rounded bg-white hover:bg-[#E6DCCB] disabled:opacity-50"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            height="24px"
+            viewBox="0 -960 960 960"
+            width="24px"
+            fill="black"
+          >
+            <path d="M384.85-220q-87.77 0-150.35-58.77t-62.58-144.69q0-85.92 62.58-144.5t150.35-58.58h280.84l-111.3-111.31L596.54-780 780-596.54 596.54-413.08l-42.15-42.15 111.3-111.31H384.85q-62.62 0-107.77 41.15-45.16 41.16-45.16 101.93 0 60.77 45.16 102.11Q322.23-280 384.85-280h287.07v60H384.85Z"/>
+          </svg>
+        </button>
+
       </div>
 
       {/* Color Picker */}
       <div className="flex gap-1">
-        {['#E53935','#059669','#2563EB','#413320','#B26C1F','#7C3AED','#F97316','#FBBF24','#14B8A6','#DB2777','#4B5563'].map(color => (
+        {[
+        '#E53935',
+        '#059669',
+        '#2563EB',
+        '#413320',
+        '#B26C1F',
+        '#7C3AED',
+        '#F97316',
+        '#FBBF24',
+        '#14B8A6',
+        '#DB2777',
+        '#F472B6',
+        '#4B5563'
+      ]
+      .map(color => (
         <button
           key={color}
           onClick={() => editor?.chain().focus().setColor(color).run()}
@@ -241,6 +377,41 @@ const isHeading = editor?.isActive('heading')
         ))}
         <button onClick={() => editor.chain().focus().unsetColor().run()} className="px-2 py-1 border rounded ml-2 !font-sans">Reset</button>
       </div>
+
+      {linkModalOpen && (
+      <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+        <div className="bg-white p-4 rounded w-80 space-y-3">
+          <h3 className="font-semibold !font-sans">Insert link</h3>
+
+          <input
+            value={linkUrl}
+            onChange={(e) => setLinkUrl(e.target.value)}
+            placeholder="https://example.com"
+            className="w-full border px-2 py-1 rounded !font-sans"
+          />
+
+          <div className="flex justify-end gap-2">
+         <button
+            onClick={() => {
+              setLinkModalOpen(false);
+              editor?.view.focus();
+            }}
+            className="!font-sans"
+          >
+            Cancel
+          </button>
+
+            <button
+              onClick={applyLink}
+              className="px-3 py-1 bg-[#E6DCCB] rounded !font-sans"
+            >
+              Apply
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
+
 
       {/* Editor */}
       <div className="relative border rounded bg-white p-4 min-h-[300px] editor-content max-w-none" style={{ borderColor: "#D8CDBE" }}>
