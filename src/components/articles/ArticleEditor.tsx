@@ -19,8 +19,9 @@ import { TextStyleKit } from '@tiptap/extension-text-style';
 import { Plugin } from 'prosemirror-state';
 import type { Transaction } from 'prosemirror-state';
 import Link from "@tiptap/extension-link";
-import EmojiPicker from "@emoji-mart/react";
-import emojiData from "@emoji-mart/data";
+import Picker from "@emoji-mart/react";
+import data from '@emoji-mart/data';
+import CharacterCount from '@tiptap/extension-character-count'
 
 
 
@@ -120,6 +121,10 @@ export default function ArticleEditor({ value, articleId, onChange, onImageUploa
         },
       }),
       ImageLoading,
+      CharacterCount.configure({
+      limit: null, // or set a limit if you want
+    }),
+
      FileHandler.configure({
   allowedMimeTypes: ["image/jpeg", "image/png", "image/webp", "image/gif"],
 
@@ -469,21 +474,21 @@ const isHeading = editor?.isActive('heading')
       </button>
 
       {/* Emoji Picker */}
-     <EmojiPicker
-  data={emojiData}
-  onEmojiSelect={handleEmojiClick}
-  theme="light"
-  lazyLoadEmojis
-  emojiSize={24}         // smaller emoji size improves scroll
-  perLine={8}            // how many emojis per row
-  maxFrequentRows={2}    // limits frequent emojis to avoid huge rendering
-  style={{
-    backgroundColor: "transparent",
-    boxShadow: "none",
-    height: "100%",       // use full height of container
-  }}
-  searchDisabled={false}
-/>
+     <Picker
+      data={data}
+      onEmojiSelect={handleEmojiClick}
+      theme="light"
+      lazyLoadEmojis
+      emojiSize={24}         // smaller emoji size improves scroll
+      perLine={8}            // how many emojis per row
+      maxFrequentRows={2}    // limits frequent emojis to avoid huge rendering
+      style={{
+        backgroundColor: "transparent",
+        boxShadow: "none",
+        height: "100%",       // use full height of container
+      }}
+      searchDisabled={false}
+    />
 
     </div>
   </div>
@@ -496,6 +501,15 @@ const isHeading = editor?.isActive('heading')
       <div className="relative border rounded bg-white p-4 min-h-[300px] editor-content max-w-none" style={{ borderColor: "#D8CDBE" }}>
         <EditorContent editor={editor} />
       </div>
+
+      <div className="text-sm text-gray-600 mt-2 !font-sans">
+  {(() => {
+    const text = editor.getText() || "";
+    const words = text.trim().split(/\s+/).filter(Boolean).length;
+    const chars = editor.storage.characterCount.characters();
+    return `${words} words - ${chars} characters`;
+  })()}
+</div>
     </div>
   );
 }
