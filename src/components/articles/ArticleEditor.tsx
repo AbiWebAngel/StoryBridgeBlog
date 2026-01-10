@@ -17,8 +17,15 @@ import { ImageLoading } from "@/components/editor/extensions/ImageLoading";
 import { Node as ProseMirrorNode } from "prosemirror-model";
 import { TextStyleKit } from '@tiptap/extension-text-style';
 import { Plugin } from 'prosemirror-state';
-import type { EditorState, Transaction } from 'prosemirror-state';
+import type { Transaction } from 'prosemirror-state';
 import Link from "@tiptap/extension-link";
+import EmojiPicker from "@emoji-mart/react";
+import emojiData from "@emoji-mart/data";
+
+
+
+
+
 
 
 
@@ -34,7 +41,9 @@ export default function ArticleEditor({ value, articleId, onChange, onImageUploa
   const [linkModalOpen, setLinkModalOpen] = useState(false);
   const [linkUrl, setLinkUrl] = useState("");
   const [hasSelection, setHasSelection] = useState(false);
-  
+  const [emojiOpen, setEmojiOpen] = useState(false);
+
+
   // 🔹 Safe position helper
   const getSafePos = (pos: number | undefined, editor: ReturnType<typeof useEditor>): number => {
     if (typeof pos === "number" && Number.isFinite(pos)) return pos;
@@ -54,6 +63,7 @@ export default function ArticleEditor({ value, articleId, onChange, onImageUploa
     return data.url;
   };
 
+  
   // 🔹 Editor instance
   const editor = useEditor({
     immediatelyRender: false,
@@ -218,6 +228,22 @@ const applyLink = () => {
   setLinkModalOpen(false);
 };
 
+const handleEmojiClick = (emojiData: any) => {
+  if (!editor) return;
+
+  const emoji = emojiData.native; // <---- THE IMPORTANT BIT
+
+  editor
+    .chain()
+    .focus()
+    .insertContent(emoji)
+    .run();
+
+  setEmojiOpen(false);
+};
+
+
+
 
 const unsetLink = useCallback(() => {
   editor?.chain().focus().unsetLink().run();
@@ -296,6 +322,7 @@ const isHeading = editor?.isActive('heading')
         <button onClick={() => editor.chain().focus().toggleList('bulletList','listItem').run()} className={`px-2 py-1 rounded ${editor.isActive('list',{ type: 'bulletList'}) ? "bg-[#E6DCCB]":"bg-white"} !font-sans`}>• List</button>
         <button onClick={() => editor.chain().focus().toggleList('orderedList','listItem').run()} className={`px-2 py-1 rounded ${editor.isActive('list',{ type: 'orderedList'}) ? "bg-[#E6DCCB]":"bg-white"} !font-sans`}>1. List</button>
         <button onClick={() => editor.chain().focus().toggleCodeBlock().run()} className={`px-2 py-1 rounded ${editor.isActive("codeBlock") ? "bg-[#E6DCCB]":"bg-white"} !font-sans`}>{"</>"}</button>
+
         <button
           onClick={addImage}
           className="px-2 py-1 rounded bg-white hover:bg-[#E6DCCB] disabled:opacity-50"
@@ -311,6 +338,12 @@ const isHeading = editor?.isActive('heading')
           </svg>
         </button>
 
+       <button
+          onClick={() => setEmojiOpen(!emojiOpen)}
+          className="px-2 py-1 rounded bg-white hover:bg-[#E6DCCB]"
+        >
+          😃
+        </button>
         <button
           onClick={() => editor.chain().focus().undo().run()}
           className="px-2 py-1 rounded bg-white hover:bg-[#E6DCCB] disabled:opacity-50"
@@ -383,12 +416,25 @@ const isHeading = editor?.isActive('heading')
         <div className="bg-white p-4 rounded w-80 space-y-3">
           <h3 className="font-semibold !font-sans">Insert link</h3>
 
-          <input
-            value={linkUrl}
-            onChange={(e) => setLinkUrl(e.target.value)}
-            placeholder="https://example.com"
-            className="w-full border px-2 py-1 rounded !font-sans"
-          />
+        <input
+          value={linkUrl}
+          onChange={(e) => setLinkUrl(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              e.preventDefault(); // stop form-y behavior
+              applyLink();        // save link
+            }
+
+            if (e.key === "Escape") {
+              e.preventDefault();
+              setLinkModalOpen(false);
+              editor?.view.focus();
+            }
+          }}
+          placeholder="https://example.com"
+          className="w-full border px-2 py-1 rounded !font-sans"
+        />
+
 
           <div className="flex justify-end gap-2">
          <button
@@ -411,6 +457,39 @@ const isHeading = editor?.isActive('heading')
         </div>
       </div>
     )}
+    {emojiOpen && (
+  <div className="fixed inset-0 flex items-center justify-center z-50">
+    <div className="relative w-[380px] max-h-[460px] overflow-auto">
+      {/* Close button */}
+      <button
+        onClick={() => setEmojiOpen(false)}
+        className="absolute top-1 right-10 text-black text-lg transform transition-transform duration-200 hover:scale-125"
+      >
+        ✕
+      </button>
+
+      {/* Emoji Picker */}
+     <EmojiPicker
+  data={emojiData}
+  onEmojiSelect={handleEmojiClick}
+  theme="light"
+  lazyLoadEmojis
+  emojiSize={24}         // smaller emoji size improves scroll
+  perLine={8}            // how many emojis per row
+  maxFrequentRows={2}    // limits frequent emojis to avoid huge rendering
+  style={{
+    backgroundColor: "transparent",
+    boxShadow: "none",
+    height: "100%",       // use full height of container
+  }}
+  searchDisabled={false}
+/>
+
+    </div>
+  </div>
+)}
+
+
 
 
       {/* Editor */}
