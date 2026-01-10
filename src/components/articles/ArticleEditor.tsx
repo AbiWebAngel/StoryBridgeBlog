@@ -11,6 +11,7 @@ import { DraggableParagraph } from "@/components/editor/extensions/DraggablePara
 import { DraggableHeading } from "@/components/editor/extensions/DraggableHeading";
 import { DraggableCodeBlock } from "@/components/editor/extensions/DraggableCodeBlock";
 import { DraggableImage } from "@/components/editor/extensions/DraggableImage";
+import { DraggableYouTube } from '@/components/editor/extensions/DraggableYouTube';
 import FileHandler from "@tiptap/extension-file-handler";
 import DragHandle from '@tiptap/extension-drag-handle';
 import { ImageLoading } from "@/components/editor/extensions/ImageLoading";
@@ -22,11 +23,6 @@ import Link from "@tiptap/extension-link";
 import Picker from "@emoji-mart/react";
 import data from '@emoji-mart/data';
 import CharacterCount from '@tiptap/extension-character-count'
-
-
-
-
-
 
 
 
@@ -43,6 +39,8 @@ export default function ArticleEditor({ value, articleId, onChange, onImageUploa
   const [linkUrl, setLinkUrl] = useState("");
   const [hasSelection, setHasSelection] = useState(false);
   const [emojiOpen, setEmojiOpen] = useState(false);
+  const [youtubeModalOpen, setYoutubeModalOpen] = useState(false);
+  const [youtubeUrl, setYoutubeUrl] = useState('');
 
 
   // 🔹 Safe position helper
@@ -63,6 +61,47 @@ export default function ArticleEditor({ value, articleId, onChange, onImageUploa
     const data = await res.json();
     return data.url;
   };
+const applyYouTube = () => {
+  if (!editor) return;
+
+  const url = youtubeUrl.trim();
+  if (!url) return;
+
+  // Robust regex for most YouTube URLs
+  const match = url.match(
+    /(?:youtu\.be\/|youtube(?:-nocookie)?\.com\/(?:watch\?v=|embed\/))([\w-]{11})/
+  );
+
+  if (!match) {
+    alert("Invalid YouTube URL. Paste a proper YouTube link.");
+    return;
+  }
+
+  const videoId = match[1];
+  const embedUrl = `https://www.youtube.com/embed/${videoId}`;
+
+  // Insert YouTube node with src
+  editor.chain().focus().insertContent({
+    type: 'youtube',
+    attrs: {
+      src: embedUrl,
+      width: 640,
+      height: 360,
+      allowFullscreen: true,
+    },
+  }).run();
+
+  
+  console.log("YouTube node:", editor.getJSON());
+  
+  // Close modal, clear input, and refocus
+  setYoutubeModalOpen(false);
+  setYoutubeUrl('');
+  editor.view.focus();
+};
+
+
+
 
   
   // 🔹 Editor instance
@@ -97,6 +136,12 @@ export default function ArticleEditor({ value, articleId, onChange, onImageUploa
         },
       }),
       DraggableImage,
+      DraggableYouTube.configure({
+      width: 640,      // default width
+      height: 360,     // default height
+      allowFullscreen: true,
+    }),
+
       ImageWithRemove.configure({
         inline: false,
         allowBase64: false,
@@ -212,6 +257,22 @@ export default function ArticleEditor({ value, articleId, onChange, onImageUploa
   setLinkUrl(previousUrl);
   setLinkModalOpen(true);
 }, [editor]);
+
+const insertYouTube = useCallback((url: string) => {
+  if (!editor) return;
+
+  // Extract the video ID from a normal YouTube URL
+  const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([\w-]+)/);
+  if (!match) return;
+
+  const videoId = match[1];
+
+  editor.chain().focus().insertContent({
+    type: 'youtube',
+    attrs: { src: `https://www.youtube.com/embed/${videoId}` },
+  }).run();
+}, [editor]);
+
 
 const applyLink = () => {
   if (!editor) return;
@@ -342,6 +403,13 @@ const isHeading = editor?.isActive('heading')
             <path d="M212.31-140Q182-140 161-161q-21-21-21-51.31v-535.38Q140-778 161-799q21-21 51.31-21h535.38Q778-820 799-799q21 21 21 51.31v535.38Q820-182 799-161q-21 21-51.31 21H212.31Zm0-60h535.38q4.62 0 8.46-3.85 3.85-3.84 3.85-8.46v-535.38q0-4.62-3.85-8.46-3.84-3.85-8.46-3.85H212.31q-4.62 0-8.46 3.85-3.85 3.84-3.85 8.46v535.38q0 4.62 3.85 8.46 3.84 3.85 8.46 3.85ZM270-290h423.07L561.54-465.38 449.23-319.23l-80-102.31L270-290Zm-70 90v-560 560Z"/>
           </svg>
         </button>
+       <button
+          onClick={() => setYoutubeModalOpen(true)}
+          className="px-2 py-1 rounded bg-white hover:bg-[#E6DCCB] !font-sans"
+        >
+          🎬
+        </button>
+
 
        <button
           onClick={() => setEmojiOpen(!emojiOpen)}
@@ -490,6 +558,47 @@ const isHeading = editor?.isActive('heading')
       searchDisabled={false}
     />
 
+    </div>
+  </div>
+)}
+{youtubeModalOpen && (
+  <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+    <div className="bg-white p-4 rounded w-80 space-y-3">
+      <h3 className="font-semibold !font-sans">Insert YouTube Video</h3>
+
+      <input
+        value={youtubeUrl}
+        onChange={(e) => setYoutubeUrl(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            applyYouTube();
+          }
+          if (e.key === 'Escape') {
+            e.preventDefault();
+            setYoutubeModalOpen(false);
+            editor?.view.focus();
+          }
+        }}
+        placeholder="https://youtube.com/watch?v=VIDEO_ID"
+        className="w-full border px-2 py-1 rounded !font-sans"
+      />
+
+      <div className="flex justify-end gap-2">
+        <button
+          onClick={() => setYoutubeModalOpen(false)}
+          className="!font-sans"
+        >
+          Cancel
+        </button>
+
+        <button
+          onClick={applyYouTube}
+          className="px-3 py-1 bg-[#E6DCCB] rounded !font-sans"
+        >
+          Insert
+        </button>
+      </div>
     </div>
   </div>
 )}
