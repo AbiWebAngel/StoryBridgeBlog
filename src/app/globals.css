@@ -181,6 +181,3 @@ textarea.scrollable-description::-webkit-scrollbar-thumb:hover {
   opacity: 0.85;
 }
 
-em-emoji-picker {
-  pointer-events: auto !important;
-}

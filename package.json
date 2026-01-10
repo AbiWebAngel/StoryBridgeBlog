@@ -6,8 +6,7 @@
     "dev": "next dev --turbopack",
     "build": "next build --turbopack",
     "start": "next start",
-    "lint": "eslint",
-    "vercel-build": "npm install --legacy-peer-deps && npm run build"
+    "lint": "eslint"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.956.0",
