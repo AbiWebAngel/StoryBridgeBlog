@@ -180,3 +180,7 @@ textarea.scrollable-description::-webkit-scrollbar-thumb:hover {
 .editor-content a:hover {
   opacity: 0.85;
 }
+
+em-emoji-picker {
+  pointer-events: auto !important;
+}
