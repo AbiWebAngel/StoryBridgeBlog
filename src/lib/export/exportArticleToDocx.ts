@@ -24,41 +24,90 @@ function generateArticleFileName() {
   return `article-${date}-${time}`;
 }
 
+function normalizeDocxColor(color?: string): string | undefined {
+  if (!color) return undefined;
 
-function textRunsFromNode(node: TipTapNode, isHeading: boolean = false): (TextRun | ExternalHyperlink)[] {
+  // Already hex
+  if (color.startsWith("#")) {
+    return color.replace("#", "").toUpperCase();
+  }
+
+  // rgb(...) or RGB(...)
+  const rgbMatch = color.match(/rgb\s*\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)/i);
+  if (rgbMatch) {
+    const r = parseInt(rgbMatch[1], 10);
+    const g = parseInt(rgbMatch[2], 10);
+    const b = parseInt(rgbMatch[3], 10);
+
+    return [r, g, b]
+      .map(v => v.toString(16).padStart(2, "0"))
+      .join("")
+      .toUpperCase();
+  }
+
+  // Anything else → ignore
+  return undefined;
+}
+
+
+function textRunsFromNode(
+  node: TipTapNode,
+  isHeading: boolean = false
+): (TextRun | ExternalHyperlink)[] {
   if (!node.text) return [];
 
   const marks = node.marks || [];
 
-  const bold = marks.some((m: any) => m.type === "bold") || isHeading;
-  const italic = marks.some((m: any) => m.type === "italic");
-  const underline = marks.some((m: any) => m.type === "underline");
-  const link = marks.find((m: any) => m.type === "link");
+  // ───────────────────────────────────────────
+  // Detect marks
+  // ───────────────────────────────────────────
+  const textStyleMark = marks.find((m: any) => m.type === "textStyle");
+  const linkMark = marks.find((m: any) => m.type === "link");
 
-  const run = new TextRun({
-    text: node.text,
-    bold,
-    italics: italic,
-    underline: underline ? {} : undefined,
-  });
+  const hasBold =
+    marks.some((m: any) => m.type === "bold" || m.type === "strong") ||
+    textStyleMark?.attrs?.fontWeight === "bold" ||
+    textStyleMark?.attrs?.fontWeight === 700 ||
+    isHeading;
 
-  if (link?.attrs?.href) {
+  const hasItalic =
+    marks.some((m: any) => m.type === "italic") ||
+    textStyleMark?.attrs?.fontStyle === "italic";
+
+  const hasUnderline =
+    marks.some((m: any) => m.type === "underline") ||
+    textStyleMark?.attrs?.textDecoration === "underline";
+
+  const color = normalizeDocxColor(textStyleMark?.attrs?.color);
+
+  // ───────────────────────────────────────────
+  // Build TextRun props
+  // ───────────────────────────────────────────
+const runProps: any = {
+  text: node.text,
+  bold: hasBold === true ? true : false,
+  italics: hasItalic === true ? true : false,
+  underline: hasUnderline ? {} : undefined,
+};
+
+
+  if (color) {
+    runProps.color = color;
+  }
+
+  // ───────────────────────────────────────────
+  // Hyperlink handling (color must be explicit)
+  // ───────────────────────────────────────────
+  if (linkMark?.attrs?.href) {
     return [
       new ExternalHyperlink({
-        link: link.attrs.href,
-        children: [
-          new TextRun({
-            text: node.text,
-            style: "HyperlinkStyle",
-            bold,
-            italics: italic,
-          }),
-        ],
+        link: linkMark.attrs.href,
+        children: [new TextRun(runProps)],
       }),
     ];
   }
 
-  return [run];
+  return [new TextRun(runProps)];
 }
 
 function paragraphFromNode(node: TipTapNode): Paragraph | null {
