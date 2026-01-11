@@ -11,11 +11,12 @@ interface AvatarProps {
 }
 
 const COLORS = [
-  "#B23529", "#A3164E", "#771E85", "#4F2E8A",
-  "#2F3F8F", "#176FB8", "#027EB5", "#008FA7",
-  "#006D60", "#39873C", "#6D943A", "#A6B32C",
-  "#BF9405", "#BF7600", "#C2461C", "#5E4039"
+  "#C53E32", "#B51D5A", "#8A2798", "#5E3A9E",
+  "#3A4FA3", "#1F82D4", "#028FD0", "#00A3BC",
+  "#008171", "#46A04A", "#7FAE45", "#B9C93A",
+  "#D3A61A", "#D38A12", "#D95A2A", "#70514A"
 ];
+
 
 const stringToColor = (str: string) => {
   let hash = 0;
