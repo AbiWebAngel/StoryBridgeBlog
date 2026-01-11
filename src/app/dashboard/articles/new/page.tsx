@@ -16,7 +16,6 @@ import { X } from "lucide-react";
 import FloatingSaveBar from "@/components/admin/FloatingSaveBar";
 import { useRef } from "react";
 
-
 export default function NewArticlePage() {
   const { user: currentAuthUser } = useAuth();
 
@@ -233,7 +232,7 @@ if (!pageReady) {
         <div className="h-full w-full animate-pulse bg-[#4A3820]"></div>
       </div>
 
-      <p className="mt-4 text-[#4A3820] font-medium text-lg !font-sans">
+      <p className="mt-4 text-[#4A3820] font-medium text-lg font-sans!">
         Loading editor…
       </p>
     </div>
@@ -246,7 +245,7 @@ if (!pageReady) {
   return (
     <div className="px-6 min-h-screen pb-32 font-sans">
       <div className="max-w-6xl mx-auto">
-        <h1 className="text-3xl font-extrabold text-[#4A3820] mb-6 text-center !font-sans">
+        <h1 className="text-3xl font-extrabold text-[#4A3820] mb-6 text-center font-sans!">
           Create New Article
         </h1>
 
@@ -263,14 +262,14 @@ if (!pageReady) {
         )}
 
         <div className="bg-[#F0E8DB] border border-[#D8CDBE] rounded-lg shadow-md p-6 sm:p-8 mb-8">
-          <h2 className="text-2xl font-medium text-[#4A3820] mb-8 !font-sans">
+          <h2 className="text-2xl font-medium text-[#4A3820] mb-8 font-sans!">
             Article Details
           </h2>
 
           <div className="space-y-8">
             {/* TITLE */}
             <div className="bg-white rounded-lg border border-[#D8CDBE] p-5 shadow-md">
-              <label className="block text-lg font-bold text-[#4A3820] mb-3 !font-sans">
+              <label className="block text-lg font-bold text-[#4A3820] mb-3 font-sans!">
                 Title
               </label>
               <input
@@ -287,7 +286,7 @@ if (!pageReady) {
 
             {/* SLUG */}
             <div className="bg-white rounded-lg border border-[#D8CDBE] p-5 shadow-md">
-              <label className="block text-lg font-bold text-[#4A3820] mb-3 !font-sans">
+              <label className="block text-lg font-bold text-[#4A3820] mb-3 font-sans!">
                 Slug (URL)
               </label>
               <input
@@ -304,7 +303,7 @@ if (!pageReady) {
 
             {/* COVER IMAGE */}
             <div className="bg-white rounded-lg border border-[#D8CDBE] p-5 shadow-md">
-              <label className="block text-lg font-bold text-[#4A3820] mb-3 !font-sans">
+              <label className="block text-lg font-bold text-[#4A3820] mb-3 font-sans!">
                 Cover Image
               </label>
            <CoverUpload
@@ -328,7 +327,7 @@ if (!pageReady) {
 
             {/* BODY EDITOR */}
             <div className="bg-white rounded-lg border border-[#D8CDBE] p-5 shadow-md">
-              <label className="block text-lg font-bold text-[#4A3820] mb-3 !font-sans">
+              <label className="block text-lg font-bold text-[#4A3820] mb-3 font-sans!">
                 Article Content
               </label>
              <ArticleEditor
@@ -350,7 +349,7 @@ if (!pageReady) {
 
             {/* TAGS */}
             <div className="bg-white rounded-lg border border-[#D8CDBE] p-5 shadow-md">
-              <label className="block text-lg font-bold text-[#4A3820] mb-3 !font-sans">
+              <label className="block text-lg font-bold text-[#4A3820] mb-3 font-sans!">
                 Tags
               </label>
               <input
@@ -383,7 +382,7 @@ if (!pageReady) {
            
             {/* STATUS */}
             <div className="bg-white rounded-lg border border-[#D8CDBE] p-5 shadow-md">
-              <label className="block text-lg font-bold text-[#4A3820] mb-3 !font-sans">
+              <label className="block text-lg font-bold text-[#4A3820] mb-3 font-sans!">
                 Publish Status
               </label>
               <select
@@ -397,7 +396,8 @@ if (!pageReady) {
             </div>
           </div>
         </div>
-
+        
+        
         <FloatingSaveBar onClick={handleSave} saving={saving} label="Save Article" />
       </div>
     </div>

@@ -11,7 +11,7 @@ const Footer = () => {
             href="mailto:storybridgeteens@gmail.com" 
             className="relative group inline-block"
           >
-            <span className="relative !text-[20px]">
+            <span className="relative text-[20px]!">
               storybridgeteens@gmail.com
               <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-white transition-all duration-300 group-hover:w-full"></span>
             </span>
@@ -29,7 +29,7 @@ const Footer = () => {
             rel="noopener noreferrer"
             className="relative group ml-2 inline-block"
           >
-            <span className="relative !text-[20px]">
+            <span className="relative text-[20px]!">
               Anna Kutova
               <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-white transition-all duration-300 group-hover:w-full"></span>
             </span>
@@ -43,7 +43,7 @@ const Footer = () => {
             rel="noopener noreferrer"
             className="relative group ml-2 inline-block"
           >
-            <span className="relative !text-[20px]">
+            <span className="relative text-[20px]!">
               Prince Sithole
               <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-white transition-all duration-300 group-hover:w-full"></span>
             </span>

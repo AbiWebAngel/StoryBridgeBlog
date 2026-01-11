@@ -21,6 +21,9 @@ import { Plugin } from 'prosemirror-state';
 import type { Transaction } from 'prosemirror-state';
 import Link from "@tiptap/extension-link";
 import CharacterCount from '@tiptap/extension-character-count';
+import { exportArticleToDocx } from "@/lib/export/exportArticleToDocx";
+
+
 
 interface ArticleEditorProps {
   value: any;
@@ -316,13 +319,13 @@ export default function ArticleEditor({ value, articleId, onChange, onImageUploa
       <div className="flex flex-wrap gap-2 p-2 border rounded bg-white" style={{ borderColor: "#D8CDBE" }}>
         <button 
           onClick={() => editor.chain().focus().toggleBold().run()} 
-          className={`px-2 py-1 rounded ${editor.isActive("bold") ? "bg-[#E6DCCB]" : "bg-white"} !font-sans`}
+          className={`px-2 py-1 rounded ${editor.isActive("bold") ? "bg-[#E6DCCB]" : "bg-white"} font-sans!`}
         >
           B
         </button>
         <button 
           onClick={() => editor.chain().focus().toggleItalic().run()} 
-          className={`px-2 py-1 rounded ${editor.isActive("italic") ? "bg-[#E6DCCB]" : "bg-white"} !font-sans`}
+          className={`px-2 py-1 rounded ${editor.isActive("italic") ? "bg-[#E6DCCB]" : "bg-white"} font-sans!`}
         >
           I
         </button>
@@ -358,37 +361,37 @@ export default function ArticleEditor({ value, articleId, onChange, onImageUploa
         </button>
         <button 
           onClick={() => editor.chain().focus().toggleUnderline().run()} 
-          className={`px-2 py-1 rounded ${editor.isActive("underline") ? "bg-[#E6DCCB]" : "bg-white"} !font-sans`}
+          className={`px-2 py-1 rounded ${editor.isActive("underline") ? "bg-[#E6DCCB]" : "bg-white"} font-sans!`}
         >
           U
         </button>
         <button 
           onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()} 
-          className={`px-2 py-1 rounded ${editor.isActive("heading", { level: 1 }) ? "bg-[#E6DCCB]" : "bg-white"} !font-sans`}
+          className={`px-2 py-1 rounded ${editor.isActive("heading", { level: 1 }) ? "bg-[#E6DCCB]" : "bg-white"} font-sans!`}
         >
           H1
         </button>
         <button 
           onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()} 
-          className={`px-2 py-1 rounded ${editor.isActive("heading", { level: 2 }) ? "bg-[#E6DCCB]" : "bg-white"} !font-sans`}
+          className={`px-2 py-1 rounded ${editor.isActive("heading", { level: 2 }) ? "bg-[#E6DCCB]" : "bg-white"} font-sans!`}
         >
           H2
         </button>
         <button 
           onClick={() => editor.chain().focus().toggleList('bulletList','listItem').run()} 
-          className={`px-2 py-1 rounded ${editor.isActive('list',{ type: 'bulletList'}) ? "bg-[#E6DCCB]":"bg-white"} !font-sans`}
+          className={`px-2 py-1 rounded ${editor.isActive('list',{ type: 'bulletList'}) ? "bg-[#E6DCCB]":"bg-white"} font-sans!`}
         >
           • List
         </button>
         <button 
           onClick={() => editor.chain().focus().toggleList('orderedList','listItem').run()} 
-          className={`px-2 py-1 rounded ${editor.isActive('list',{ type: 'orderedList'}) ? "bg-[#E6DCCB]":"bg-white"} !font-sans`}
+          className={`px-2 py-1 rounded ${editor.isActive('list',{ type: 'orderedList'}) ? "bg-[#E6DCCB]":"bg-white"} font-sans!`}
         >
           1. List
         </button>
         <button 
           onClick={() => editor.chain().focus().toggleCodeBlock().run()} 
-          className={`px-2 py-1 rounded ${editor.isActive("codeBlock") ? "bg-[#E6DCCB]":"bg-white"} !font-sans`}
+          className={`px-2 py-1 rounded ${editor.isActive("codeBlock") ? "bg-[#E6DCCB]":"bg-white"} font-sans!`}
         >
           {"</>"}
         </button>
@@ -408,7 +411,7 @@ export default function ArticleEditor({ value, articleId, onChange, onImageUploa
         </button>
         <button
           onClick={() => setYoutubeModalOpen(true)}
-          className="px-2 py-1 rounded bg-white hover:bg-[#E6DCCB] !font-sans"
+          className="px-2 py-1 rounded bg-white hover:bg-[#E6DCCB] font-sans!"
         >
           🎬
         </button>
@@ -440,6 +443,18 @@ export default function ArticleEditor({ value, articleId, onChange, onImageUploa
             <path d="M384.85-220q-87.77 0-150.35-58.77t-62.58-144.69q0-85.92 62.58-144.5t150.35-58.58h280.84l-111.3-111.31L596.54-780 780-596.54 596.54-413.08l-42.15-42.15 111.3-111.31H384.85q-62.62 0-107.77 41.15-45.16 41.16-45.16 101.93 0 60.77 45.16 102.11Q322.23-280 384.85-280h287.07v60H384.85Z"/>
           </svg>
         </button>
+
+         <div className="flex-1" /> {/* flex spacer */}
+
+          <button
+            onClick={() => exportArticleToDocx(editor.getJSON())}
+            className="px-3 py-1 rounded border border-[#4A3820] text-[#4A3820] bg-white shadow hover:bg-[#f9f9f9] font-sans!"
+            title="Export article to DOCX"
+          >
+            Export docx
+          </button>
+
+            
       </div>
 
       {/* Color Picker */}
@@ -475,7 +490,7 @@ export default function ArticleEditor({ value, articleId, onChange, onImageUploa
         ))}
         <button 
           onClick={() => editor.chain().focus().unsetColor().run()} 
-          className="px-2 py-1 border rounded ml-2 !font-sans"
+          className="px-2 py-1 border rounded ml-2 font-sans!"
         >
           Reset
         </button>
@@ -485,7 +500,7 @@ export default function ArticleEditor({ value, articleId, onChange, onImageUploa
       {linkModalOpen && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
           <div className="bg-white p-4 rounded w-80 space-y-3">
-            <h3 className="font-semibold !font-sans">Insert link</h3>
+            <h3 className="font-semibold font-sans!">Insert link</h3>
             <input
               value={linkUrl}
               onChange={(e) => setLinkUrl(e.target.value)}
@@ -501,7 +516,7 @@ export default function ArticleEditor({ value, articleId, onChange, onImageUploa
                 }
               }}
               placeholder="https://example.com"
-              className="w-full border px-2 py-1 rounded !font-sans"
+              className="w-full border px-2 py-1 rounded font-sans!"
             />
             <div className="flex justify-end gap-2">
               <button
@@ -509,13 +524,13 @@ export default function ArticleEditor({ value, articleId, onChange, onImageUploa
                   setLinkModalOpen(false);
                   editor?.view.focus();
                 }}
-                className="!font-sans"
+                className="font-sans!"
               >
                 Cancel
               </button>
               <button
                 onClick={applyLink}
-                className="px-3 py-1 bg-[#E6DCCB] rounded !font-sans"
+                className="px-3 py-1 bg-[#E6DCCB] rounded font-sans!"
               >
                 Apply
               </button>
@@ -528,7 +543,7 @@ export default function ArticleEditor({ value, articleId, onChange, onImageUploa
       {youtubeModalOpen && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
           <div className="bg-white p-4 rounded w-80 space-y-3">
-            <h3 className="font-semibold !font-sans">Insert YouTube Video</h3>
+            <h3 className="font-semibold font-sans!">Insert YouTube Video</h3>
             <input
               value={youtubeUrl}
               onChange={(e) => setYoutubeUrl(e.target.value)}
@@ -544,33 +559,35 @@ export default function ArticleEditor({ value, articleId, onChange, onImageUploa
                 }
               }}
               placeholder="https://youtube.com/watch?v=VIDEO_ID"
-              className="w-full border px-2 py-1 rounded !font-sans"
+              className="w-full border px-2 py-1 rounded font-sans!"
             />
             <div className="flex justify-end gap-2">
               <button
                 onClick={() => setYoutubeModalOpen(false)}
-                className="!font-sans"
+                className="font-sans!"
               >
                 Cancel
               </button>
               <button
                 onClick={applyYouTube}
-                className="px-3 py-1 bg-[#E6DCCB] rounded !font-sans"
+                className="px-3 py-1 bg-[#E6DCCB] rounded font-sans!"
               >
                 Insert
               </button>
+
+              
             </div>
           </div>
         </div>
       )}
 
       {/* Editor */}
-      <div className="relative border rounded bg-white p-4 min-h-[300px] editor-content max-w-none" style={{ borderColor: "#D8CDBE" }}>
+      <div className="relative border rounded bg-white p-4 min-h-75 editor-content max-w-none" style={{ borderColor: "#D8CDBE" }}>
         <EditorContent editor={editor} />
       </div>
 
       {/* Word/Character Count */}
-      <div className="text-sm text-gray-600 mt-2 !font-sans">
+      <div className="text-sm text-gray-600 mt-2 font-sans!">
         {(() => {
           const text = editor.getText() || "";
           const words = text.trim().split(/\s+/).filter(Boolean).length;

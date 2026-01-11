@@ -112,20 +112,20 @@ textarea.scrollable-description::-webkit-scrollbar-thumb:hover {
 /* Editor font + sizes */
 .editor-content {
   font-family: var(--font-inter), sans-serif;
-  font-size: 20px;
+  font-size: 18px;
   line-height: 1.7;
 }
 
 /* ensures your font-size always applies even if NodeViewWrapper adds a div */
 .editor-content [data-level="1"],
 .editor-content [data-level="1"] h1 {
-  font-size: 28px;
+  font-size: 22px;
   font-weight: 700;
 }
 
 .editor-content [data-level="2"],
 .editor-content [data-level="2"] h2 {
-  font-size: 24px;
+  font-size: 20px;
   font-weight: 600;
 }
 
@@ -134,7 +134,7 @@ textarea.scrollable-description::-webkit-scrollbar-thumb:hover {
 .editor-content li,
 .editor-content span {
   font-family: var(--font-inter), sans-serif;
-  font-size: 20px;
+  font-size: 18px;
 }
 
 /* TipTap list fix */
