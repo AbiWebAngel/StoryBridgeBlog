@@ -22,7 +22,7 @@ import type { Transaction } from 'prosemirror-state';
 import Link from "@tiptap/extension-link";
 import CharacterCount from '@tiptap/extension-character-count';
 import { exportArticleToDocx } from "@/lib/export/exportArticleToDocx";
-
+import { Extension } from '@tiptap/core';
 
 
 interface ArticleEditorProps {
@@ -96,6 +96,28 @@ export default function ArticleEditor({ value, articleId, onChange, onImageUploa
     setYoutubeUrl('');
     editor.view.focus();
   };
+  const DisableImagePaste = Extension.create({
+  addProseMirrorPlugins() {
+    return [
+      new Plugin({
+        props: {
+          handlePaste(view, event) {
+            const items = event.clipboardData?.items;
+            if (!items) return false;
+
+            for (const item of items) {
+              if (item.type.startsWith('image/')) {
+                // 👈 block default image insertion
+                return true;
+              }
+            }
+            return false;
+          },
+        },
+      }),
+    ];
+  },
+});
 
   // 🔹 Editor instance
   const editor = useEditor({
@@ -109,6 +131,7 @@ export default function ArticleEditor({ value, articleId, onChange, onImageUploa
         orderedList: false,
         listItem: false,
       }),
+      DisableImagePaste,
       TextStyleKit,
       DraggableParagraph,
       DraggableHeading,
@@ -161,17 +184,26 @@ export default function ArticleEditor({ value, articleId, onChange, onImageUploa
       CharacterCount.configure({
         limit: null,
       }),
+      
       FileHandler.configure({
-        allowedMimeTypes: ["image/jpeg", "image/png", "image/webp", "image/gif"],
-        onDrop: async (editorInstance, files, pos) => {
-          const safePos = typeof pos === "number" ? pos : editorInstance.state.selection.from ?? 0;
-          await handleFileInsert(editorInstance, files, safePos);
-        },
-        onPaste: async (editorInstance, files, pos) => {
-          const safePos = typeof pos === "number" ? pos : editorInstance.state.selection.from ?? 0;
-          await handleFileInsert(editorInstance, files, safePos);
-        },
-      }),
+        allowedMimeTypes: ["image/jpeg", "image/png", "image/webp","image/avif", "image/gif"],
+           onPaste: async (editorInstance, files, pos) => {
+      const safePos =
+        typeof pos === "number"
+          ? pos
+          : editorInstance.state.selection.from ?? 0;
+
+      await handleFileInsert(editorInstance, files, safePos);
+    },
+     onDrop: async (editorInstance, files, pos) => {
+      const safePos =
+        typeof pos === "number"
+          ? pos
+          : editorInstance.state.selection.from ?? 0;
+
+      await handleFileInsert(editorInstance, files, safePos);
+    },
+  }),
     ],
     content: value,
     onUpdate: ({ editor }) => onChange(editor.getJSON()),
