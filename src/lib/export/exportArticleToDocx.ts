@@ -16,51 +16,25 @@ type TipTapNode = any;
    Helpers
 ----------------------------- */
 
-const DOCX_DEBUG = true;
-
-function log(scope: string, message: string, data?: any) {
-  if (DOCX_DEBUG) {
-    console.log(`[DOCX][${scope}] ${message}`, data ? data : '');
-  }
-}
-
-function warn(scope: string, message: string, data?: any) {
-  if (DOCX_DEBUG) {
-    console.warn(`[DOCX][${scope}] ${message}`, data ? data : '');
-  }
-}
-
-function error(scope: string, message: string, data?: any) {
-  if (DOCX_DEBUG) {
-    console.error(`[DOCX][${scope}] ${message}`, data ? data : '');
-  }
-}
-
 function proxiedImageUrl(originalUrl: string) {
   return `/api/image-proxy?url=${encodeURIComponent(originalUrl)}`;
 }
-
 
 function generateArticleFileName() {
   const now = new Date();
   const date = now.toISOString().split("T")[0];
   const time = now.toTimeString().split(" ")[0].replace(/:/g, "-");
-  
-  log('Filename', `Generated filename: article-${date}-${time}`);
   return `article-${date}-${time}`;
 }
 
 function normalizeDocxColor(color?: string): string | undefined {
   if (!color) {
-    log('Color', 'No color provided');
     return undefined;
   }
 
   // Already hex
   if (color.startsWith("#")) {
-    const hexColor = color.replace("#", "").toUpperCase();
-    log('Color', `Converted #${color} to ${hexColor}`);
-    return hexColor;
+    return color.replace("#", "").toUpperCase();
   }
 
   // rgb(...) or RGB(...)
@@ -69,16 +43,12 @@ function normalizeDocxColor(color?: string): string | undefined {
     const r = parseInt(rgbMatch[1], 10);
     const g = parseInt(rgbMatch[2], 10);
     const b = parseInt(rgbMatch[3], 10);
-    const hexColor = [r, g, b]
+    return [r, g, b]
       .map(v => v.toString(16).padStart(2, "0"))
       .join("")
       .toUpperCase();
-    
-    log('Color', `Converted rgb(${r},${g},${b}) to ${hexColor}`);
-    return hexColor;
   }
 
-  log('Color', `Unsupported color format: ${color}`);
   return undefined;
 }
 
@@ -87,15 +57,10 @@ function textRunsFromNode(
   isHeading: boolean = false
 ): (TextRun | ExternalHyperlink)[] {
   if (!node.text) {
-    log('TextRun', 'Empty text node');
     return [];
   }
 
   const marks = node.marks || [];
-  log('TextRun', `Processing text: "${node.text.substring(0, 50)}${node.text.length > 50 ? '...' : ''}"`, {
-    marks: marks.map((m: any) => m.type),
-    isHeading
-  });
 
   // ───────────────────────────────────────────
   // Detect marks
@@ -133,22 +98,10 @@ function textRunsFromNode(
     runProps.color = color;
   }
 
-  log('TextRun', 'Run properties:', {
-    length: node.text.length,
-    bold: runProps.bold,
-    italic: runProps.italics,
-    underline: runProps.underline,
-    color: runProps.color
-  });
-
   // ───────────────────────────────────────────
   // Hyperlink handling
   // ───────────────────────────────────────────
   if (linkMark?.attrs?.href) {
-    log('TextRun', 'Creating hyperlink', {
-      href: linkMark.attrs.href,
-      textLength: node.text.length
-    });
     return [
       new ExternalHyperlink({
         link: linkMark.attrs.href,
@@ -161,12 +114,9 @@ function textRunsFromNode(
 }
 
 function paragraphFromNode(node: TipTapNode): Paragraph | null {
-  log('Paragraph', `Processing ${node.type} node`);
-  
   switch (node.type) {
     case "paragraph":
       const paragraphChildren = node.content?.flatMap(textRunsFromNode) || [];
-      log('Paragraph', `Created paragraph with ${paragraphChildren.length} children`);
       return new Paragraph({
         style: "NormalParagraph",
         children: paragraphChildren,
@@ -179,11 +129,6 @@ function paragraphFromNode(node: TipTapNode): Paragraph | null {
         textRunsFromNode(child, isHeading1 || isHeading2)
       ) || [];
       
-      log('Paragraph', `Created heading level ${node.attrs.level}`, {
-        style: isHeading1 ? 'Heading1' : isHeading2 ? 'Heading2' : 'NormalParagraph',
-        childrenCount: headingChildren.length
-      });
-      
       return new Paragraph({
         style: isHeading1 ? "Heading1" : isHeading2 ? "Heading2" : "NormalParagraph",
         children: headingChildren,
@@ -191,10 +136,6 @@ function paragraphFromNode(node: TipTapNode): Paragraph | null {
 
     case "codeBlock":
       const codeText = node.content?.[0]?.text || "";
-      log('Paragraph', `Created code block`, {
-        length: codeText.length,
-        preview: codeText.substring(0, 50) + (codeText.length > 50 ? '...' : '')
-      });
       
       return new Paragraph({
         style: "CodeBlock",
@@ -206,7 +147,6 @@ function paragraphFromNode(node: TipTapNode): Paragraph | null {
       });
 
     default:
-      log('Paragraph', `No paragraph converter for node type: ${node.type}`);
       return null;
   }
 }
@@ -218,19 +158,15 @@ async function fetchImageAsBufferAndInfo(
   url: string
 ): Promise<{ buffer: Uint8Array; type: "png" | "jpeg"; width: number; height: number }> {
   
-  log('Image', `Fetching image: ${url.substring(0, 100)}${url.length > 100 ? '...' : ''}`);
-  
   // Support data URLs
   if (url.startsWith("data:")) {
     const match = url.match(/^data:(image\/(png|jpeg|jpg|gif|webp));base64,(.*)$/);
     if (!match) {
-      error('Image', 'Unsupported data URL image format');
       throw new Error("Unsupported data URL image");
     }
 
     const mime = match[1];
     const base64 = match[3];
-    log('Image', 'Processing data URL', { mime, base64Length: base64.length });
 
     const binary = atob(base64);
     const len = binary.length;
@@ -241,34 +177,17 @@ async function fetchImageAsBufferAndInfo(
     const dims = await getImageDimensions(blob);
     const type: "png" | "jpeg" = mime.includes("png") ? "png" : "jpeg";
     
-    log('Image', 'Data URL image processed', {
-      type,
-      width: dims.width,
-      height: dims.height,
-      bufferSize: uint8.byteLength
-    });
-    
     return { buffer: uint8, type, width: dims.width, height: dims.height };
   }
 
   // Remote URL
-  log('Image', `Fetching remote image`);
   const res = await fetch(proxiedImageUrl(url));
   if (!res.ok) {
-    error('Image', `Failed to fetch image: ${res.status} ${res.statusText}`);
     throw new Error(`Failed to fetch image: ${res.status}`);
   }
 
   const contentType = (res.headers.get("content-type") || "").toLowerCase();
   const blob = await res.blob();
-
-  log('Image', 'Fetch response', {
-    ok: res.ok,
-    status: res.status,
-    contentType,
-    blobSize: blob.size,
-    blobType: blob.type
-  });
 
   // If PNG or JPEG, use directly
   if (contentType.includes("png") || contentType.includes("jpeg") || contentType.includes("jpg")) {
@@ -277,36 +196,19 @@ async function fetchImageAsBufferAndInfo(
     const dims = await getImageDimensions(blob);
     const type: "png" | "jpeg" = contentType.includes("png") ? "png" : "jpeg";
     
-    log('Image', 'Using direct image format', {
-      type,
-      width: dims.width,
-      height: dims.height,
-      bufferSize: uint8.byteLength
-    });
-    
     return { buffer: uint8, type, width: dims.width, height: dims.height };
   }
 
   // Convert other formats (webp/gif) to PNG
-  log('Image', 'Converting to PNG', { originalType: blob.type });
   const pngBlob = await convertBlobToPng(blob);
   const arrayBuffer = await pngBlob.arrayBuffer();
   const uint8 = new Uint8Array(arrayBuffer);
   const dims = await getImageDimensions(pngBlob);
 
-  log('Image', 'PNG conversion complete', {
-    originalSize: blob.size,
-    pngSize: pngBlob.size,
-    width: dims.width,
-    height: dims.height,
-    bufferSize: uint8.byteLength
-  });
-
   return { buffer: uint8, type: "png", width: dims.width, height: dims.height };
 }
 
 function getImageDimensions(blob: Blob): Promise<{ width: number; height: number }> {
-  log('Image', 'Getting image dimensions');
   return new Promise((resolve, reject) => {
     const url = URL.createObjectURL(blob);
     const img = new Image();
@@ -315,14 +217,11 @@ function getImageDimensions(blob: Blob): Promise<{ width: number; height: number
       const width = img.naturalWidth || img.width;
       const height = img.naturalHeight || img.height;
       URL.revokeObjectURL(url);
-      
-      log('Image', 'Dimensions retrieved', { width, height });
       resolve({ width, height });
     };
     
     img.onerror = (e) => {
       URL.revokeObjectURL(url);
-      error('Image', 'Failed to get image dimensions', e);
       reject(new Error("Failed to get image dimensions"));
     };
     
@@ -331,7 +230,6 @@ function getImageDimensions(blob: Blob): Promise<{ width: number; height: number
 }
 
 function convertBlobToPng(blob: Blob): Promise<Blob> {
-  log('Image', 'Starting PNG conversion');
   return new Promise(async (resolve, reject) => {
     try {
       const url = URL.createObjectURL(blob);
@@ -344,15 +242,9 @@ function convertBlobToPng(blob: Blob): Promise<Blob> {
           canvas.width = img.naturalWidth || img.width;
           canvas.height = img.naturalHeight || img.height;
           
-          log('Image', 'Canvas created for conversion', {
-            width: canvas.width,
-            height: canvas.height
-          });
-          
           const ctx = canvas.getContext('2d');
           if (!ctx) {
             URL.revokeObjectURL(url);
-            error('Image', 'Canvas context not available');
             throw new Error('Canvas not supported');
           }
           
@@ -362,73 +254,139 @@ function convertBlobToPng(blob: Blob): Promise<Blob> {
             URL.revokeObjectURL(url);
             
             if (!outBlob) {
-              error('Image', 'PNG conversion returned null blob');
               reject(new Error('Conversion to PNG failed'));
               return;
             }
-            
-            log('Image', 'PNG conversion successful', {
-              pngSize: outBlob.size,
-              pngType: outBlob.type
-            });
             
             resolve(outBlob);
           }, 'image/png');
         } catch (err) {
           URL.revokeObjectURL(url);
-          error('Image', 'Canvas conversion error', err);
           reject(err);
         }
       };
       
       img.onerror = (e) => {
         URL.revokeObjectURL(url);
-        error('Image', 'Image failed to load for conversion', e);
         reject(new Error('Failed to load image for conversion'));
       };
       
       img.src = url;
     } catch (err) {
-      error('Image', 'PNG conversion setup error', err);
       reject(err);
     }
   });
 }
 
 async function extractParagraphs(nodes: TipTapNode[]): Promise<Paragraph[]> {
-  log('Extract', `Starting paragraph extraction from ${nodes.length} nodes`);
   const paragraphs: Paragraph[] = [];
-  let imageCount = 0;
-  let textCount = 0;
-  let listCount = 0;
 
   for (let i = 0; i < nodes.length; i++) {
     const node = nodes[i];
-    log('Extract', `Processing node ${i + 1}/${nodes.length}:`, {
-      type: node.type,
-      attrs: Object.keys(node.attrs || {})
-    });
+
+    /* ------------------ YOUTUBE EMBEDS ------------------ */
+    if (node.type === "youtube" || node.type === "youtubeEmbed") {
+      const embedSrc = node.attrs?.src;
+      if (!embedSrc) {
+        continue;
+      }
+
+      // Extract video id if present (embed or watch formats)
+      const vidMatch = embedSrc.match(/(?:embed\/|v=|youtu\.be\/)([\w-]{11})/);
+      const videoId = vidMatch ? vidMatch[1] : null;
+      const watchUrl = videoId ? `https://www.youtube.com/watch?v=${videoId}` : embedSrc;
+
+      // Use placeholder from public folder (served at /youtube-placeholder.jpg)
+      const placeholderPath = '/assets/images/articleEditor/youtube-placeholder.jpg';
+      try {
+        const res = await fetch(placeholderPath);
+        if (!res.ok) throw new Error(`Failed to fetch placeholder: ${res.status}`);
+
+        const blob = await res.blob();
+        const arrayBuffer = await blob.arrayBuffer();
+        const uint8 = new Uint8Array(arrayBuffer);
+        const dims = await getImageDimensions(blob);
+
+        // Scale like other images (maxWidth same as image handling above)
+        const maxWidth = 300;
+        let outWidth = dims.width;
+        let outHeight = dims.height;
+        if (dims.width > maxWidth) {
+          const ratio = maxWidth / dims.width;
+          outWidth = Math.round(dims.width * ratio);
+          outHeight = Math.round(dims.height * ratio);
+        }
+
+        // Add placeholder image paragraph
+        paragraphs.push(
+          new Paragraph({
+            alignment: AlignmentType.CENTER,
+            spacing: {
+              before: 240,
+              after: 120,
+            },
+            children: [
+              new ImageRun({
+                data: uint8,
+                type: 'jpg',
+                transformation: {
+                  width: outWidth,
+                  height: outHeight,
+                },
+              }),
+            ],
+          })
+        );
+
+        // Add a link paragraph under the image
+        paragraphs.push(
+          new Paragraph({
+            alignment: AlignmentType.CENTER,
+            spacing: {
+              before: 60,
+              after: 240,
+            },
+            children: [
+              new ExternalHyperlink({
+                link: watchUrl,
+                children: [
+                  new TextRun({
+                    text: watchUrl,
+                    underline: {},
+                    color: '2563EB',
+                  }),
+                ],
+              }),
+            ],
+          })
+        );
+      } catch (err) {
+        // fallback: just add the link text
+        paragraphs.push(
+          new Paragraph({
+            children: [new TextRun({ text: watchUrl })]
+          })
+        );
+      }
+
+      continue;
+    }
 
     /* ---------- TEXT / HEADINGS / CODE ---------- */
     const para = paragraphFromNode(node);
     if (para) {
       paragraphs.push(para);
-      textCount++;
-      log('Extract', `Added ${node.type} paragraph`, { totalParagraphs: paragraphs.length });
       continue;
     }
 
     /* ------------------ IMAGES ------------------ */
     if (node.type === "imageWithRemove" || node.type === 'image') {
-      imageCount++;
       try {
         const src = node.attrs?.src;
         if (!src) {
-          warn('Extract', 'Image node missing src attribute');
           continue;
         }
 
-        log('Extract', `Processing image ${imageCount}`, { src: src.substring(0, 100) });
         const { buffer, type, width, height } = await fetchImageAsBufferAndInfo(src);
 
         // Scale width to max 600 while keeping aspect ratio
@@ -439,37 +397,29 @@ async function extractParagraphs(nodes: TipTapNode[]): Promise<Paragraph[]> {
           const ratio = maxWidth / width;
           outWidth = Math.round(width * ratio);
           outHeight = Math.round(height * ratio);
-          log('Extract', `Scaled image from ${width}x${height} to ${outWidth}x${outHeight}`);
         }
 
-      paragraphs.push(
-        new Paragraph({
-          alignment: AlignmentType.CENTER,
-          spacing: {
-            before: 240,
-            after: 240,
-          },
-          children: [
-            new ImageRun({
-              data: buffer,
-              type: type === "png" ? "png" : "jpg",
-              transformation: {
-                width: outWidth,
-                height: outHeight,
-              },
-            }),
-          ],
-        })
-      );
-
-        
-        log('Extract', `Image added successfully`, {
-          dimensions: `${outWidth}x${outHeight}`,
-          type,
-          bufferSize: buffer.byteLength
-        });
+        paragraphs.push(
+          new Paragraph({
+            alignment: AlignmentType.CENTER,
+            spacing: {
+              before: 240,
+              after: 240,
+            },
+            children: [
+              new ImageRun({
+                data: buffer,
+                type: type === "png" ? "png" : "jpg",
+                transformation: {
+                  width: outWidth,
+                  height: outHeight,
+                },
+              }),
+            ],
+          })
+        );
       } catch (err) {
-        warn('Extract', `Skipping image due to error:`, err);
+        // Skip image on error
       }
       continue;
     }
@@ -477,12 +427,6 @@ async function extractParagraphs(nodes: TipTapNode[]): Promise<Paragraph[]> {
     /* ------------------ LISTS ------------------ */
     if (node.type === "bulletList" || node.type === "orderedList") {
       const listItems = node.content || [];
-      listCount++;
-      
-      log('Extract', `Processing ${node.type}`, {
-        itemCount: listItems.length,
-        listType: node.type
-      });
       
       for (const item of listItems) {
         const textNodes = item.content?.[0]?.content || [];
@@ -498,18 +442,8 @@ async function extractParagraphs(nodes: TipTapNode[]): Promise<Paragraph[]> {
           })
         );
       }
-      
-      log('Extract', `Added list with ${listItems.length} items`);
     }
   }
-
-  log('Extract', 'Paragraph extraction complete', {
-    totalParagraphs: paragraphs.length,
-    images: imageCount,
-    textNodes: textCount,
-    lists: listCount,
-    unhandledTypes: nodes.length - (imageCount + textCount + listCount)
-  });
   
   return paragraphs;
 }
@@ -519,29 +453,13 @@ async function extractParagraphs(nodes: TipTapNode[]): Promise<Paragraph[]> {
 ----------------------------- */
 
 export async function exportArticleToDocx(body: any) {
-  const startTime = performance.now();
-  log('Export', 'Starting DOCX export');
-  
   if (!body?.content) {
-    error('Export', 'No content to export');
     alert("Nothing to export 😅");
     return;
   }
 
-  log('Export', 'Body structure', {
-    hasContent: !!body.content,
-    contentLength: body.content?.length,
-    bodyKeys: Object.keys(body)
-  });
-
   try {
     const paragraphs = await extractParagraphs(body.content);
-    
-    log('Export', 'Creating document structure', {
-      paragraphCount: paragraphs.length,
-      styles: 5,
-      numbering: 2
-    });
     
     const doc = new Document({
       styles: {
@@ -652,21 +570,11 @@ export async function exportArticleToDocx(body: any) {
       ],
     });
 
-    log('Export', 'Generating blob');
     const blob = await Packer.toBlob(doc);
     
     const fileName = `${generateArticleFileName()}.docx`;
-    log('Export', 'Saving file', {
-      fileName,
-      blobSize: blob.size,
-      timeElapsed: `${(performance.now() - startTime).toFixed(2)}ms`
-    });
-    
     saveAs(blob, fileName);
-    
-    log('Export', 'Export completed successfully');
   } catch (err) {
-    error('Export', 'Export failed with error:', err);
     throw err;
   }
 }
