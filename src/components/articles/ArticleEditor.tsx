@@ -226,13 +226,18 @@ export default function ArticleEditor({ value, articleId, onChange, onImageUploa
     try {
       const url = await uploadImageToR2(file);
       const tr = editorInstance.state.tr;
+      const defaultAlt =
+  file.name?.replace(/\.[^/.]+$/, "").replace(/[-_]/g, " ") || "";
 
       editorInstance.state.doc.descendants((node: ProseMirrorNode, p: number) => {
         if (node.type.name === "imageLoading" && typeof node.attrs.id === "string" && node.attrs.id === tempId) {
           tr.replaceWith(
             p,
             p + node.nodeSize,
-            editorInstance.schema.nodes.imageWithRemove.create({ src: url })
+            editorInstance.schema.nodes.imageWithRemove.create({
+            src: url,
+            alt: defaultAlt,
+          })
           );
         }
       });

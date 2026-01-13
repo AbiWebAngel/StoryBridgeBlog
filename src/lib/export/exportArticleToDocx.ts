@@ -399,25 +399,57 @@ async function extractParagraphs(nodes: TipTapNode[]): Promise<Paragraph[]> {
           outHeight = Math.round(height * ratio);
         }
 
-        paragraphs.push(
-          new Paragraph({
-            alignment: AlignmentType.CENTER,
-            spacing: {
-              before: 240,
-              after: 240,
-            },
-            children: [
-              new ImageRun({
-                data: buffer,
-                type: type === "png" ? "png" : "jpg",
-                transformation: {
-                  width: outWidth,
-                  height: outHeight,
-                },
-              }),
-            ],
-          })
-        );
+        const altText = node.attrs?.alt?.trim();
+
+      paragraphs.push(
+        new Paragraph({
+          alignment: AlignmentType.CENTER,
+          spacing: {
+            before: 240,
+            after: 240,
+          },
+          children: [
+            new ImageRun({
+              data: buffer,
+              type: type === "png" ? "png" : "jpg",
+              transformation: {
+                width: outWidth,
+                height: outHeight,
+              },
+
+              // ✅ REAL DOCX ALT TEXT
+           altText: altText
+            ? {
+                name: altText,          // REQUIRED
+                description: altText,   // REQUIRED
+              }
+            : undefined,
+            }),
+          ],
+        })
+      );
+
+      if (altText) {
+      paragraphs.push(
+        new Paragraph({
+          alignment: AlignmentType.CENTER,
+          spacing: {
+            before: 60,
+            after: 180,
+          },
+          children: [
+            new TextRun({
+              text: altText,
+              italics: false,
+              size: 28,
+              color: "555555",
+              font: "Inter",
+            }),
+          ],
+        })
+      );
+    }
+
       } catch (err) {
         // Skip image on error
       }

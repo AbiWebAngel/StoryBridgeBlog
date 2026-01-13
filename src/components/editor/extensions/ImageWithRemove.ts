@@ -8,16 +8,26 @@ export const ImageWithRemove = Image.extend<ImageWithRemoveOptions>({
 
   addOptions() {
     return {
-      // REQUIRED ImageOptions
       inline: false,
       allowBase64: false,
       HTMLAttributes: {},
-
-      // 🔥 THIS was the issue — must be false, not undefined
       resize: false,
-
-      // Custom option
       onImageRemoved: () => {},
+    };
+  },
+
+  // ✅ ADD THIS
+  addAttributes() {
+    return {
+      ...this.parent?.(),
+
+      alt: {
+        default: "",
+        renderHTML: attributes => {
+          if (!attributes.alt) return {};
+          return { alt: attributes.alt };
+        },
+      },
     };
   },
 
