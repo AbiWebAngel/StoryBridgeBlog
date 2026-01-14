@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { db } from "@/lib/firebase";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { useAuth } from "@/context/AuthContext";
@@ -29,6 +29,8 @@ const [svgUploadProgress, setSvgUploadProgress] =
 
   const [originalContent, setOriginalContent] = useState<HomeContent | null>(null);
   const [uploading, setUploading] = useState(false);
+  const sessionId = useRef(crypto.randomUUID()).current;
+  const [pendingAssets, setPendingAssets] = useState<string[]>([]);
 
 
   const [content, setContent] = useState<HomeContent>({
@@ -101,6 +103,9 @@ async function uploadAsset(
 
     form.append("file", file);
     form.append("folder", folder);
+    form.append("sessionId", sessionId);
+    form.append("draft", "true");
+
 
     xhr.open("POST", "/api/upload");
 
@@ -116,7 +121,10 @@ async function uploadAsset(
 
   if (xhr.status >= 200 && xhr.status < 300) {
     const res = JSON.parse(xhr.responseText);
+    setPendingAssets(prev => [...prev, res.url]);
     resolve(res.url);
+
+
   } else {
     reject(
       new Error(
@@ -126,7 +134,7 @@ async function uploadAsset(
   }
 };
 
-
+  
     xhr.onerror = () => reject(new Error("Upload error"));
 
     xhr.send(form);
@@ -194,33 +202,75 @@ async function handleSave() {
     }
 
     const ref = doc(db, "siteContent", "home");
-   
 
-    await setDoc(
-      ref,
-      {
-        director: {
-          imageSrc: content.director.imageSrc.trim(),
-          imageAlt: content.director.imageAlt.trim(),
-          message: content.director.message.trim(),
-          name: content.director.name.trim(),
-          buttonText: content.director.buttonText.trim(),
-          buttonLink: content.director.buttonLink.trim(),
-        },
-        programLinks: content.programLinks.map(p => ({
-          programName: p.programName.trim(),
-          link: p.link.trim(),
-          svgPath: p.svgPath.trim(),
-        })),
-        updatedAt: new Date(),
+
+  // Replace temp URLs with permanent ones
+ let finalContent = content;
+
+if (pendingAssets.length) {
+  // ✅ 1. Figure out what assets are actually used
+  const usedAssets = extractAssetUrlsFromHome(content);
+
+  // ✅ 2. Only promote assets that are still referenced
+  const assetsToPromote = pendingAssets.filter(url =>
+    usedAssets.includes(url)
+  );
+
+  if (assetsToPromote.length) {
+    const res = await fetch("/api/promote-assets", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ urls: assetsToPromote }),
+    });
+
+    const { replacements } = await res.json();
+
+    finalContent = {
+      ...content,
+      director: {
+        ...content.director,
+        imageSrc:
+          replacements[content.director.imageSrc] ??
+          content.director.imageSrc,
       },
-      { merge: true }
-    );
+      programLinks: content.programLinks.map(p => ({
+        ...p,
+        svgPath: replacements[p.svgPath] ?? p.svgPath,
+      })),
+    };
+
+    setContent(finalContent);
+  }
+
+  // 🧹 Clear all pending assets (used or not)
+  setPendingAssets([]);
+}
+
+
+
+   await setDoc(ref, {
+  director: {
+    imageSrc: finalContent.director.imageSrc.trim(),
+    imageAlt: finalContent.director.imageAlt.trim(),
+    message: finalContent.director.message.trim(),
+    name: finalContent.director.name.trim(),
+    buttonText: finalContent.director.buttonText.trim(),
+    buttonLink: finalContent.director.buttonLink.trim(),
+  },
+  programLinks: finalContent.programLinks.map(p => ({
+    programName: p.programName.trim(),
+    link: p.link.trim(),
+    svgPath: p.svgPath.trim(),
+  })),
+  updatedAt: new Date(),
+});
+
 
      // 🧹 Delete unused R2 assets
     if (originalContent) {
       const before = new Set(extractAssetUrlsFromHome(originalContent));
-      const after = new Set(extractAssetUrlsFromHome(content));
+      const after = new Set(extractAssetUrlsFromHome(finalContent));
+
 
       const unusedAssets = [...before].filter(url => !after.has(url));
 
@@ -236,7 +286,7 @@ async function handleSave() {
     }
 
     setSuccessMessage("Home page content saved successfully!");
-    setOriginalContent(structuredClone(content));
+    setOriginalContent(structuredClone(finalContent));
 
     setTimeout(() => setSuccessMessage(""), 3000);
   } catch (err: any) {
@@ -295,7 +345,7 @@ if (loading) {
       <div className="w-48 h-2 bg-[#E0D6C7] rounded-full overflow-hidden">
         <div className="h-full w-full animate-pulse bg-[#4A3820]"></div>
       </div>
-      <p className="mt-4 text-[#4A3820] font-medium text-lg !font-sans">
+      <p className="mt-4 text-[#4A3820] font-medium text-lg font-sans!">
         Loading home content...
       </p>
     </div>
@@ -306,7 +356,7 @@ if (loading) {
   return (
     <div className="px-6 min-h-screen font-sans">
       <div className="max-w-4xl mx-auto">
-        <h1 className="text-3xl font-extrabold text-[#4A3820] mb-6 text-center !font-sans">
+        <h1 className="text-3xl font-extrabold text-[#4A3820] mb-6 text-center font-sans!">
           Home Page Management
         </h1>
 
@@ -325,7 +375,7 @@ if (loading) {
 
         {/* Main Content Card */}
         <div className="bg-[#F0E8DB] border border-[#D8CDBE] rounded-lg shadow-md p-6 sm:p-8 mb-8">
-          <h2 className="text-2xl font-medium text-[#4A3820] mb-6 !font-sans">
+          <h2 className="text-2xl font-medium text-[#4A3820] mb-6 font-sans!">
             Edit Home Page Content
           </h2>
 
@@ -335,7 +385,7 @@ if (loading) {
             <div className="space-y-6">
               {/* Message From Director Section */}
               <div className="bg-white rounded-lg border border-[#D8CDBE] p-5 shadow-md">
-                <h3 className="text-xl font-bold text-[#4A3820] mb-6 !font-sans">
+                <h3 className="text-xl font-bold text-[#4A3820] mb-6 font-sans!">
                   Message From Director
                 </h3>
                 
@@ -368,14 +418,6 @@ if (loading) {
 
                       handleDirectorChange("imageSrc", url);
 
-                      // 🧹 delete old director image (safe)
-                      if (previousImage && previousImage !== url) {
-                        await fetch("/api/delete-asset", {
-                          method: "POST",
-                          headers: { "Content-Type": "application/json" },
-                          body: JSON.stringify({ url: previousImage }),
-                        });
-                      }
                     } catch (err) {
                       console.error("Upload error:", err);
                       setErrorMessage(
@@ -428,13 +470,6 @@ if (loading) {
 
                     handleDirectorChange("imageSrc", url);
 
-                    if (previousImage && previousImage !== url) {
-                      await fetch("/api/delete-asset", {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ url: previousImage }),
-                      });
-                    }
                   } catch (err) {
                     setErrorMessage("Drag-drop upload failed");
                   } finally {
@@ -512,7 +547,7 @@ if (loading) {
                     <textarea
                       value={content.director.message}
                       onChange={(e) => handleDirectorChange("message", e.target.value)}
-                      className="w-full px-4 py-2 rounded-lg border-2 border-[#805C2C] bg-white text-[#4A3820] placeholder-[#4A3820]/60 focus:outline-none focus:ring-2 focus:ring-[#805C2C]/50 min-h-[150px] scrollable-description"
+                      className="w-full px-4 py-2 rounded-lg border-2 border-[#805C2C] bg-white text-[#4A3820] placeholder-[#4A3820]/60 focus:outline-none focus:ring-2 focus:ring-[#805C2C]/50 min-h-37.5rollable-description"
                       placeholder="Enter the director's message..."
                     />
                   </div>
@@ -564,12 +599,12 @@ if (loading) {
               {/* Program Links Section */}
               <div className="bg-white rounded-lg border border-[#D8CDBE] p-5 shadow-md">
                 <div className="flex justify-between items-center mb-6">
-                  <h3 className="text-xl font-bold text-[#4A3820] !font-sans">
+                  <h3 className="text-xl font-bold text-[#4A3820] font-sans!">
                     Join Our Programs Links
                   </h3>
                   <button
                     onClick={addProgramLink}
-                    className="px-4 py-2 rounded-lg border-2 border-[#805C2C] text-[#805C2C] font-medium hover:bg-[#F0E8DB] transition-colors !font-sans"
+                    className="px-4 py-2 rounded-lg border-2 border-[#805C2C] text-[#805C2C] font-medium hover:bg-[#F0E8DB] transition-colors font-sans!"
                   >
                     + Add Program Link
                   </button>
@@ -579,12 +614,12 @@ if (loading) {
                   {content.programLinks.map((programLink, index) => (
                     <div key={index} className="border-2 border-[#D8CDBE] rounded-lg p-5 bg-[#F9F5F0]">
                       <div className="flex justify-between items-start mb-4">
-                        <h4 className="font-bold text-[#4A3820] !font-sans">
+                        <h4 className="font-bold text-[#4A3820] font-sans!">
                           Program Link #{index + 1}
                         </h4>
                         <button
                           onClick={() => removeProgramLink(index)}
-                          className="px-3 py-1 rounded-lg border-2 border-red-500 text-red-500 text-sm hover:bg-red-50 transition-colors !font-sans"
+                          className="px-3 py-1 rounded-lg border-2 border-red-500 text-red-500 text-sm hover:bg-red-50 transition-colors font-sans!"
                         >
                           Remove
                         </button>

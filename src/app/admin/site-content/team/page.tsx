@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { db } from "@/lib/firebase";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { useAuth } from "@/context/AuthContext";
@@ -23,6 +23,8 @@ export default function AdminTeamPage() {
   const [successMessage, setSuccessMessage] = useState("");
   const [originalContent, setOriginalContent] = useState<TeamContent | null>(null);
   const [teamImageUploadProgress, setTeamImageUploadProgress] = useState<Record<number, number | null>>({});
+  const sessionId = useRef(crypto.randomUUID()).current;
+  const [pendingAssets, setPendingAssets] = useState<string[]>([]);
 
   const [content, setContent] = useState<TeamContent>({
     joinTeamText: "",
@@ -43,6 +45,8 @@ export default function AdminTeamPage() {
 
       form.append("file", file);
       form.append("folder", folder);
+      form.append("sessionId", sessionId);
+      form.append("draft", "true");
 
       xhr.open("POST", "/api/upload");
 
@@ -58,6 +62,7 @@ export default function AdminTeamPage() {
 
         if (xhr.status >= 200 && xhr.status < 300) {
           const res = JSON.parse(xhr.responseText);
+          setPendingAssets(prev => [...prev, res.url]);
           resolve(res.url);
         } else {
           reject(
@@ -174,13 +179,52 @@ export default function AdminTeamPage() {
 
       const ref = doc(db, "siteContent", "team");
 
-     await setDoc(
+      // Replace temp URLs with permanent ones
+      let finalContent = content;
+
+      if (pendingAssets.length) {
+        // ✅ 1. Figure out what assets are actually used
+        const usedAssets = extractAssetUrlsFromTeam(content);
+
+        // ✅ 2. Only promote assets that are still referenced
+        const assetsToPromote = pendingAssets.filter(url =>
+          usedAssets.includes(url)
+        );
+
+        if (assetsToPromote.length) {
+          const res = await fetch("/api/promote-assets", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ urls: assetsToPromote }),
+          });
+
+          const { replacements } = await res.json();
+
+          // Apply replacements to team member images
+          finalContent = {
+            ...content,
+            teamMembers: content.teamMembers.map(member => ({
+              ...member,
+              image: {
+                src: replacements[member.image.src] ?? member.image.src,
+                alt: member.image.alt
+              }
+            })),
+          };
+
+          setContent(finalContent);
+        }
+
+        // 🧹 Clear all pending assets (used or not)
+        setPendingAssets([]);
+      }
+
+      await setDoc(
         ref,
         {
-          ...content,
-          joinTeamText: content.joinTeamText.trim(),
-
-          teamMembers: content.teamMembers.map(m => ({
+          ...finalContent,
+          joinTeamText: finalContent.joinTeamText.trim(),
+          teamMembers: finalContent.teamMembers.map(m => ({
             ...m,
             name: m.name.trim(),
             role: m.role.trim(),
@@ -190,17 +234,15 @@ export default function AdminTeamPage() {
               alt: m.image.alt.trim(),
             },
           })),
-
           updatedAt: new Date(),
         },
         { merge: true }
       );
 
-
       // 🧹 Delete unused R2 assets
       if (originalContent) {
         const before = new Set(extractAssetUrlsFromTeam(originalContent));
-        const after = new Set(extractAssetUrlsFromTeam(content));
+        const after = new Set(extractAssetUrlsFromTeam(finalContent));
 
         const unusedAssets = [...before].filter(url => !after.has(url));
 
@@ -216,7 +258,7 @@ export default function AdminTeamPage() {
       }
 
       setSuccessMessage("Team page content saved successfully!");
-      setOriginalContent(structuredClone(content));
+      setOriginalContent(structuredClone(finalContent));
       setTimeout(() => setSuccessMessage(""), 3000);
     } catch (err: any) {
       console.error("Save error:", err);
@@ -271,7 +313,6 @@ export default function AdminTeamPage() {
     });
   };
 
-
   const removeTeamMember = (index: number) => {
     setContent(prev => ({
       ...prev,
@@ -303,7 +344,6 @@ export default function AdminTeamPage() {
 
   // Handle team member image upload
   const handleTeamImageUpload = async (index: number, file: File) => {
-    const previousSrc = content.teamMembers[index]?.image?.src;
     setTeamImageUploadProgress(prev => ({ ...prev, [index]: 0 }));
     setUploading(true);
 
@@ -315,16 +355,6 @@ export default function AdminTeamPage() {
       );
 
       updateTeamMember(index, "image.src", url);
-
-      // Delete old image if it exists and is different
-        if (previousSrc && previousSrc !== url) {
-      await fetch("/api/delete-asset", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url: previousSrc }),
-      });
-    }
-
     } catch (err) {
       console.error("Upload error:", err);
       setErrorMessage(
@@ -348,7 +378,6 @@ if (loading) {
     </div>
   );
 }
-
 
   return (
     <div className="px-6 min-h-screen font-sans">
@@ -563,7 +592,6 @@ if (loading) {
                               Click or drag a team member image here
                             </label>
                           </div>
-
 
                             {typeof teamImageUploadProgress[index] === "number" && (
                               <div className="mt-2">

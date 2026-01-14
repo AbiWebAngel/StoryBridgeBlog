@@ -27,6 +27,10 @@ export async function POST(req: Request) {
 
   const originalBuffer = Buffer.from(await file.arrayBuffer());
   const isSvg = file.type === "image/svg+xml";
+  const sessionId = formData.get("sessionId") as string | null;
+  const draft = formData.get("draft") === "true";
+
+
 
   const metadata = await sharp(originalBuffer).metadata();
   const tooLarge =
@@ -71,9 +75,14 @@ export async function POST(req: Request) {
   if (articleId) {
     key = `articles/${articleId}/${assetType}/${crypto.randomUUID()}.${extension}`;
   } else if (folder) {
-  // Allow full folder paths (e.g., "site-assets/about/book-images")
-  key = `${folder}/${crypto.randomUUID()}.${extension}`;      
-  } else {
+  const baseFolder =
+    draft && sessionId
+      ? `tmp/${sessionId}/${folder}`
+      : folder;
+
+  key = `${baseFolder}/${crypto.randomUUID()}.${extension}`;
+}
+ else {
     return NextResponse.json(
       { error: "Missing articleId or folder" },
       { status: 400 }

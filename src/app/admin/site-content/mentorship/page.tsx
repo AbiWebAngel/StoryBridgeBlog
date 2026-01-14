@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { db } from "@/lib/firebase";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { useAuth } from "@/context/AuthContext";
@@ -28,6 +28,8 @@ export default function AdminMentorshipPage() {
 
   const [originalContent, setOriginalContent] = useState<MentorshipContent | null>(null);
   const [uploading, setUploading] = useState(false);
+  const sessionId = useRef(crypto.randomUUID()).current;
+  const [pendingAssets, setPendingAssets] = useState<string[]>([]);
 
   const [content, setContent] = useState<MentorshipContent>({
     whatIsMentorship: {
@@ -180,6 +182,8 @@ export default function AdminMentorshipPage() {
 
       form.append("file", file);
       form.append("folder", folder);
+      form.append("sessionId", sessionId);
+      form.append("draft", "true");
 
       xhr.open("POST", "/api/upload");
 
@@ -190,8 +194,12 @@ export default function AdminMentorshipPage() {
       };
 
       xhr.onload = () => {
+        console.log("Upload response status:", xhr.status);
+        console.log("Upload response text:", xhr.responseText);
+
         if (xhr.status >= 200 && xhr.status < 300) {
           const res = JSON.parse(xhr.responseText);
+          setPendingAssets(prev => [...prev, res.url]);
           resolve(res.url);
         } else {
           reject(
@@ -296,47 +304,110 @@ export default function AdminMentorshipPage() {
 
       const ref = doc(db, "siteContent", "mentorship");
 
+      // Replace temp URLs with permanent ones
+      let finalContent = content;
+
+      if (pendingAssets.length) {
+        // ✅ 1. Figure out what assets are actually used
+        const usedAssets = extractAssetUrlsFromMentorship(content);
+
+        // ✅ 2. Only promote assets that are still referenced
+        const assetsToPromote = pendingAssets.filter(url =>
+          usedAssets.includes(url)
+        );
+
+        if (assetsToPromote.length) {
+          const res = await fetch("/api/promote-assets", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ urls: assetsToPromote }),
+          });
+
+          const { replacements } = await res.json();
+
+          finalContent = {
+            ...content,
+            howItWorks: {
+              ...content.howItWorks,
+              image: {
+                ...content.howItWorks.image,
+                src: replacements[content.howItWorks.image.src] ?? content.howItWorks.image.src,
+              },
+            },
+            signUpNow: {
+              ...content.signUpNow,
+              menteeSection: {
+                ...content.signUpNow.menteeSection,
+                image: {
+                  ...content.signUpNow.menteeSection.image,
+                  src: replacements[content.signUpNow.menteeSection.image.src] ?? content.signUpNow.menteeSection.image.src,
+                },
+              },
+              mentorSection: {
+                ...content.signUpNow.mentorSection,
+                image: {
+                  ...content.signUpNow.mentorSection.image,
+                  src: replacements[content.signUpNow.mentorSection.image.src] ?? content.signUpNow.mentorSection.image.src,
+                },
+              },
+            },
+            testimonials: {
+              ...content.testimonials,
+              testimonials: content.testimonials.testimonials.map(t => ({
+                ...t,
+                image: replacements[t.image] ?? t.image,
+              })),
+            },
+          };
+
+          setContent(finalContent);
+        }
+
+        // 🧹 Clear all pending assets (used or not)
+        setPendingAssets([]);
+      }
+
       await setDoc(
         ref,
         {
           whatIsMentorship: {
-            text: content.whatIsMentorship.text.trim(),
+            text: finalContent.whatIsMentorship.text.trim(),
           },
           howItWorks: {
-            text: content.howItWorks.text.map((t) => t.trim()),
+            text: finalContent.howItWorks.text.map((t) => t.trim()),
             image: {
-              src: content.howItWorks.image.src.trim(),
-              alt: content.howItWorks.image.alt.trim(),
-              width: content.howItWorks.image.width,
-              height: content.howItWorks.image.height,
+              src: finalContent.howItWorks.image.src.trim(),
+              alt: finalContent.howItWorks.image.alt.trim(),
+              width: finalContent.howItWorks.image.width,
+              height: finalContent.howItWorks.image.height,
             },
           },
           signUpNow: {
             menteeSection: {
-              title: content.signUpNow.menteeSection.title.trim(),
-              description: content.signUpNow.menteeSection.description.trim(),
-              buttonText: content.signUpNow.menteeSection.buttonText.trim(),
+              title: finalContent.signUpNow.menteeSection.title.trim(),
+              description: finalContent.signUpNow.menteeSection.description.trim(),
+              buttonText: finalContent.signUpNow.menteeSection.buttonText.trim(),
               image: {
-                src: content.signUpNow.menteeSection.image.src.trim(),
-                alt: content.signUpNow.menteeSection.image.alt.trim(),
-                width: content.signUpNow.menteeSection.image.width,
-                height: content.signUpNow.menteeSection.image.height,
+                src: finalContent.signUpNow.menteeSection.image.src.trim(),
+                alt: finalContent.signUpNow.menteeSection.image.alt.trim(),
+                width: finalContent.signUpNow.menteeSection.image.width,
+                height: finalContent.signUpNow.menteeSection.image.height,
               },
             },
             mentorSection: {
-              title: content.signUpNow.mentorSection.title.trim(),
-              description: content.signUpNow.mentorSection.description.trim(),
-              buttonText: content.signUpNow.mentorSection.buttonText.trim(),
+              title: finalContent.signUpNow.mentorSection.title.trim(),
+              description: finalContent.signUpNow.mentorSection.description.trim(),
+              buttonText: finalContent.signUpNow.mentorSection.buttonText.trim(),
               image: {
-                src: content.signUpNow.mentorSection.image.src.trim(),
-                alt: content.signUpNow.mentorSection.image.alt.trim(),
-                width: content.signUpNow.mentorSection.image.width,
-                height: content.signUpNow.mentorSection.image.height,
+                src: finalContent.signUpNow.mentorSection.image.src.trim(),
+                alt: finalContent.signUpNow.mentorSection.image.alt.trim(),
+                width: finalContent.signUpNow.mentorSection.image.width,
+                height: finalContent.signUpNow.mentorSection.image.height,
               },
             },
           },
           testimonials: {
-          testimonials: content.testimonials.testimonials.map((t) => ({
+          testimonials: finalContent.testimonials.testimonials.map((t) => ({
             text: t.text.trim(),
             image: t.image.trim(),
             imageAlt: t.imageAlt.trim(),
@@ -351,7 +422,7 @@ export default function AdminMentorshipPage() {
       // 🧹 Delete unused R2 assets
       if (originalContent) {
         const before = new Set(extractAssetUrlsFromMentorship(originalContent));
-        const after = new Set(extractAssetUrlsFromMentorship(content));
+        const after = new Set(extractAssetUrlsFromMentorship(finalContent));
 
         const unusedAssets = [...before].filter((url) => !after.has(url));
 
@@ -367,7 +438,7 @@ export default function AdminMentorshipPage() {
       }
 
       setSuccessMessage("Mentorship page content saved successfully!");
-      setOriginalContent(structuredClone(content));
+      setOriginalContent(structuredClone(finalContent));
 
       setTimeout(() => setSuccessMessage(""), 3000);
     } catch (err: any) {
@@ -623,6 +694,7 @@ if (loading) {
                     async (file) => {
                       const previousImage = content.howItWorks.image.src;
                       setHowItWorksImageUploadProgress(0);
+                      setUploading(true);
                       try {
                         const url = await uploadAsset(
                           file,
@@ -639,17 +711,11 @@ if (loading) {
                             },
                           },
                         }));
-                        if (previousImage && previousImage !== url) {
-                          await fetch("/api/delete-asset", {
-                            method: "POST",
-                            headers: { "Content-Type": "application/json" },
-                            body: JSON.stringify({ url: previousImage }),
-                          });
-                        }
                       } catch (err) {
                         console.error("Upload error:", err);
                       } finally {
                         setHowItWorksImageUploadProgress(null);
+                        setUploading(false);
                       }
                     },
                     howItWorksImageUploadProgress,
@@ -772,6 +838,7 @@ if (loading) {
                       async (file) => {
                         const previousImage = content.signUpNow.menteeSection.image.src;
                         setMenteeImageUploadProgress(0);
+                        setUploading(true);
                         try {
                           const url = await uploadAsset(
                             file,
@@ -791,17 +858,11 @@ if (loading) {
                               },
                             },
                           }));
-                          if (previousImage && previousImage !== url) {
-                            await fetch("/api/delete-asset", {
-                              method: "POST",
-                              headers: { "Content-Type": "application/json" },
-                              body: JSON.stringify({ url: previousImage }),
-                            });
-                          }
                         } catch (err) {
                           console.error("Upload error:", err);
                         } finally {
                           setMenteeImageUploadProgress(null);
+                          setUploading(false);
                         }
                       },
                       menteeImageUploadProgress,
@@ -920,6 +981,7 @@ if (loading) {
                       async (file) => {
                         const previousImage = content.signUpNow.mentorSection.image.src;
                         setMentorImageUploadProgress(0);
+                        setUploading(true);
                         try {
                           const url = await uploadAsset(
                             file,
@@ -939,17 +1001,11 @@ if (loading) {
                               },
                             },
                           }));
-                          if (previousImage && previousImage !== url) {
-                            await fetch("/api/delete-asset", {
-                              method: "POST",
-                              headers: { "Content-Type": "application/json" },
-                              body: JSON.stringify({ url: previousImage }),
-                            });
-                          }
                         } catch (err) {
                           console.error("Upload error:", err);
                         } finally {
                           setMentorImageUploadProgress(null);
+                          setUploading(false);
                         }
                       },
                       mentorImageUploadProgress,
@@ -1042,7 +1098,6 @@ if (loading) {
                             onChange={async (e) => {
                               if (!e.target.files?.[0]) return;
                               setUploading(true);
-                              const previousImage = testimonial.image;
                               try {
                                 setTestimonialImageUploadProgress((prev) => ({ ...prev, [index]: 0 }));
                                 const url = await uploadAsset(
@@ -1051,13 +1106,6 @@ if (loading) {
                                   (p) => setTestimonialImageUploadProgress((prev) => ({ ...prev, [index]: p }))
                                 );
                                 handleTestimonialChange(index, "image", url);
-                                if (previousImage && previousImage !== url) {
-                                  await fetch("/api/delete-asset", {
-                                    method: "POST",
-                                    headers: { "Content-Type": "application/json" },
-                                    body: JSON.stringify({ url: previousImage }),
-                                  });
-                                }
                               } catch (err) {
                                 console.error("Upload error:", err);
                               } finally {
@@ -1073,7 +1121,6 @@ if (loading) {
                               const file = e.dataTransfer.files?.[0];
                               if (!file) return;
                               setUploading(true);
-                              const previousImage = testimonial.image;
                               try {
                                 setTestimonialImageUploadProgress((prev) => ({ ...prev, [index]: 0 }));
                                 const url = await uploadAsset(
@@ -1082,13 +1129,6 @@ if (loading) {
                                   (p) => setTestimonialImageUploadProgress((prev) => ({ ...prev, [index]: p }))
                                 );
                                 handleTestimonialChange(index, "image", url);
-                                if (previousImage && previousImage !== url) {
-                                  await fetch("/api/delete-asset", {
-                                    method: "POST",
-                                    headers: { "Content-Type": "application/json" },
-                                    body: JSON.stringify({ url: previousImage }),
-                                  });
-                                }
                               } catch (err) {
                                 console.error("Upload error:", err);
                               } finally {

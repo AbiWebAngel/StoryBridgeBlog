@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react"; // Added useRef
 import { db } from "@/lib/firebase";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { useAuth } from "@/context/AuthContext";
@@ -9,7 +9,7 @@ import {
   isNonEmptyArray,
 } from "@/lib/contentValidation";
 import { extractAssetUrlsFromAbout } from "@/lib/extractAssetUrls";
-import type { Testimonial, AboutContent} from "@/types/about";
+import type { Testimonial, AboutContent } from "@/types/about";
 import FloatingSaveBar from "@/components/admin/FloatingSaveBar";
 
 
@@ -36,7 +36,11 @@ export default function AdminAboutPage() {
     bookImages: [],
   });
 
-  // Upload function (same as home)
+  // Added: sessionId and pendingAssets like home page
+  const sessionId = useRef(crypto.randomUUID()).current;
+  const [pendingAssets, setPendingAssets] = useState<string[]>([]);
+
+  // Modified upload function to save to temp
   async function uploadAsset(
     file: File,
     folder: string,
@@ -48,6 +52,8 @@ export default function AdminAboutPage() {
 
       form.append("file", file);
       form.append("folder", folder);
+      form.append("sessionId", sessionId); // Added
+      form.append("draft", "true"); // Added
 
       xhr.open("POST", "/api/upload");
 
@@ -63,6 +69,7 @@ export default function AdminAboutPage() {
 
         if (xhr.status >= 200 && xhr.status < 300) {
           const res = JSON.parse(xhr.responseText);
+          setPendingAssets(prev => [...prev, res.url]); // Track pending assets
           resolve(res.url);
         } else {
           reject(
@@ -78,7 +85,7 @@ export default function AdminAboutPage() {
     });
   }
 
-  // Load Firestore data
+  // Load Firestore data (unchanged)
   useEffect(() => {
     async function loadContent() {
       if (!currentAuthUser) {
@@ -177,7 +184,7 @@ export default function AdminAboutPage() {
     return null;
   }
 
-  // Save to Firestore
+  // Modified handleSave to promote assets from temp to permanent
   async function handleSave() {
     if (!currentAuthUser) {
       setErrorMessage("Please log in to save changes.");
@@ -201,21 +208,65 @@ export default function AdminAboutPage() {
         throw new Error("Insufficient permissions. Admin or author role required.");
       }
 
+      // Modified: Promote assets from temp to permanent like home page
+      let finalContent = content;
+
+      if (pendingAssets.length) {
+        // Get assets actually used in content
+        const usedAssets = extractAssetUrlsFromAbout(content);
+
+        // Only promote assets that are still referenced
+        const assetsToPromote = pendingAssets.filter(url =>
+          usedAssets.includes(url)
+        );
+
+        if (assetsToPromote.length) {
+          const res = await fetch("/api/promote-assets", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ urls: assetsToPromote }),
+          });
+
+          const { replacements } = await res.json();
+
+          // Update content with permanent URLs
+          finalContent = {
+            ...content,
+            bookImages: content.bookImages.map(img => ({
+              src: replacements[img.src] ?? img.src,
+              alt: img.alt,
+            })),
+            testimonials: content.testimonials.map(t => ({
+              text: t.text,
+              image: {
+                src: replacements[t.image.src] ?? t.image.src,
+                alt: t.image.alt,
+              },
+            })),
+          };
+
+          setContent(finalContent);
+        }
+
+        // Clear all pending assets (used or not)
+        setPendingAssets([]);
+      }
+
       const ref = doc(db, "siteContent", "about");
 
       await setDoc(
         ref,
         {
-          missionStatement: content.missionStatement.trim(),
-          whoWeAre: content.whoWeAre.trim(),
-          whatWeDo: content.whatWeDo.trim(),
-          whyItMatters: content.whyItMatters.trim(),
-         bookImages: content.bookImages.map(img => ({
+          missionStatement: finalContent.missionStatement.trim(),
+          whoWeAre: finalContent.whoWeAre.trim(),
+          whatWeDo: finalContent.whatWeDo.trim(),
+          whyItMatters: finalContent.whyItMatters.trim(),
+         bookImages: finalContent.bookImages.map(img => ({
           src: img.src.trim(),
           alt: img.alt.trim(),
         })),
 
-        testimonials: content.testimonials.map(t => ({
+        testimonials: finalContent.testimonials.map(t => ({
           text: t.text.trim(),
           image: {
             src: t.image.src.trim(),
@@ -231,7 +282,7 @@ export default function AdminAboutPage() {
       // 🧹 Delete unused R2 assets (same as home)
       if (originalContent) {
         const before = new Set(extractAssetUrlsFromAbout(originalContent));
-        const after = new Set(extractAssetUrlsFromAbout(content));
+        const after = new Set(extractAssetUrlsFromAbout(finalContent));
 
         const unusedAssets = [...before].filter(url => !after.has(url));
 
@@ -247,7 +298,7 @@ export default function AdminAboutPage() {
       }
 
       setSuccessMessage("About page content saved successfully!");
-      setOriginalContent(structuredClone(content));
+      setOriginalContent(structuredClone(finalContent));
       setTimeout(() => setSuccessMessage(""), 3000);
     } catch (err: any) {
       console.error("Save error:", err);
@@ -298,6 +349,7 @@ const addTestimonial = () => {
   });
 };
 
+  // Modified: Removed immediate deletion of old images
   const handleBookImageUpload = async (index: number, file: File) => {
     const previousImage = content.bookImages[index]?.src;
     
@@ -313,16 +365,7 @@ const addTestimonial = () => {
 
       updateBookImageSrc(index, url);
 
-
-      // Delete old image if it exists and is different
-      if (previousImage && previousImage !== url) {
-        await fetch("/api/delete-asset", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ url: previousImage }),
-        });
-      }
-
+      // Removed immediate deletion - assets will be cleaned up during save
     } catch (err) {
       console.error("Upload error:", err);
       setErrorMessage(
@@ -358,9 +401,9 @@ const updateTestimonial = (
     }));
   };
 
+  // Modified: Removed immediate deletion of old images
   const handleTestimonialImageUpload = async (index: number, file: File) => {
     const previousImage = content.testimonials[index]?.image?.src;
-
     
     setTestimonialImageUploadProgress(prev => ({ ...prev, [index]: 0 }));
     setUploading(true);
@@ -384,14 +427,7 @@ const updateTestimonial = (
       return { ...prev, testimonials };
     });
 
-      // Delete old image if it exists and is different
-      if (previousImage && previousImage !== url) {
-        await fetch("/api/delete-asset", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ url: previousImage }),
-        });
-      }
+      // Removed immediate deletion - assets will be cleaned up during save
     } catch (err) {
       console.error("Upload error:", err);
       setErrorMessage(
