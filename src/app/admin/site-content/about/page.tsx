@@ -608,7 +608,7 @@ if (loading) {
                               <img
                                 src={image.src}
                                 alt={image.alt || "Book image"}
-                                className="max-h-48 rounded-lg border"
+                                className="max-h-48 rounded-lg border mt-3"
                               />
 
                               <input
