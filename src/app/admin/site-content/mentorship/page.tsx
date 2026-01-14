@@ -442,7 +442,7 @@ if (loading) {
       <div className="w-48 h-2 bg-[#E0D6C7] rounded-full overflow-hidden">
         <div className="h-full w-full animate-pulse bg-[#4A3820]"></div>
       </div>
-      <p className="mt-4 text-[#4A3820] font-medium text-lg !font-sans">
+      <p className="mt-4 text-[#4A3820] font-medium text-lg font-sans!">
         Loading mentorship content...
       </p>
     </div>
@@ -538,7 +538,7 @@ if (loading) {
   return (
     <div className="px-6 min-h-screen font-sans">
       <div className="max-w-4xl mx-auto">
-        <h1 className="text-3xl font-extrabold text-[#4A3820] mb-6 text-center !font-sans">
+        <h1 className="text-3xl font-extrabold text-[#4A3820] mb-6 text-center font-sans!">
           Mentorship Page Management
         </h1>
 
@@ -557,7 +557,7 @@ if (loading) {
 
         {/* Main Content Card */}
         <div className="bg-[#F0E8DB] border border-[#D8CDBE] rounded-lg shadow-md p-6 sm:p-8 mb-8">
-          <h2 className="text-2xl font-medium text-[#4A3820] mb-6 !font-sans">
+          <h2 className="text-2xl font-medium text-[#4A3820] mb-6 font-sans!">
             Edit Mentorship Page Content
           </h2>
 
@@ -567,7 +567,7 @@ if (loading) {
             <div className="space-y-8">
               {/* What is Mentorship Section */}
               <div className="bg-white rounded-lg border border-[#D8CDBE] p-5 shadow-md">
-                <h3 className="text-xl font-bold text-[#4A3820] mb-6 !font-sans">
+                <h3 className="text-xl font-bold text-[#4A3820] mb-6 font-sans!">
                   What is Mentorship Section
                 </h3>
                 <div className="space-y-4">
@@ -586,7 +586,7 @@ if (loading) {
                           },
                         }))
                       }
-                      className="w-full px-4 py-2 rounded-lg border-2 border-[#805C2C] bg-white text-[#4A3820] placeholder-[#4A3820]/60 focus:outline-none focus:ring-2 focus:ring-[#805C2C]/50 min-h-[100px]"
+                      className="w-full px-4 py-2 rounded-lg border-2 border-[#805C2C] bg-white text-[#4A3820] placeholder-[#4A3820]/60 focus:outline-none focus:ring-2 focus:ring-[#805C2C]/50 min-h-25"
                       placeholder="Enter description text..."
                     />
                   </div>
@@ -595,7 +595,7 @@ if (loading) {
 
               {/* How it Works Section */}
               <div className="bg-white rounded-lg border border-[#D8CDBE] p-5 shadow-md">
-                <h3 className="text-xl font-bold text-[#4A3820] mb-6 !font-sans">
+                <h3 className="text-xl font-bold text-[#4A3820] mb-6 font-sans!">
                   How it Works Section
                 </h3>
                 <div className="space-y-4">
@@ -609,7 +609,7 @@ if (loading) {
                         <textarea
                           value={step}
                           onChange={(e) => handleHowItWorksTextChange(index, e.target.value)}
-                          className="flex-1 px-4 py-2 rounded-lg border-2 border-[#805C2C] bg-white text-[#4A3820] placeholder-[#4A3820]/60 focus:outline-none focus:ring-2 focus:ring-[#805C2C]/50 min-h-[60px]"
+                          className="flex-1 px-4 py-2 rounded-lg border-2 border-[#805C2C] bg-white text-[#4A3820] placeholder-[#4A3820]/60 focus:outline-none focus:ring-2 focus:ring-[#805C2C]/50 min-h-15"
                           placeholder={`Step ${index + 1}`}
                         />
                       </div>
@@ -684,14 +684,14 @@ if (loading) {
 
               {/* Sign Up Now Section */}
               <div className="bg-white rounded-lg border border-[#D8CDBE] p-5 shadow-md">
-                <h3 className="text-xl font-bold text-[#4A3820] mb-6 !font-sans">
+                <h3 className="text-xl font-bold text-[#4A3820] mb-6 font-sans!">
                   Sign Up Now Section
                 </h3>
                 
 
                 {/* Mentee Section */}
                 <div className="mt-8 p-4 bg-[#F9F5F0] rounded-lg">
-                  <h4 className="text-lg font-bold text-[#4A3820] mb-4 !font-sans">
+                  <h4 className="text-lg font-bold text-[#4A3820] mb-4 font-sans!">
                     Mentee Section
                   </h4>
                   <div className="space-y-4">
@@ -737,7 +737,7 @@ if (loading) {
                             },
                           }))
                         }
-                        className="w-full px-4 py-2 rounded-lg border-2 border-[#805C2C] bg-white text-[#4A3820] placeholder-[#4A3820]/60 focus:outline-none focus:ring-2 focus:ring-[#805C2C]/50 min-h-[100px]"
+                        className="w-full px-4 py-2 rounded-lg border-2 border-[#805C2C] bg-white text-[#4A3820] placeholder-[#4A3820]/60 focus:outline-none focus:ring-2 focus:ring-[#805C2C]/50 min-h-25"
                         placeholder="Enter mentee section description..."
                       />
                     </div>
@@ -839,7 +839,7 @@ if (loading) {
 
                 {/* Mentor Section */}
                 <div className="mt-8 p-4 bg-[#F9F5F0] rounded-lg">
-                  <h4 className="text-lg font-bold text-[#4A3820] mb-4 !font-sans">
+                  <h4 className="text-lg font-bold text-[#4A3820] mb-4 font-sans!">
                     Mentor Section
                   </h4>
                   <div className="space-y-4">
@@ -885,7 +885,7 @@ if (loading) {
                             },
                           }))
                         }
-                        className="w-full px-4 py-2 rounded-lg border-2 border-[#805C2C] bg-white text-[#4A3820] placeholder-[#4A3820]/60 focus:outline-none focus:ring-2 focus:ring-[#805C2C]/50 min-h-[100px]"
+                        className="w-full px-4 py-2 rounded-lg border-2 border-[#805C2C] bg-white text-[#4A3820] placeholder-[#4A3820]/60 focus:outline-none focus:ring-2 focus:ring-[#805C2C]/50 min-h-25"
                         placeholder="Enter mentor section description..."
                       />
                     </div>
@@ -989,12 +989,12 @@ if (loading) {
               {/* Testimonials Section */}
               <div className="bg-white rounded-lg border border-[#D8CDBE] p-5 shadow-md">
                 <div className="flex justify-between items-center mb-6">
-                  <h3 className="text-xl font-bold text-[#4A3820] !font-sans">
+                  <h3 className="text-xl font-bold text-[#4A3820] font-sans!">
                     Testimonials Section
                   </h3>
                   <button
                     onClick={addTestimonial}
-                    className="px-4 py-2 rounded-lg border-2 border-[#805C2C] text-[#805C2C] font-medium hover:bg-[#F0E8DB] transition-colors !font-sans"
+                    className="px-4 py-2 rounded-lg border-2 border-[#805C2C] text-[#805C2C] font-medium hover:bg-[#F0E8DB] transition-colors font-sans!"
                   >
                     + Add Testimonial
                   </button>
@@ -1006,12 +1006,12 @@ if (loading) {
                   {content.testimonials.testimonials.map((testimonial, index) => (
                     <div key={index} className="border-2 border-[#D8CDBE] rounded-lg p-5 bg-[#F9F5F0]">
                       <div className="flex justify-between items-start mb-4">
-                        <h4 className="font-bold text-[#4A3820] !font-sans">
+                        <h4 className="font-bold text-[#4A3820] font-sans!">
                           Testimonial #{index + 1}
                         </h4>
                         <button
                           onClick={() => removeTestimonial(index)}
-                          className="px-3 py-1 rounded-lg border-2 border-red-500 text-red-500 text-sm hover:bg-red-50 transition-colors !font-sans"
+                          className="px-3 py-1 rounded-lg border-2 border-red-500 text-red-500 text-sm hover:bg-red-50 transition-colors font-sans!"
                         >
                           Remove
                         </button>
@@ -1025,7 +1025,7 @@ if (loading) {
                           <textarea
                             value={testimonial.text}
                             onChange={(e) => handleTestimonialChange(index, "text", e.target.value)}
-                            className="w-full px-4 py-2 rounded-lg border-2 border-[#805C2C] bg-white text-[#4A3820] placeholder-[#4A3820]/60 focus:outline-none focus:ring-2 focus:ring-[#805C2C]/50 min-h-[80px]"
+                            className="w-full px-4 py-2 rounded-lg border-2 border-[#805C2C] bg-white text-[#4A3820] placeholder-[#4A3820]/60 focus:outline-none focus:ring-2 focus:ring-[#805C2C]/50 min-h-20"
                             placeholder="Enter testimonial text..."
                           />
                         </div>

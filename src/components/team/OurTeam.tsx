@@ -24,7 +24,7 @@ export default function OurTeam({ teamData }: OurTeamProps) {
         {teamData.map((member) => (
           <div
             key={member.id}
-            className="flex w-full h-[280px] sm:h-[320px] rounded-l-[30px] overflow-hidden shadow-xl"
+            className="flex w-full h-70 sm:h-80 rounded-l-[30px] overflow-hidden shadow-xl"
           >
         
             {/* Image Section - 1/4 of card */}

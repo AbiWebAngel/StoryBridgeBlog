@@ -48,15 +48,16 @@ export function extractAssetUrlsFromAbout(content: AboutContent): string[] {
 export function extractAssetUrlsFromTeam(content: TeamContent): string[] {
   const urls: string[] = [];
 
-  // Add team member images
-  content.teamMembers?.forEach(m => {
-    if (m.image) {
-      urls.push(m.image);
+  content.teamMembers?.forEach(member => {
+    const src = member.image?.src;
+    if (typeof src === "string" && src.trim() !== "") {
+      urls.push(src);
     }
   });
 
   return urls;
 }
+
 
 export function extractAssetUrlsFromMentorship(content: MentorshipContent): string[] {
   const urls: string[] = [];
