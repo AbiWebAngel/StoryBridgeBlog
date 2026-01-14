@@ -5,6 +5,13 @@ import SignUpNow from "@/components/mentorship/SignUpNow";
 import Testimonials from "../../components/Testimonials";
 import { getMentorshipContent } from "@/lib/getMentorshipContent";
 
+type AdminTestimonial = {
+  text: string;
+  image: string;
+  imageAlt: string;
+};
+
+
 export default async function MentorshipPage() {
   // Fetch mentorship content from Firestore
   const mentorshipContent = await getMentorshipContent();
@@ -85,7 +92,18 @@ export default async function MentorshipPage() {
           centerAll={true}
         />
       </div>
-      <Testimonials testimonials={mentorshipContent.testimonials.testimonials} />
+    <Testimonials
+      testimonials={mentorshipContent.testimonials.testimonials.map(
+        (t: AdminTestimonial, index: number) => ({
+          text: t.text,
+          image: {
+            src: t.image,
+            alt: t.imageAlt || `Mentorship testimonial ${index + 1}`,
+          },
+        })
+      )}
+    />
+
     </main>
   );
 }

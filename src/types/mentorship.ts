@@ -11,7 +11,9 @@ export interface ImageAsset {
 export interface Testimonial {
   text: string;
   image: string;
+  imageAlt: string;
 }
+
 
 export interface MentorshipSection {
   title: string;

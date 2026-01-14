@@ -70,7 +70,7 @@ if (!authReady) {
         <div className="h-full w-full animate-pulse bg-[#4A3820]"></div>
       </div>
 
-      <p className="mt-4 text-[#4A3820] font-medium text-lg !font-sans">
+      <p className="mt-4 text-[#4A3820] font-medium text-lg font-sans!">
         Loading site content…
       </p>
     </div>
@@ -91,21 +91,21 @@ if (!user) {
 
 
   return (
-    <div className="min-h-screen px-4 sm:px-6 lg:px-8 !font-sans">
+    <div className="min-h-screen px-4 sm:px-6 lg:px-8 font-sans!">
       <div className="max-w-4xl mx-auto">
 
-        <h1 className="text-3xl font-extrabold text-[#4A3820] mb-2 text-center !font-sans">
+        <h1 className="text-3xl font-extrabold text-[#4A3820] mb-2 text-center font-sans!">
           Site Content Management
         </h1>
 
-        <p className="!text-xl text-[#4A3820] font-semibold mb-8 text-center">
+        <p className="text-xl! text-[#4A3820] font-semibold mb-8 text-center">
           Adjust the text, images, and structure of your public website pages.
         </p>
 
         {/* Content Management Section */}
         <div className="space-y-6">
           <div className="bg-[#F0E8DB] border border-[#D8CDBE] rounded-lg shadow-md p-6 sm:p-8">
-            <h2 className="text-3xl font-extrabold text-[#4A3820] mb-6 text-center !font-sans">
+            <h2 className="text-3xl font-extrabold text-[#4A3820] mb-6 text-center font-sans!">
               Manage Pages
             </h2>
 

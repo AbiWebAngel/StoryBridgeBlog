@@ -4,7 +4,10 @@ export type TeamMember = {
   name: string;
   role: string;
   description: string;
-  image: string;
+    image: { 
+    src: string; 
+    alt: string; 
+  };
 };
 
 export type TeamContent = {

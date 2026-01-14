@@ -72,16 +72,16 @@ export default function AdminMentorshipPage() {
         },
       },
     },
-    testimonials: {
-      testimonials: [
-        { text: "", image: "" },
-        { text: "", image: "" },
-        { text: "", image: "" },
-        { text: "", image: "" },
-        { text: "", image: "" },
-        { text: "", image: "" },
-      ],
-    },
+   testimonials: {
+    testimonials: [
+      { text: "", image: "", imageAlt: "" },
+      { text: "", image: "", imageAlt: "" },
+      { text: "", image: "", imageAlt: "" },
+      { text: "", image: "", imageAlt: "" },
+      { text: "", image: "", imageAlt: "" },
+      { text: "", image: "", imageAlt: "" },
+    ],
+  },
   });
 
   // Load Firestore data
@@ -144,14 +144,15 @@ export default function AdminMentorshipPage() {
             },
             testimonials: data.testimonials || {
               testimonials: [
-                { text: "", image: "" },
-                { text: "", image: "" },
-                { text: "", image: "" },
-                { text: "", image: "" },
-                { text: "", image: "" },
-                { text: "", image: "" },
+                { text: "", image: "", imageAlt: "" },
+                { text: "", image: "", imageAlt: "" },
+                { text: "", image: "", imageAlt: "" },
+                { text: "", image: "", imageAlt: "" },
+                { text: "", image: "", imageAlt: "" },
+                { text: "", image: "", imageAlt: "" },
               ],
             },
+
           };
 
           setContent(loaded);
@@ -255,9 +256,14 @@ export default function AdminMentorshipPage() {
     // Validate Testimonials
     for (let i = 0; i < content.testimonials.testimonials.length; i++) {
       const testimonial = content.testimonials.testimonials[i];
-      if (!isNonEmptyString(testimonial.text) || !isNonEmptyString(testimonial.image)) {
+    if (
+        !isNonEmptyString(testimonial.text) ||
+        !isNonEmptyString(testimonial.image) ||
+        !isNonEmptyString(testimonial.imageAlt)
+      ) {
         return `All fields in Testimonial #${i + 1} must be filled.`;
       }
+
     }
 
     return null; // ✅ valid
@@ -330,10 +336,12 @@ export default function AdminMentorshipPage() {
             },
           },
           testimonials: {
-            testimonials: content.testimonials.testimonials.map((t) => ({
-              text: t.text.trim(),
-              image: t.image.trim(),
-            })),
+          testimonials: content.testimonials.testimonials.map((t) => ({
+            text: t.text.trim(),
+            image: t.image.trim(),
+            imageAlt: t.imageAlt.trim(),
+          })),
+
           },
           updatedAt: new Date(),
         },
@@ -409,7 +417,10 @@ export default function AdminMentorshipPage() {
       ...prev,
       testimonials: {
         ...prev.testimonials,
-        testimonials: [...prev.testimonials.testimonials, { text: "", image: "" }],
+      testimonials: [
+      ...prev.testimonials.testimonials,
+      { text: "", image: "", imageAlt: "" },
+    ],
       },
     }));
   };
@@ -1123,11 +1134,28 @@ if (loading) {
                               <p className="text-sm mb-2 text-[#4A3820]">Preview</p>
                               <img
                                 src={testimonial.image}
-                                alt={`Testimonial ${index + 1} preview`}
-                                className="max-h-32 rounded-lg border"
+                               alt={testimonial.imageAlt || `Testimonial ${index + 1}`}
+                                className="max-h-32 rounded-lg border mb-2"
                               />
                             </div>
                           )}
+                          {testimonial.image && (
+                          <div>
+                            <label className="block text-sm font-medium text-[#4A3820] mb-2">
+                              Image Alt Text
+                            </label>
+                            <input
+                              type="text"
+                              value={testimonial.imageAlt ?? ""}
+                              onChange={(e) =>
+                                handleTestimonialChange(index, "imageAlt", e.target.value)
+                              }
+                              className="w-full px-4 py-2 rounded-lg border-2 border-[#805C2C] bg-white text-[#4A3820] placeholder-[#4A3820]/60 focus:outline-none focus:ring-2 focus:ring-[#805C2C]/50"
+                              placeholder="Describe the person in the image"
+                            />
+                          </div>
+                        )}
+
                         </div>
                       </div>
                     </div>

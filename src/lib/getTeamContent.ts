@@ -1,12 +1,16 @@
 import { adminDb } from "@/lib/firebaseAdmin";
 
-export type TeamMember = {
+export interface TeamMember {
   id: number;
   name: string;
   role: string;
   description: string;
-  image: string;
-};
+  image: {
+    src: string;
+    alt: string;
+  };
+}
+
 
 export type TeamContent = {
   joinTeamText: string;

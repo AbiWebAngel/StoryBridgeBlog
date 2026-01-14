@@ -7,7 +7,10 @@ export interface TeamMember {
   name: string;
   role: string;
   description: string;
-  image: string;
+  image: {
+    src: string;
+    alt: string;
+  };
 }
 
 interface OurTeamProps {
@@ -27,8 +30,8 @@ export default function OurTeam({ teamData }: OurTeamProps) {
             {/* Image Section - 1/4 of card */}
             <div className="w-1/4 relative h-full">
               <Image
-                src={member.image}
-                alt={member.name}
+                src={member.image.src}
+                alt={member.image.alt || member.name}
                 fill
                 sizes="25vw"
                 className="object-cover rounded-l-[30px]"

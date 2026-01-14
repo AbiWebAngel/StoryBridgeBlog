@@ -88,12 +88,18 @@ export default function AdminTeamPage() {
 
         if (snap.exists()) {
           const data = snap.data();
-          const loaded: TeamContent = {
-            joinTeamText: data.joinTeamText || "",
-            matchesCount: data.matchesCount || 0,
-            workshopsCount: data.workshopsCount || 0,
-            teamMembers: data.teamMembers || [],
-          };
+         const loaded: TeamContent = {
+          joinTeamText: data.joinTeamText || "",
+          matchesCount: data.matchesCount || 0,
+          workshopsCount: data.workshopsCount || 0,
+          teamMembers: (data.teamMembers || []).map((m: any) => ({
+            ...m,
+            image: typeof m.image === "string"
+              ? { src: m.image, alt: "" }
+              : m.image,
+          })),
+        };
+
           setContent(loaded);
           setOriginalContent(structuredClone(loaded));
         }
@@ -132,7 +138,8 @@ export default function AdminTeamPage() {
         !isNonEmptyString(member.name) ||
         !isNonEmptyString(member.role) ||
         !isNonEmptyString(member.description) ||
-        !isNonEmptyString(member.image)
+        !isNonEmptyString(member.image?.src) ||
+        !isNonEmptyString(member.image?.alt)
       ) {
         return `Team member #${i + 1} has empty fields.`;
       }
@@ -167,22 +174,28 @@ export default function AdminTeamPage() {
 
       const ref = doc(db, "siteContent", "team");
 
-      await setDoc(
+     await setDoc(
         ref,
         {
           ...content,
           joinTeamText: content.joinTeamText.trim(),
+
           teamMembers: content.teamMembers.map(m => ({
             ...m,
             name: m.name.trim(),
             role: m.role.trim(),
             description: m.description.trim(),
-            image: m.image.trim(),
+            image: {
+              src: m.image.src.trim(),
+              alt: m.image.alt.trim(),
+            },
           })),
+
           updatedAt: new Date(),
         },
         { merge: true }
       );
+
 
       // 🧹 Delete unused R2 assets
       if (originalContent) {
@@ -230,21 +243,34 @@ export default function AdminTeamPage() {
         name: "", 
         role: "", 
         description: "", 
-        image: "" 
+        image: { src: "", alt: "" } 
       }]
     }));
   };
 
-  const updateTeamMember = (index: number, field: keyof TeamMember, value: string) => {
+  const updateTeamMember = (
+    index: number,
+   field: keyof TeamMember | "image.src" | "image.alt",
+    value: any
+  ) => {
     setContent(prev => {
-      const updatedMembers = [...prev.teamMembers];
-      updatedMembers[index] = {
-        ...updatedMembers[index],
-        [field]: value
-      };
-      return { ...prev, teamMembers: updatedMembers };
+      const updated = [...prev.teamMembers];
+
+      // handle nested image updates
+      if (field.startsWith("image.")) {
+        const [, key] = field.split(".");
+        updated[index] = {
+          ...updated[index],
+          image: { ...updated[index].image, [key]: value },
+        };
+      } else {
+        updated[index] = { ...updated[index], [field]: value };
+      }
+
+      return { ...prev, teamMembers: updated };
     });
   };
+
 
   const removeTeamMember = (index: number) => {
     setContent(prev => ({
@@ -277,8 +303,7 @@ export default function AdminTeamPage() {
 
   // Handle team member image upload
   const handleTeamImageUpload = async (index: number, file: File) => {
-    const previousImage = content.teamMembers[index]?.image;
-    
+    const previousSrc = content.teamMembers[index]?.image?.src;
     setTeamImageUploadProgress(prev => ({ ...prev, [index]: 0 }));
     setUploading(true);
 
@@ -289,16 +314,17 @@ export default function AdminTeamPage() {
         (p) => setTeamImageUploadProgress(prev => ({ ...prev, [index]: p }))
       );
 
-      updateTeamMember(index, "image", url);
+      updateTeamMember(index, "image.src", url);
 
       // Delete old image if it exists and is different
-      if (previousImage && previousImage !== url) {
-        await fetch("/api/delete-asset", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ url: previousImage }),
-        });
-      }
+        if (previousSrc && previousSrc !== url) {
+      await fetch("/api/delete-asset", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url: previousSrc }),
+      });
+    }
+
     } catch (err) {
       console.error("Upload error:", err);
       setErrorMessage(
@@ -316,7 +342,7 @@ if (loading) {
       <div className="w-48 h-2 bg-[#E0D6C7] rounded-full overflow-hidden">
         <div className="h-full w-full animate-pulse bg-[#4A3820]"></div>
       </div>
-      <p className="mt-4 text-[#4A3820] font-medium text-lg !font-sans">
+      <p className="mt-4 text-[#4A3820] font-medium text-lg font-sans!">
         Loading team content...
       </p>
     </div>
@@ -327,7 +353,7 @@ if (loading) {
   return (
     <div className="px-6 min-h-screen font-sans">
       <div className="max-w-6xl mx-auto">
-        <h1 className="text-3xl font-extrabold text-[#4A3820] mb-6 text-center !font-sans">
+        <h1 className="text-3xl font-extrabold text-[#4A3820] mb-6 text-center font-sans!">
           Team Page Management
         </h1>
 
@@ -346,7 +372,7 @@ if (loading) {
 
         {/* Main Content Card */}
         <div className="bg-[#F0E8DB] border border-[#D8CDBE] rounded-lg shadow-md p-6 sm:p-8 mb-8">
-          <h2 className="text-2xl font-medium text-[#4A3820] mb-6 !font-sans">
+          <h2 className="text-2xl font-medium text-[#4A3820] mb-6 font-sans!">
             Edit Team Page Content
           </h2>
 
@@ -356,20 +382,20 @@ if (loading) {
             <div className="space-y-8">
               {/* Join Team Text */}
               <div className="bg-white rounded-lg border border-[#D8CDBE] p-5 shadow-md">
-                <label className="block text-lg font-bold text-[#4A3820] mb-3 !font-sans">
+                <label className="block text-lg font-bold text-[#4A3820] mb-3 font-sans!">
                   Join Team Text
                 </label>
                 <textarea
                   value={content.joinTeamText}
                   onChange={(e) => handleContentChange("joinTeamText", e.target.value)}
-                  className="w-full px-4 py-3 rounded-lg border-2 border-[#805C2C] bg-white text-[#4A3820] placeholder-[#4A3820]/60 focus:outline-none focus:ring-2 focus:ring-[#805C2C]/50 min-h-[200px] scrollable-description"
+                  className="w-full px-4 py-3 rounded-lg border-2 border-[#805C2C] bg-white text-[#4A3820] placeholder-[#4A3820]/60 focus:outline-none focus:ring-2 focus:ring-[#805C2C]/50 min-h-50 scrollable-description"
                   placeholder="Enter the text for the 'Join The Team' section..."
                 />
               </div>
 
               {/* Tally Counter Stats */}
               <div className="bg-white rounded-lg border border-[#D8CDBE] p-5 shadow-md">
-                <h3 className="text-xl font-bold text-[#4A3820] mb-6 !font-sans">
+                <h3 className="text-xl font-bold text-[#4A3820] mb-6 font-sans!">
                   Tally Counter Statistics
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -405,12 +431,12 @@ if (loading) {
               {/* Team Members Section */}
               <div className="bg-white rounded-lg border border-[#D8CDBE] p-5 shadow-md">
                 <div className="flex justify-between items-center mb-6">
-                  <h3 className="text-xl font-bold text-[#4A3820] !font-sans">
+                  <h3 className="text-xl font-bold text-[#4A3820] font-sans!">
                     Team Members
                   </h3>
                   <button
                     onClick={addTeamMember}
-                    className="px-4 py-2 rounded-lg border-2 border-[#805C2C] text-[#805C2C] font-medium hover:bg-[#F0E8DB] transition-colors !font-sans"
+                    className="px-4 py-2 rounded-lg border-2 border-[#805C2C] text-[#805C2C] font-medium hover:bg-[#F0E8DB] transition-colors font-sans!"
                   >
                     + Add Team Member
                   </button>
@@ -420,27 +446,27 @@ if (loading) {
                   {content.teamMembers.map((member, index) => (
                     <div key={index} className="border-2 border-[#D8CDBE] rounded-lg p-5 bg-[#F9F5F0]">
                       <div className="flex justify-between items-start mb-4">
-                        <h4 className="font-bold text-[#4A3820] !font-sans">
+                        <h4 className="font-bold text-[#4A3820] font-sans!">
                           Team Member #{index + 1}
                         </h4>
                         <div className="flex space-x-2">
                           <button
                             onClick={() => moveTeamMemberUp(index)}
                             disabled={index === 0}
-                            className="px-3 py-1 rounded-lg border-2 border-[#805C2C] text-[#805C2C] text-sm hover:bg-[#F0E8DB] transition-colors disabled:opacity-40 disabled:cursor-not-allowed !font-sans"
+                            className="px-3 py-1 rounded-lg border-2 border-[#805C2C] text-[#805C2C] text-sm hover:bg-[#F0E8DB] transition-colors disabled:opacity-40 disabled:cursor-not-allowed font-sans!"
                           >
                             ↑
                           </button>
                           <button
                             onClick={() => moveTeamMemberDown(index)}
                             disabled={index === content.teamMembers.length - 1}
-                            className="px-3 py-1 rounded-lg border-2 border-[#805C2C] text-[#805C2C] text-sm hover:bg-[#F0E8DB] transition-colors disabled:opacity-40 disabled:cursor-not-allowed !font-sans"
+                            className="px-3 py-1 rounded-lg border-2 border-[#805C2C] text-[#805C2C] text-sm hover:bg-[#F0E8DB] transition-colors disabled:opacity-40 disabled:cursor-not-allowed font-sans!"
                           >
                             ↓
                           </button>
                           <button
                             onClick={() => removeTeamMember(index)}
-                            className="px-3 py-1 rounded-lg border-2 border-red-500 text-red-500 text-sm hover:bg-red-50 transition-colors !font-sans"
+                            className="px-3 py-1 rounded-lg border-2 border-red-500 text-red-500 text-sm hover:bg-red-50 transition-colors font-sans!"
                           >
                             Remove
                           </button>
@@ -490,6 +516,7 @@ if (loading) {
                                 await handleTeamImageUpload(index, e.target.files[0]);
                               }}
                             />
+                          
 
                          {/* DRAG & DROP WRAPPER */}
                           <div
@@ -555,13 +582,24 @@ if (loading) {
                             {member.image && (
                               <div className="mt-4">
                                 <p className="text-sm mb-2 text-[#4A3820]">Preview</p>
-                                <img
-                                  src={member.image}
-                                  alt={`${member.name} preview`}
+                               <img src={member.image.src} alt={member.image.alt || `${member.name} photo`}
                                   className="max-h-48 rounded-lg border"
                                 />
                               </div>
                             )}
+                              {member.image?.src && (
+                              <div className="mt-4 space-y-2">
+                                <p className="text-sm! text-[#4A3820] font-bold">Image Alt Text</p>
+                                <input
+                                  type="text"
+                                  value={member.image.alt}
+                                  onChange={(e) => updateTeamMember(index, "image.alt", e.target.value)}
+                                  className="w-full px-4 py-2 rounded-lg border-2 border-[#805C2C] bg-white text-[#4A3820]"
+                                  placeholder="Describe the image for accessibility"
+                                />
+                              </div>
+                            )}
+
                           </div>
                         </div>
                         <div>
@@ -571,7 +609,7 @@ if (loading) {
                           <textarea
                             value={member.description}
                             onChange={(e) => updateTeamMember(index, "description", e.target.value)}
-                            className="w-full px-4 py-2 rounded-lg border-2 border-[#805C2C] bg-white text-[#4A3820] placeholder-[#4A3820]/60 focus:outline-none focus:ring-2 focus:ring-[#805C2C]/50 min-h-[180px] scrollable-description"
+                            className="w-full px-4 py-2 rounded-lg border-2 border-[#805C2C] bg-white text-[#4A3820] placeholder-[#4A3820]/60 focus:outline-none focus:ring-2 focus:ring-[#805C2C]/50 min-h-45 scrollable-description"
                             placeholder="Enter team member description"
                           />
                         </div>
