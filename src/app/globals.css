@@ -174,7 +174,7 @@ textarea.scrollable-description::-webkit-scrollbar-thumb:hover {
   color: #2563EB;
   text-decoration: underline;
   text-underline-offset: 2px;
-  font-size: 20px;
+  font-size: 18px;
 }
 
 .editor-content a:hover {

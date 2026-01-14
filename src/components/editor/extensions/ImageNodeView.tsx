@@ -28,7 +28,7 @@ export default function ImageNodeView({ node, editor, getPos, updateAttributes }
         alt={alt || ""}
         className="rounded-lg"
         style={{
-          maxWidth: "300px",
+          maxWidth: "600px",
           width: "100%",
           height: "auto",
           display: "block",

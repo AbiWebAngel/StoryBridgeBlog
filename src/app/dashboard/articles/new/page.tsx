@@ -30,6 +30,7 @@ export default function NewArticlePage() {
   const [tags, setTags] = useState<string[]>([]);
   const [status, setStatus] = useState<"draft" | "published">("draft");
   const [editorKey, setEditorKey] = useState(Date.now());
+  const [metaDescription, setMetaDescription] = useState("");
 
   // 🔥 NEW: Track ALL uploaded asset URLs
   const [uploadedAssets, setUploadedAssets] = useState<string[]>([]);
@@ -159,22 +160,23 @@ const handleAddTag = (e: React.KeyboardEvent<HTMLInputElement>) => {
     }
 
       // Save article
-      await setDoc(
-      doc(db, "articles", articleId),
-      {
-        articleId,
-        slug,
-        title,
-        coverImage,
-        coverImageAlt,
-        body,
-        tags,
-        status,
-        authorId: currentAuthUser.uid,
-        updatedAt: serverTimestamp(),
-      },
-      { merge: true }
-    );
+    await setDoc(
+    doc(db, "articles", articleId),
+    {
+      title,
+      slug,
+      metaDescription,
+      coverImage,
+      coverImageAlt,
+      body,
+      tags,
+      status,
+      authorId: currentAuthUser.uid,
+      updatedAt: serverTimestamp(),
+    },
+    { merge: true }
+  );
+
 
 
       const shouldCleanup = hasSavedOnceRef.current;
@@ -312,6 +314,33 @@ if (!pageReady) {
                 <p className="mt-2 text-red-600 font-medium">{errors.slug}</p>
               )}
             </div>
+
+            {/* META DESCRIPTION */}
+      <div className="bg-white rounded-lg border border-[#D8CDBE] p-5 shadow-md">
+        <label className="block text-lg font-bold text-[#4A3820] mb-3 font-sans!">
+          Meta Description
+        </label>
+
+        <textarea
+          value={metaDescription}
+          onChange={(e) => setMetaDescription(e.target.value)}
+          maxLength={160}
+          rows={3}
+          placeholder="Short summary shown in search results (150–160 chars)"
+          className="w-full px-4 py-3 rounded-lg border-2 border-[#805C2C]"
+        />
+
+        <p className="mt-1 text-sm! text-gray-600 font-sans!">
+          {metaDescription.length}/160 characters
+        </p>
+
+        {errors.metaDescription && (
+          <p className="mt-2 text-red-600 font-medium">
+            {errors.metaDescription}
+          </p>
+        )}
+      </div>
+
 
             {/* COVER IMAGE */}
             <div className="bg-white rounded-lg border border-[#D8CDBE] p-5 shadow-md">

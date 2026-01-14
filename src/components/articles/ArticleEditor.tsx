@@ -39,6 +39,7 @@ export default function ArticleEditor({ value, articleId, onChange, onImageUploa
   const [hasSelection, setHasSelection] = useState(false);
   const [youtubeModalOpen, setYoutubeModalOpen] = useState(false);
   const [youtubeUrl, setYoutubeUrl] = useState('');
+ 
 
   // 🔹 Safe position helper
   const getSafePos = (pos: number | undefined, editor: ReturnType<typeof useEditor>): number => {

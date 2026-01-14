@@ -134,7 +134,7 @@ export default function CoverUpload({
              <img
           src={value}
           alt="Cover"
-          className="w-full max-h-96 object-cover mx-auto rounded"
+          className="w-600 max-h-96 object-cover mx-auto rounded"
         />
 
               <p className="text-sm text-[#4A3820]/70">Click to replace image</p>
