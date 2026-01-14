@@ -7,7 +7,10 @@ import { useState, useEffect } from "react";
 
 interface Testimonial {
   text: string;
-  image: string;
+  image: {
+    src: string;
+    alt: string;
+  };
 }
 
 interface TestimonialCarouselProps {
@@ -128,7 +131,12 @@ export default function Testimonials({
                   backgroundColor: "#fff",
                 }}
               >
-                <Image src={t.image} alt={`Testimonial ${i}`} fill className="object-cover"/>
+               <Image
+                src={t.image.src}
+                alt={t.image.alt || `Testimonial ${i}`}
+                fill
+                className="object-cover"
+              />
               </div>
             </div>
           </div>

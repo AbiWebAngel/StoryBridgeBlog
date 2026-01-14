@@ -30,16 +30,15 @@ export function extractAssetUrlsFromAbout(content: AboutContent): string[] {
   const urls: string[] = [];
 
   // Add book images
-  content.bookImages?.forEach(img => {
-    if (img) {
-      urls.push(img);
-    }
-  });
+ content.bookImages?.forEach(img => {
+  if (img.src) urls.push(img.src);
+});
+
 
   // Add testimonial images
   content.testimonials?.forEach(t => {
-    if (t.image) {
-      urls.push(t.image);
+    if (t.image?.src) {
+      urls.push(t.image.src);
     }
   });
 

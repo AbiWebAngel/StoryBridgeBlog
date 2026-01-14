@@ -25,6 +25,7 @@ export default function NewArticlePage() {
   const [title, setTitle] = useState("");
   const [slug, setSlug] = useState("");
   const [coverImage, setCoverImage] = useState<string | null>(null);
+  const [coverImageAlt, setCoverImageAlt] = useState("");
   const [body, setBody] = useState<any>(null);
   const [tags, setTags] = useState<string[]>([]);
   const [status, setStatus] = useState<"draft" | "published">("draft");
@@ -60,6 +61,12 @@ export default function NewArticlePage() {
   return () => clearTimeout(timer);
 }, []);
 
+useEffect(() => {
+  if (!coverImage) {
+    setCoverImageAlt("");
+  }
+}, [coverImage]);
+
   // -------------------------
   // TAG HELPERS
   // -------------------------
@@ -90,6 +97,7 @@ const handleAddTag = (e: React.KeyboardEvent<HTMLInputElement>) => {
  function resetForm() {
   setTitle("");
   setSlug("");
+  setCoverImageAlt("");
   setCoverImage(null);
   setBody(null);
   setTags([]);
@@ -121,6 +129,7 @@ const handleAddTag = (e: React.KeyboardEvent<HTMLInputElement>) => {
       title,
       slug,
       coverImage,
+      coverImageAlt,
       body,
       tags,
       status,
@@ -151,20 +160,22 @@ const handleAddTag = (e: React.KeyboardEvent<HTMLInputElement>) => {
 
       // Save article
       await setDoc(
-        doc(db, "articles", articleId),
-        {
-          articleId,
-          slug,
-          title,
-          coverImage,
-          body,
-          tags,
-          status,
-          authorId: currentAuthUser.uid,
-          updatedAt: serverTimestamp(),
-        },
-        { merge: true }
-      );
+      doc(db, "articles", articleId),
+      {
+        articleId,
+        slug,
+        title,
+        coverImage,
+        coverImageAlt,
+        body,
+        tags,
+        status,
+        authorId: currentAuthUser.uid,
+        updatedAt: serverTimestamp(),
+      },
+      { merge: true }
+    );
+
 
       const shouldCleanup = hasSavedOnceRef.current;
       if (!hasSavedOnceRef.current) {
@@ -267,22 +278,23 @@ if (!pageReady) {
           </h2>
 
           <div className="space-y-8">
-            {/* TITLE */}
-            <div className="bg-white rounded-lg border border-[#D8CDBE] p-5 shadow-md">
-              <label className="block text-lg font-bold text-[#4A3820] mb-3 font-sans!">
-                Title
-              </label>
-              <input
-                type="text"
-                className="w-full px-4 py-3 rounded-lg border-2 border-[#805C2C]"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                placeholder="Enter article title"
-              />
-              {errors.title && (
-                <p className="mt-2 text-red-600 font-medium">{errors.title}</p>
-              )}
-            </div>
+           {/* TITLE */}
+              <div className="bg-white rounded-lg border border-[#D8CDBE] p-5 shadow-md">
+                <label className="block text-lg font-bold text-[#4A3820] mb-3 font-sans!">
+                  Title
+                </label>
+                <input
+                  type="text"
+                  className="w-full px-4 py-3 rounded-lg border-2 border-[#805C2C]"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  placeholder="Enter article title"
+                />
+                {errors.title && (
+                  <p className="mt-2 text-red-600 font-medium">{errors.title}</p>
+                )}
+              </div>
+
 
             {/* SLUG */}
             <div className="bg-white rounded-lg border border-[#D8CDBE] p-5 shadow-md">
@@ -318,6 +330,30 @@ if (!pageReady) {
             }}
 
             />
+            <div className="mt-4">
+              <label className="block text-sm font-semibold text-[#4A3820] mb-1">
+                Cover Image Alt Text
+              </label>
+
+              <input
+                type="text"
+                value={coverImageAlt}
+                onChange={(e) => setCoverImageAlt(e.target.value)}
+                placeholder="Describe the image for accessibility & SEO"
+                disabled={!coverImage}
+                className={`w-full px-4 py-2 rounded-lg border-2 ${
+                  coverImage
+                    ? "border-[#805C2C]"
+                    : "border-gray-300 bg-gray-100 cursor-not-allowed"
+                }`}
+              />
+
+              {errors.coverImageAlt && (
+                <p className="mt-1 text-red-600 font-medium">
+                  {errors.coverImageAlt}
+                </p>
+              )}
+            </div>
 
 
               {errors.coverImage && (

@@ -5,8 +5,13 @@ import { useKeenSlider} from "keen-slider/react";
 import Image from "next/image";
 import { useState, useEffect } from "react";
 
+type ImageAsset = {
+  src: string;
+  alt: string;
+};
+
 interface ImageSliderProps {
-  images: string[];
+  images: ImageAsset[];
   autoPlay?: boolean;
   interval?: number;
 }
@@ -16,7 +21,7 @@ export default function ImageSlider({
   autoPlay = true,
   interval = 5000,
 }: ImageSliderProps) {
-  const [currentImage, setCurrentImage] = useState<string | null>(null);
+  const [currentImage, setCurrentImage] = useState<ImageAsset | null>(null);
   const [isPaused, setIsPaused] = useState(false); // track pause state
 
       const [sliderRef, slider] = useKeenSlider<HTMLDivElement>({
@@ -59,23 +64,24 @@ export default function ImageSlider({
     <div className="relative group ml-6 mr-8">
       {/* Slider */}
       <div ref={sliderRef} className="keen-slider">
-        {images.map((src, i) => (
+       {images.map((image, i) => (
     <div key={i} className="keen-slider__slide flex justify-center p-4">
       <div
         className="relative w-64 h-48 sm:w-72 sm:h-52 rounded-4xl 
                   shadow-[3px_3px_8px_rgba(0,0,0,0.2),6px_6px_12px_rgba(130,95,48,1)] cursor-pointer 
                   transform transition-transform duration-300 hover:scale-105 bg-white/5"
-        onClick={() => setCurrentImage(src)}
+        onClick={() => setCurrentImage(image)}
       >
       <div className="absolute inset-0 overflow-hidden rounded-4xl">
-        <Image
-          src={src}
-          alt={`Slide ${i}`}
-          fill
-          priority
-          sizes="(max-width: 768px) 100vw, 33vw"
-          className="object-cover object-center w-full h-full scale-[1.04] translate-x-[-0.5px]"
-        />
+      <Image
+      src={image.src}
+      alt={image.alt || `Slide ${i + 1}`}
+      fill
+      priority
+      sizes="(max-width: 768px) 100vw, 33vw"
+      className="object-cover object-center w-full h-full scale-[1.04] translate-x-[-0.5px]"
+    />
+
       </div>
       </div>
     </div>
@@ -106,7 +112,12 @@ export default function ImageSlider({
           onClick={() => setCurrentImage(null)}
         >
           <div className="relative w-[90%] h-[90%] sm:w-[85%] sm:h-[85%] lg:w-[80%] lg:h-[80%]">
-            <Image src={currentImage} alt="Full Image" fill className="object-contain" />
+           <Image
+          src={currentImage.src}
+          alt={currentImage.alt || "Full image"}
+          fill
+          className="object-contain"
+        />
             <button
               className="absolute top-4 right-4 text-white text-3xl font-bold"
               onClick={() => setCurrentImage(null)}

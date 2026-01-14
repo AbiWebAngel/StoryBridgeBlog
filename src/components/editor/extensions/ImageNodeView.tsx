@@ -43,7 +43,7 @@ export default function ImageNodeView({ node, editor, getPos, updateAttributes }
         onChange={(e) => setAlt(e.target.value)}
         onBlur={() => updateAttributes({ alt })}
         placeholder="Alt text (describe this image)"
-        className="mt-2 w-full max-w-[300px] text-xs border rounded px-2 py-1 
+        className="mt-2 w-full max-w-75 text-xs border rounded px-2 py-1 
                    text-gray-600 focus:outline-none focus:ring-1 focus:ring-gray-400"
       />
 

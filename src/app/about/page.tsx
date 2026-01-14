@@ -5,6 +5,8 @@ import ImageSlider from "../../components/ImageSlider";
 import Testimonials from "../../components/Testimonials";
 import AboutSuccessMessage from "@/components/about/AboutSuccessMessage";
 import { getAboutContent } from "@/lib/getAboutContent";
+import type { ImageAsset } from "@/types/about";
+
 
 export const dynamic = "force-dynamic";
 
@@ -19,15 +21,20 @@ export default async function AboutPage() {
     );
   }
 
-  const bookImages =
-    content.bookImages.length > 0
-      ? content.bookImages
-      : [
-          "/assets/images/about/book1.png",
-          "/assets/images/about/book2.png",
-          "/assets/images/about/book3.png",
-          "/assets/images/about/book4.png",
-        ];
+
+const bookImages: ImageAsset[] =
+  content.bookImages.length > 0
+    ? // normalize Firestore data in case it still contains strings
+      content.bookImages.map((img) =>
+        typeof img === "string" ? { src: img, alt: "" } : img
+      )
+    : [
+        { src: "/assets/images/about/book1.png", alt: "Book 1" },
+        { src: "/assets/images/about/book2.png", alt: "Book 2" },
+        { src: "/assets/images/about/book3.png", alt: "Book 3" },
+        { src: "/assets/images/about/book4.png", alt: "Book 4" },
+      ];
+
 
   return (
     <main>

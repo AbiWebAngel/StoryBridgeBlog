@@ -94,13 +94,26 @@ export default function AdminAboutPage() {
         if (snap.exists()) {
           const data = snap.data();
           const loaded: AboutContent = {
-            missionStatement: data.missionStatement || "",
-            whoWeAre: data.whoWeAre || "",
-            whatWeDo: data.whatWeDo || "",
-            whyItMatters: data.whyItMatters || "",
-            testimonials: data.testimonials || [],
-            bookImages: data.bookImages || [],
-          };
+          missionStatement: data.missionStatement || "",
+          whoWeAre: data.whoWeAre || "",
+          whatWeDo: data.whatWeDo || "",
+          whyItMatters: data.whyItMatters || "",
+
+          bookImages: (data.bookImages || []).map((img: any) =>
+            typeof img === "string"
+              ? { src: img, alt: "" }
+              : { src: img.src || "", alt: img.alt || "" }
+          ),
+
+          testimonials: (data.testimonials || []).map((t: any) => ({
+            text: t.text || "",
+            image:
+              typeof t.image === "string"
+                ? { src: t.image, alt: "" }
+                : { src: t.image?.src || "", alt: t.image?.alt || "" },
+          })),
+        };
+
           setContent(loaded);
           setOriginalContent(structuredClone(loaded));
         }
@@ -130,9 +143,14 @@ export default function AdminAboutPage() {
     }
 
     for (let i = 0; i < content.bookImages.length; i++) {
-      if (!isNonEmptyString(content.bookImages[i])) {
-        return `Book image #${i + 1} URL cannot be empty.`;
-      }
+      if (!isNonEmptyString(content.bookImages[i].src)) {
+      return `Book image #${i + 1} must have an image uploaded.`;
+    }
+
+    if (!isNonEmptyString(content.bookImages[i].alt)) {
+      return `Book image #${i + 1} must have alt text.`;
+    }
+
     }
 
     if (!isNonEmptyArray(content.testimonials)) {
@@ -142,12 +160,18 @@ export default function AdminAboutPage() {
     for (let i = 0; i < content.testimonials.length; i++) {
       const t = content.testimonials[i];
 
-      if (
-        !isNonEmptyString(t.text) ||
-        !isNonEmptyString(t.image)
-      ) {
-        return `Testimonial #${i + 1} has empty fields.`;
-      }
+    if (!isNonEmptyString(t.text)) {
+      return `Testimonial #${i + 1} text is required.`;
+    }
+
+    if (!isNonEmptyString(t.image?.src)) {
+      return `Testimonial #${i + 1} image is required.`;
+    }
+
+    if (!isNonEmptyString(t.image?.alt)) {
+      return `Testimonial #${i + 1} image alt text is required.`;
+    }
+
     }
 
     return null;
@@ -186,11 +210,19 @@ export default function AdminAboutPage() {
           whoWeAre: content.whoWeAre.trim(),
           whatWeDo: content.whatWeDo.trim(),
           whyItMatters: content.whyItMatters.trim(),
-          bookImages: content.bookImages.map(img => img.trim()),
-          testimonials: content.testimonials.map(t => ({
-            text: t.text.trim(),
-            image: t.image.trim(),
-          })),
+         bookImages: content.bookImages.map(img => ({
+          src: img.src.trim(),
+          alt: img.alt.trim(),
+        })),
+
+        testimonials: content.testimonials.map(t => ({
+          text: t.text.trim(),
+          image: {
+            src: t.image.src.trim(),
+            alt: t.image.alt.trim(),
+          },
+        })),
+
           updatedAt: new Date(),
         },
         { merge: true }
@@ -234,20 +266,22 @@ export default function AdminAboutPage() {
   };
 
   // Book Images functions with upload
-  const addBookImage = () => {
-    setContent(prev => ({
-      ...prev,
-      bookImages: [...prev.bookImages, ""]
-    }));
-  };
+const addBookImage = () => {
+  setContent(prev => ({
+    ...prev,
+    bookImages: [...prev.bookImages, { src: "", alt: "" }],
+  }));
+};
 
-  const updateBookImage = (index: number, value: string) => {
-    setContent(prev => {
-      const updatedBookImages = [...prev.bookImages];
-      updatedBookImages[index] = value;
-      return { ...prev, bookImages: updatedBookImages };
-    });
-  };
+const addTestimonial = () => {
+  setContent(prev => ({
+    ...prev,
+    testimonials: [
+      ...prev.testimonials,
+      { text: "", image: { src: "", alt: "" } },
+    ],
+  }));
+};
 
   const removeBookImage = (index: number) => {
     setContent(prev => ({
@@ -256,8 +290,16 @@ export default function AdminAboutPage() {
     }));
   };
 
+  const updateBookImageSrc = (index: number, src: string) => {
+  setContent(prev => {
+    const images = [...prev.bookImages];
+    images[index] = { ...images[index], src };
+    return { ...prev, bookImages: images };
+  });
+};
+
   const handleBookImageUpload = async (index: number, file: File) => {
-    const previousImage = content.bookImages[index];
+    const previousImage = content.bookImages[index]?.src;
     
     setBookImageUploadProgress(prev => ({ ...prev, [index]: 0 }));
     setUploading(true);
@@ -269,7 +311,8 @@ export default function AdminAboutPage() {
         (p) => setBookImageUploadProgress(prev => ({ ...prev, [index]: p }))
       );
 
-      updateBookImage(index, url);
+      updateBookImageSrc(index, url);
+
 
       // Delete old image if it exists and is different
       if (previousImage && previousImage !== url) {
@@ -279,6 +322,7 @@ export default function AdminAboutPage() {
           body: JSON.stringify({ url: previousImage }),
         });
       }
+
     } catch (err) {
       console.error("Upload error:", err);
       setErrorMessage(
@@ -290,15 +334,13 @@ export default function AdminAboutPage() {
     }
   };
 
-  // Testimonial functions with upload
-  const addTestimonial = () => {
-    setContent(prev => ({
-      ...prev,
-      testimonials: [...prev.testimonials, { text: "", image: "" }]
-    }));
-  };
 
-  const updateTestimonial = (index: number, field: keyof Testimonial, value: string) => {
+const updateTestimonial = (
+  index: number,
+  field: keyof Testimonial,
+  value: any
+) => {
+
     setContent(prev => {
       const updatedTestimonials = [...prev.testimonials];
       updatedTestimonials[index] = {
@@ -317,7 +359,8 @@ export default function AdminAboutPage() {
   };
 
   const handleTestimonialImageUpload = async (index: number, file: File) => {
-    const previousImage = content.testimonials[index]?.image;
+    const previousImage = content.testimonials[index]?.image?.src;
+
     
     setTestimonialImageUploadProgress(prev => ({ ...prev, [index]: 0 }));
     setUploading(true);
@@ -329,7 +372,17 @@ export default function AdminAboutPage() {
         (p) => setTestimonialImageUploadProgress(prev => ({ ...prev, [index]: p }))
       );
 
-      updateTestimonial(index, "image", url);
+      setContent(prev => {
+      const testimonials = [...prev.testimonials];
+      testimonials[index] = {
+        ...testimonials[index],
+        image: {
+          ...testimonials[index].image,
+          src: url,
+        },
+      };
+      return { ...prev, testimonials };
+    });
 
       // Delete old image if it exists and is different
       if (previousImage && previousImage !== url) {
@@ -357,7 +410,7 @@ if (loading) {
       <div className="w-48 h-2 bg-[#E0D6C7] rounded-full overflow-hidden">
         <div className="h-full w-full animate-pulse bg-[#4A3820]"></div>
       </div>
-      <p className="mt-4 text-[#4A3820] font-medium text-lg !font-sans">
+      <p className="mt-4 text-[#4A3820] font-medium text-lg font-sans!">
         Loading about content...
       </p>
     </div>
@@ -367,7 +420,7 @@ if (loading) {
   return (
     <div className="px-6 min-h-screen font-sans">
       <div className="max-w-4xl mx-auto">
-        <h1 className="text-3xl font-extrabold text-[#4A3820] mb-6 text-center !font-sans">
+        <h1 className="text-3xl font-extrabold text-[#4A3820] mb-6 text-center font-sans!">
           About Page Management
         </h1>
 
@@ -386,7 +439,7 @@ if (loading) {
 
         {/* Main Content Card */}
         <div className="bg-[#F0E8DB] border border-[#D8CDBE] rounded-lg shadow-md p-6 sm:p-8 mb-8">
-          <h2 className="text-2xl font-medium text-[#4A3820] mb-6 !font-sans">
+          <h2 className="text-2xl font-medium text-[#4A3820] mb-6 font-sans!">
             Edit About Page Content
           </h2>
 
@@ -396,52 +449,52 @@ if (loading) {
             <div className="space-y-6">
               {/* Mission Statement */}
               <div className="bg-white rounded-lg border border-[#D8CDBE] p-5 shadow-md">
-                <label className="block text-lg font-bold text-[#4A3820] mb-3 !font-sans">
+                <label className="block text-lg font-bold text-[#4A3820] mb-3 font-sans!">
                   Mission Statement
                 </label>
                 <textarea
                   value={content.missionStatement}
                   onChange={(e) => handleContentChange("missionStatement", e.target.value)}
-                  className="w-full px-4 py-3 rounded-lg border-2 border-[#805C2C] bg-white text-[#4A3820] placeholder-[#4A3820]/60 focus:outline-none focus:ring-2 focus:ring-[#805C2C]/50 min-h-[120px] scrollable-description"
+                  className="w-full px-4 py-3 rounded-lg border-2 border-[#805C2C] bg-white text-[#4A3820] placeholder-[#4A3820]/60 focus:outline-none focus:ring-2 focus:ring-[#805C2C]/50 min-h-30 scrollable-description"
                   placeholder="Enter your mission statement..."
                 />
               </div>
 
               {/* Who We Are */}
               <div className="bg-white rounded-lg border border-[#D8CDBE] p-5 shadow-md">
-                <label className="block text-lg font-bold text-[#4A3820] mb-3 !font-sans">
+                <label className="block text-lg font-bold text-[#4A3820] mb-3 font-sans!">
                   Who We Are
                 </label>
                 <textarea
                   value={content.whoWeAre}
                   onChange={(e) => handleContentChange("whoWeAre", e.target.value)}
-                  className="w-full px-4 py-3 rounded-lg border-2 border-[#805C2C] bg-white text-[#4A3820] placeholder-[#4A3820]/60 focus:outline-none focus:ring-2 focus:ring-[#805C2C]/50 min-h-[150px] scrollable-description"
+                  className="w-full px-4 py-3 rounded-lg border-2 border-[#805C2C] bg-white text-[#4A3820] placeholder-[#4A3820]/60 focus:outline-none focus:ring-2 focus:ring-[#805C2C]/50 min-h-37.5 scrollable-description"
                   placeholder="Describe who you are..."
                 />
               </div>
 
               {/* What We Do */}
               <div className="bg-white rounded-lg border border-[#D8CDBE] p-5 shadow-md">
-                <label className="block text-lg font-bold text-[#4A3820] mb-3 !font-sans">
+                <label className="block text-lg font-bold text-[#4A3820] mb-3 font-sans!">
                   What We Do
                 </label>
                 <textarea
                   value={content.whatWeDo}
                   onChange={(e) => handleContentChange("whatWeDo", e.target.value)}
-                  className="w-full px-4 py-3 rounded-lg border-2 border-[#805C2C] bg-white text-[#4A3820] placeholder-[#4A3820]/60 focus:outline-none focus:ring-2 focus:ring-[#805C2C]/50 min-h-[150px] scrollable-description"
+                  className="w-full px-4 py-3 rounded-lg border-2 border-[#805C2C] bg-white text-[#4A3820] placeholder-[#4A3820]/60 focus:outline-none focus:ring-2 focus:ring-[#805C2C]/50 min-h-37.5 scrollable-description"
                   placeholder="Explain what you do..."
                 />
               </div>
 
               {/* Why It Matters */}
               <div className="bg-white rounded-lg border border-[#D8CDBE] p-5 shadow-md">
-                <label className="block text-lg font-bold text-[#4A3820] mb-3 !font-sans">
+                <label className="block text-lg font-bold text-[#4A3820] mb-3 font-sans!">
                   Why It Matters
                 </label>
                 <textarea
                   value={content.whyItMatters}
                   onChange={(e) => handleContentChange("whyItMatters", e.target.value)}
-                  className="w-full px-4 py-3 rounded-lg border-2 border-[#805C2C] bg-white text-[#4A3820] placeholder-[#4A3820]/60 focus:outline-none focus:ring-2 focus:ring-[#805C2C]/50 min-h-[150px] scrollable-description"
+                  className="w-full px-4 py-3 rounded-lg border-2 border-[#805C2C] bg-white text-[#4A3820] placeholder-[#4A3820]/60 focus:outline-none focus:ring-2 focus:ring-[#805C2C]/50 min-h-37.5 scrollable-description"
                   placeholder="Explain why it matters..."
                 />
               </div>
@@ -449,27 +502,27 @@ if (loading) {
               {/* Book Images Section */}
               <div className="bg-white rounded-lg border border-[#D8CDBE] p-5 shadow-md">
                 <div className="flex justify-between items-center mb-6">
-                  <h3 className="text-xl font-bold text-[#4A3820] !font-sans">
+                  <h3 className="text-xl font-bold text-[#4A3820] font-sans!">
                     Book Images (for Slider)
                   </h3>
                   <button
                     onClick={addBookImage}
-                    className="px-4 py-2 rounded-lg border-2 border-[#805C2C] text-[#805C2C] font-medium hover:bg-[#F0E8DB] transition-colors !font-sans"
+                    className="px-4 py-2 rounded-lg border-2 border-[#805C2C] text-[#805C2C] font-medium hover:bg-[#F0E8DB] transition-colors font-sans!"
                   >
                     + Add Book Image
                   </button>
                 </div>
 
                 <div className="space-y-6">
-                  {content.bookImages.map((imageUrl, index) => (
+                  {content.bookImages.map((image, index) => (
                     <div key={index} className="border-2 border-[#D8CDBE] rounded-lg p-5 bg-[#F9F5F0]">
                       <div className="flex justify-between items-start mb-4">
-                        <h4 className="font-bold text-[#4A3820] !font-sans">
+                        <h4 className="font-bold text-[#4A3820] font-sans!">
                           Book Image #{index + 1}
                         </h4>
                         <button
                           onClick={() => removeBookImage(index)}
-                          className="px-3 py-1 rounded-lg border-2 border-red-500 text-red-500 text-sm hover:bg-red-50 transition-colors !font-sans"
+                          className="px-3 py-1 rounded-lg border-2 border-red-500 text-red-500 text-sm hover:bg-red-50 transition-colors font-sans!"
                         >
                           Remove
                         </button>
@@ -550,16 +603,31 @@ if (loading) {
                             </div>
                           )}
 
-                          {imageUrl && (
-                            <div className="mt-4">
-                              <p className="text-sm mb-2 text-[#4A3820]">Preview</p>
+                          {image.src && (
+                            <>
                               <img
-                                src={imageUrl}
-                                alt={`Book ${index + 1} preview`}
+                                src={image.src}
+                                alt={image.alt || "Book image"}
                                 className="max-h-48 rounded-lg border"
                               />
-                            </div>
+
+                              <input
+                                type="text"
+                                value={image.alt}
+                                onChange={(e) => {
+                                  const alt = e.target.value;
+                                  setContent(prev => {
+                                    const imgs = [...prev.bookImages];
+                                    imgs[index] = { ...imgs[index], alt };
+                                    return { ...prev, bookImages: imgs };
+                                  });
+                                }}
+                                placeholder="Alt text (describe the image)"
+                                className="mt-3 w-full px-3 py-2 border rounded-lg"
+                              />
+                            </>
                           )}
+
                         </div>
                       </div>
                     </div>
@@ -579,12 +647,12 @@ if (loading) {
               {/* Testimonials Section */}
               <div className="bg-white rounded-lg border border-[#D8CDBE] p-5 shadow-md">
                 <div className="flex justify-between items-center mb-6">
-                  <h3 className="text-xl font-bold text-[#4A3820] !font-sans">
+                  <h3 className="text-xl font-bold text-[#4A3820] font-sans!">
                     Testimonials
                   </h3>
                   <button
                     onClick={addTestimonial}
-                    className="px-4 py-2 rounded-lg border-2 border-[#805C2C] text-[#805C2C] font-medium hover:bg-[#F0E8DB] transition-colors !font-sans"
+                    className="px-4 py-2 rounded-lg border-2 border-[#805C2C] text-[#805C2C] font-medium hover:bg-[#F0E8DB] transition-colors font-sans!"
                   >
                     + Add Testimonial
                   </button>
@@ -594,12 +662,12 @@ if (loading) {
                   {content.testimonials.map((testimonial, index) => (
                     <div key={index} className="border-2 border-[#D8CDBE] rounded-lg p-5 bg-[#F9F5F0]">
                       <div className="flex justify-between items-start mb-4">
-                        <h4 className="font-bold text-[#4A3820] !font-sans">
+                        <h4 className="font-bold text-[#4A3820] font-sans!">
                           Testimonial #{index + 1}
                         </h4>
                         <button
                           onClick={() => removeTestimonial(index)}
-                          className="px-3 py-1 rounded-lg border-2 border-red-500 text-red-500 text-sm hover:bg-red-50 transition-colors !font-sans"
+                          className="px-3 py-1 rounded-lg border-2 border-red-500 text-red-500 text-sm hover:bg-red-50 transition-colors font-sans!"
                         >
                           Remove
                         </button>
@@ -613,7 +681,7 @@ if (loading) {
                           <textarea
                             value={testimonial.text}
                             onChange={(e) => updateTestimonial(index, "text", e.target.value)}
-                            className="w-full px-4 py-2 rounded-lg border-2 border-[#805C2C] bg-white text-[#4A3820] placeholder-[#4A3820]/60 focus:outline-none focus:ring-2 focus:ring-[#805C2C]/50 min-h-[100px] scrollable-description"
+                            className="w-full px-4 py-2 rounded-lg border-2 border-[#805C2C] bg-white text-[#4A3820] placeholder-[#4A3820]/60 focus:outline-none focus:ring-2 focus:ring-[#805C2C]/50 min-h-25 scrollable-description"
                             placeholder="Enter testimonial text..."
                           />
                         </div>
@@ -695,16 +763,28 @@ if (loading) {
                             </div>
                           )}
 
-                          {testimonial.image && (
-                            <div className="mt-4">
-                              <p className="text-sm mb-2 text-[#4A3820]">Preview</p>
-                              <img
-                                src={testimonial.image}
-                                alt={`Testimonial ${index + 1} preview`}
-                                className="max-h-48 rounded-lg border"
-                              />
-                            </div>
-                          )}
+                        {testimonial.image.src && (
+                        <>
+                          <img
+                            src={testimonial.image.src}
+                            alt={testimonial.image.alt || "Testimonial image"}
+                            className="max-h-48 rounded-lg border mt-3"
+                          />
+
+                          <input
+                            type="text"
+                            value={testimonial.image.alt}
+                            onChange={(e) =>
+                              updateTestimonial(index, "image", {
+                                ...testimonial.image,
+                                alt: e.target.value,
+                              })
+                            }
+                            placeholder="Alt text (e.g. 'Photo of Jane Doe, mentor')"
+                            className="mt-3 w-full px-3 py-2 border rounded-lg"
+                          />
+                        </>
+                      )}
                         </div>
                       </div>
                     </div>

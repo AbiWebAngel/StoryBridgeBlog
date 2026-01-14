@@ -2,6 +2,7 @@ export function validateArticle(article: {
   title: string;
   slug: string;
   coverImage: string | null;
+  coverImageAlt: string;
   body: any;
   tags: string[];
   status: "draft" | "published";
@@ -27,6 +28,20 @@ export function validateArticle(article: {
   // -------------------------
   if (!article.coverImage) {
     errors.coverImage = "Cover image is required.";
+  }
+
+  // -------------------------
+  // Cover Image Alt Text (NEW)
+  // -------------------------
+  if (article.coverImage) {
+    const alt = article.coverImageAlt?.trim() || "";
+
+    if (!alt) {
+      errors.coverImageAlt = "Cover image alt text is required.";
+    } else if (alt.length < 5 || alt.length > 125) {
+      errors.coverImageAlt =
+        "Alt text must be between 5 and 125 characters.";
+    }
   }
 
   // -------------------------

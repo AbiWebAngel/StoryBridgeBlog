@@ -1,9 +1,13 @@
 import { adminDb } from "@/lib/firebaseAdmin";
 
-export type Testimonial = {
+export interface Testimonial {
   text: string;
-  image: string;
-};
+  image: {
+    src: string;
+    alt: string;
+  };
+}
+
 
 export type AboutContent = {
   missionStatement: string;

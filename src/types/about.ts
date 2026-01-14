@@ -1,6 +1,11 @@
+export type ImageAsset = {
+  src: string;
+  alt: string;
+};
+
 export type Testimonial = {
   text: string;
-  image: string;
+  image: ImageAsset;
 };
 
 export type AboutContent = {
@@ -9,5 +14,5 @@ export type AboutContent = {
   whatWeDo: string;
   whyItMatters: string;
   testimonials: Testimonial[];
-  bookImages: string[];
+  bookImages: ImageAsset[];
 };
