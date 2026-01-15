@@ -62,7 +62,7 @@ export default function BlogPostPage() {
           {/* Article Card */}
           <div className="bg-[#F2ECE3] rounded-[30px] text-[#413320] shadow-xl p-6 sm:p-8">
           {/* Article Header */}
-          <h1 className="font-cinzel text-[22px] sm:text-[26px] lg:text-[30px] font-bold min-w-0 break-words text-[#413320] text-center mb-4">
+          <h1 className="font-cinzel text-[22px] sm:text-[26px] lg:text-[30px] font-bold min-w-0 wrap-break-word text-[#413320] text-center mb-4">
             {post.title}
           </h1>
           
@@ -84,7 +84,7 @@ export default function BlogPostPage() {
           alt={post.title}
           width={1200}
           height={600}
-          className="w-full h-[250px] sm:h-[350px] lg:h-[450px] object-cover rounded-[20px]"
+          className="w-full h-62.5 sm:h-87.5 lg:h-112.5 object-cover rounded-[20px]"
           priority
         />
 

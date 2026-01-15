@@ -129,6 +129,7 @@ const handleAddTag = (e: React.KeyboardEvent<HTMLInputElement>) => {
     const validation = validateArticle({
       title,
       slug,
+      metaDescription,
       coverImage,
       coverImageAlt,
       body,

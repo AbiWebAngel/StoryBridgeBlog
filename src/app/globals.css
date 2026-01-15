@@ -171,13 +171,101 @@ textarea.scrollable-description::-webkit-scrollbar-thumb:hover {
 }
 
 .editor-content a {
-  color: #2563EB;
-  text-decoration: underline;
-  text-underline-offset: 2px;
+  color: inherit;
   font-size: 18px;
+  text-decoration: underline;           /* add this */
+  text-decoration-color: currentColor;  /* keeps color consistent */
+  text-underline-offset: 2px;
 }
+
+
+.editor-content a span {
+  text-decoration-line: underline;
+  text-decoration-color: currentColor;
+  text-underline-offset: 2px;
+}
+
 
 .editor-content a:hover {
   opacity: 0.85;
+}
+
+
+/* Header styling */
+.tiptap-table-header {
+  background: #E6DCCB;
+  font-weight: bold;
+  border: 1px solid #cfcfcf;
+  padding: 4px;
+  font-weight: bold;
+}
+
+/* Cells */
+.tiptap-table-cell {
+  border: 1px solid #cfcfcf;
+  position: relative;                 /* same here */
+  overflow: visible !important;  
+  padding: 8px 8px 8px 14px;      /* ensures the handle is not clipped */
+}
+
+
+/* REQUIRED for column resizing */
+.ProseMirror {
+  position: relative;
+}
+
+/* Disable text cursor near resize handle */
+.ProseMirror table {
+  user-select: none;
+}
+
+/* ProseMirror column resize handle */
+.ProseMirror .column-resize-handle {
+  position: absolute;
+  right: -3px;
+  top: 0;
+  width: 6px;
+  height: 100%;
+  cursor: col-resize;
+  z-index: 20;
+  pointer-events: auto;
+}
+
+/* Visible guide while resizing */
+.ProseMirror.resize-cursor {
+  cursor: col-resize !important;
+}
+
+/* TipTap editor link underline follows text color */
+.ProseMirror a {
+  text-decoration-color: currentColor;
+}
+
+/* ===== Table selection visibility ===== */
+
+/* Individual selected cells */
+.ProseMirror td.selectedCell,
+.ProseMirror th.selectedCell {
+  background-color: rgba(128, 92, 44, 0.18);
+}
+
+/* Column selection overlay */
+.ProseMirror .columnSelected {
+  background-color: rgba(128, 92, 44, 0.12);
+}
+
+/* Row selection overlay */
+.ProseMirror .rowSelected {
+  background-color: rgba(128, 92, 44, 0.12);
+}
+
+/* Selection border for clarity */
+.ProseMirror td.selectedCell::after,
+.ProseMirror th.selectedCell::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border: 2px solid #805C2C;
+  pointer-events: none;
 }
 

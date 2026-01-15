@@ -23,6 +23,12 @@ import Link from "@tiptap/extension-link";
 import CharacterCount from '@tiptap/extension-character-count';
 import { exportArticleToDocx } from "@/lib/export/exportArticleToDocx";
 import { Extension } from '@tiptap/core';
+import { Table } from "@tiptap/extension-table";
+import { TableRow } from "@tiptap/extension-table-row";
+import { TableCell } from "@tiptap/extension-table-cell";
+import { TableHeader } from "@tiptap/extension-table-header";
+
+
 
 
 interface ArticleEditorProps {
@@ -39,7 +45,8 @@ export default function ArticleEditor({ value, articleId, onChange, onImageUploa
   const [hasSelection, setHasSelection] = useState(false);
   const [youtubeModalOpen, setYoutubeModalOpen] = useState(false);
   const [youtubeUrl, setYoutubeUrl] = useState('');
- 
+  const [tableMenuOpen, setTableMenuOpen] = useState(false);
+
 
   // 🔹 Safe position helper
   const getSafePos = (pos: number | undefined, editor: ReturnType<typeof useEditor>): number => {
@@ -131,6 +138,23 @@ export default function ArticleEditor({ value, articleId, onChange, onImageUploa
         bulletList: false,
         orderedList: false,
         listItem: false,
+      }),
+        Table.configure({
+      resizable: true,
+      HTMLAttributes: {
+        class: "tiptap-table",
+        },
+      }),
+      TableRow,
+      TableCell.configure({
+        HTMLAttributes: {
+          class: "tiptap-table-cell",
+        },
+      }),
+          TableHeader.configure({
+        HTMLAttributes: {
+          class: "tiptap-table-header",
+        },
       }),
       DisableImagePaste,
       TextStyleKit,
@@ -346,6 +370,28 @@ export default function ArticleEditor({ value, articleId, onChange, onImageUploa
       })
     );
   }, [editor]);
+    const [blockButtonPos, setBlockButtonPos] = useState<{
+    top: number;
+    left: number;
+  } | null>(null);
+
+
+  useEffect(() => {
+  const closeOnClick = () => setTableMenuOpen(false);
+  if (tableMenuOpen) {
+    document.addEventListener("click", closeOnClick);
+  }
+    return () => document.removeEventListener("click", closeOnClick);
+  }, [tableMenuOpen]);
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setTableMenuOpen(false);
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, []);
+
 
   const isHeading = editor?.isActive('heading');
 
@@ -427,6 +473,30 @@ export default function ArticleEditor({ value, articleId, onChange, onImageUploa
         >
           1. List
         </button>
+        <div className="relative">
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            setTableMenuOpen(v => !v);
+          }}
+          className={`px-2 py-1 rounded bg-white hover:bg-[#E6DCCB] font-sans! ${
+            editor.isActive("table") ? "bg-[#E6DCCB]" : ""
+          }`}
+        >
+          ⌗ Table
+        </button>
+
+        {tableMenuOpen && (
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="absolute z-50 mt-1 w-48 rounded border bg-white shadow"
+            style={{ borderColor: "#D8CDBE" }}
+          >
+            <TableMenu editor={editor} close={() => setTableMenuOpen(false)} />
+          </div>
+        )}
+      </div>
+
         <button 
           onClick={() => editor.chain().focus().toggleCodeBlock().run()} 
           className={`px-2 py-1 rounded ${editor.isActive("codeBlock") ? "bg-[#E6DCCB]":"bg-white"} font-sans!`}
@@ -509,7 +579,9 @@ export default function ArticleEditor({ value, articleId, onChange, onImageUploa
           '#14B8A6',
           '#DB2777',
           '#F472B6',
-          '#4B5563'
+          '#000000',
+          '#4B5563',
+              // Black added at the end
         ].map(color => (
           <button
             key={color}
@@ -633,6 +705,121 @@ export default function ArticleEditor({ value, articleId, onChange, onImageUploa
           return `${words} words - ${chars} characters`;
         })()}
       </div>
+    </div>
+  );
+
+}
+
+ function TableMenu({
+  editor,
+  close,
+}: {
+  editor: ReturnType<typeof useEditor>;
+  close: () => void;
+}) {
+  if (!editor) return null;
+
+  const can = editor.can();
+
+const inTable = editor.isActive("table");
+const Item = ({
+  label,
+  onClick,
+  disabled = false,
+}: {
+  label: string;
+  onClick: () => void;
+  disabled?: boolean;
+}) => (
+  <button
+    onClick={() => {
+      onClick();
+      close();
+    }}
+    disabled={disabled}
+    className="w-full text-left px-3 py-2 text-sm hover:bg-[#F3EEE7] disabled:opacity-50 font-sans!"
+  >
+    {label}
+  </button>
+);
+
+
+  return (
+    <div className="flex flex-col">
+      <Item
+        label="Insert table (3×3)"
+        disabled={inTable}
+        onClick={() =>
+          editor
+            .chain()
+            .focus()
+            .insertTable({ rows: 3, cols: 3, withHeaderRow: true })
+            .run()
+        }
+      />
+
+      <div className="h-px bg-[#D8CDBE] my-1" />
+
+      <Item
+        label="Add row above"
+        disabled={!inTable}
+        onClick={() => editor.chain().focus().addRowBefore().run()}
+      />
+      <Item
+        label="Add row below"
+        disabled={!inTable}
+        onClick={() => editor.chain().focus().addRowAfter().run()}
+      />
+      <Item
+        label="Add column left"
+        disabled={!inTable}
+        onClick={() => editor.chain().focus().addColumnBefore().run()}
+      />
+      <Item
+        label="Add column right"
+        disabled={!inTable}
+        onClick={() => editor.chain().focus().addColumnAfter().run()}
+      />
+      <div className="h-px bg-[#D8CDBE] my-1" />
+
+      <Item
+        label="Delete row"
+        disabled={!can.deleteRow()}
+        onClick={() => editor.chain().focus().deleteRow().run()}
+      />
+
+      <Item
+        label="Delete column"
+        disabled={!can.deleteColumn()}
+        onClick={() => editor.chain().focus().deleteColumn().run()}
+      />
+      <div className="h-px bg-[#D8CDBE] my-1" />
+
+      <Item
+        label="Merge cells"
+        disabled={!can.mergeCells()}
+        onClick={() => editor.chain().focus().mergeCells().run()}
+      />
+
+
+      <Item
+        label="Split cell"
+        disabled={!inTable}
+        onClick={() => editor.chain().focus().splitCell().run()}
+      />
+
+      <div className="h-px bg-[#D8CDBE] my-1" />
+
+      <Item
+        label="Toggle header row"
+        disabled={!inTable}
+        onClick={() => editor.chain().focus().toggleHeaderRow().run()}
+      />
+      <Item
+        label="Delete table"
+        disabled={!inTable}
+        onClick={() => editor.chain().focus().deleteTable().run()}
+      />
     </div>
   );
 }

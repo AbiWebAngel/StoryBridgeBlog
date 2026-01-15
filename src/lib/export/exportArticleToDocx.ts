@@ -10,11 +10,56 @@ import {
 import { saveAs } from "file-saver";
 import { AlignmentType } from "docx";
 
+import {
+  Table as DocxTable,
+  TableRow as DocxTableRow,
+  TableCell as DocxTableCell,
+  WidthType,
+} from "docx";
+
+
+
 type TipTapNode = any;
 
 /* -----------------------------
    Helpers
 ----------------------------- */
+function tableFromNode(node: TipTapNode): DocxTable | null {
+  if (node.type !== "table") return null;
+
+  const rows = node.content ?? [];
+
+  return new DocxTable({
+    width: {
+      size: 100,
+      type: WidthType.PERCENTAGE,
+    },
+    rows: rows.map((rowNode: any) => {
+      return new DocxTableRow({
+        children: (rowNode.content ?? []).map((cellNode: any) => {
+          const isHeader = cellNode.type === "tableHeader";
+
+          const paragraphs =
+            cellNode.content?.flatMap((cellContent: any) => {
+              const para = paragraphFromNode(cellContent);
+              return para ? [para] : [];
+            }) ?? [];
+
+          return new DocxTableCell({
+            children: paragraphs.length
+              ? paragraphs
+              : [new Paragraph("")],
+            shading: isHeader
+              ? {
+                  fill: "E6DCCB",
+                }
+              : undefined,
+          });
+        }),
+      });
+    }),
+  });
+}
 
 function proxiedImageUrl(originalUrl: string) {
   return `/api/image-proxy?url=${encodeURIComponent(originalUrl)}`;
@@ -54,21 +99,17 @@ function normalizeDocxColor(color?: string): string | undefined {
 
 function textRunsFromNode(
   node: TipTapNode,
-  isHeading: boolean = false
+  isHeading: boolean = false,
+  forceBold: boolean = false
 ): (TextRun | ExternalHyperlink)[] {
-  if (!node.text) {
-    return [];
-  }
+  if (!node.text) return [];
 
   const marks = node.marks || [];
-
-  // ───────────────────────────────────────────
-  // Detect marks
-  // ───────────────────────────────────────────
   const textStyleMark = marks.find((m: any) => m.type === "textStyle");
   const linkMark = marks.find((m: any) => m.type === "link");
 
   const hasBold =
+    forceBold ||
     marks.some((m: any) => m.type === "bold" || m.type === "strong") ||
     textStyleMark?.attrs?.fontWeight === "bold" ||
     textStyleMark?.attrs?.fontWeight === 700 ||
@@ -84,28 +125,25 @@ function textRunsFromNode(
 
   const color = normalizeDocxColor(textStyleMark?.attrs?.color);
 
-  // ───────────────────────────────────────────
-  // Build TextRun props
-  // ───────────────────────────────────────────
   const runProps: any = {
     text: node.text,
-    bold: hasBold === true ? true : false,
-    italics: hasItalic === true ? true : false,
+    bold: hasBold,
+    italics: hasItalic,
     underline: hasUnderline ? {} : undefined,
+    color,
   };
 
-  if (color) {
-    runProps.color = color;
-  }
-
-  // ───────────────────────────────────────────
-  // Hyperlink handling
-  // ───────────────────────────────────────────
   if (linkMark?.attrs?.href) {
     return [
       new ExternalHyperlink({
         link: linkMark.attrs.href,
-        children: [new TextRun(runProps)],
+        children: [
+          new TextRun({
+            ...runProps,
+            style: "Hyperlink",
+            underline: {},
+          }),
+        ],
       }),
     ];
   }
@@ -113,35 +151,39 @@ function textRunsFromNode(
   return [new TextRun(runProps)];
 }
 
-function paragraphFromNode(node: TipTapNode): Paragraph | null {
+
+function paragraphFromNode(
+  node: TipTapNode,
+  forceBold: boolean = false
+): Paragraph | null {
   switch (node.type) {
     case "paragraph":
-      const paragraphChildren = node.content?.flatMap(textRunsFromNode) || [];
       return new Paragraph({
         style: "NormalParagraph",
-        children: paragraphChildren,
+        children: node.content?.flatMap((child: any) =>
+          textRunsFromNode(child, false, forceBold)
+        ) || [],
       });
 
     case "heading":
-      const isHeading1 = node.attrs.level === 1;
-      const isHeading2 = node.attrs.level === 2;
-      const headingChildren = node.content?.flatMap((child: any) => 
-        textRunsFromNode(child, isHeading1 || isHeading2)
-      ) || [];
-      
       return new Paragraph({
-        style: isHeading1 ? "Heading1" : isHeading2 ? "Heading2" : "NormalParagraph",
-        children: headingChildren,
+        style:
+          node.attrs.level === 1
+            ? "Heading1"
+            : node.attrs.level === 2
+            ? "Heading2"
+            : "NormalParagraph",
+        children: node.content?.flatMap((child: any) =>
+          textRunsFromNode(child, true, forceBold)
+        ) || [],
       });
 
     case "codeBlock":
-      const codeText = node.content?.[0]?.text || "";
-      
       return new Paragraph({
         style: "CodeBlock",
         children: [
           new TextRun({
-            text: codeText,
+            text: node.content?.[0]?.text || "",
           }),
         ],
       });
@@ -150,6 +192,119 @@ function paragraphFromNode(node: TipTapNode): Paragraph | null {
       return null;
   }
 }
+
+async function paragraphsFromNode(
+  node: TipTapNode,
+  forceBold: boolean = false
+): Promise<Paragraph[]> {
+  // Try normal paragraph / heading / codeBlock first
+  const para = paragraphFromNode(node, forceBold);
+  if (para) return [para];
+
+  // IMAGE
+  if (node.type === "image" || node.type === "imageWithRemove") {
+    const src = node.attrs?.src;
+    if (!src) return [];
+
+    const { buffer, type, width, height } = await fetchImageAsBufferAndInfo(src);
+    const maxWidth = 250;
+    const ratio = width > maxWidth ? maxWidth / width : 1;
+    const altText = node.attrs?.alt?.trim();
+
+    const paras: Paragraph[] = [
+      new Paragraph({
+        alignment: AlignmentType.CENTER,
+        children: [
+          new ImageRun({
+            data: buffer,
+            type: type === "png" ? "png" : "jpg",
+            transformation: {
+              width: Math.round(width * ratio),
+              height: Math.round(height * ratio),
+            },
+            altText: altText ? { name: altText, description: altText } : undefined,
+          }),
+        ],
+      }),
+    ];
+
+    if (altText) {
+      paras.push(
+        new Paragraph({
+          alignment: AlignmentType.CENTER,
+          children: [
+            new TextRun({
+              text: altText,
+              size: 28,
+              color: "555555",
+              font: "Inter",
+            }),
+          ],
+        })
+      );
+    }
+
+    return paras;
+  }
+
+  // YOUTUBE
+  if (node.type === "youtube" || node.type === "youtubeEmbed") {
+    const embedSrc = node.attrs?.src;
+    if (!embedSrc) return [];
+
+    const vidMatch = embedSrc.match(/(?:embed\/|v=|youtu\.be\/)([\w-]{11})/);
+    const videoId = vidMatch ? vidMatch[1] : null;
+    const watchUrl = videoId ? `https://www.youtube.com/watch?v=${videoId}` : embedSrc;
+
+    const placeholderPath = "/assets/images/articleEditor/youtube-placeholder.jpg";
+    try {
+      const res = await fetch(placeholderPath);
+      if (!res.ok) throw new Error("placeholder fetch failed");
+
+      const blob = await res.blob();
+      const buffer = new Uint8Array(await blob.arrayBuffer());
+      const dims = await getImageDimensions(blob);
+      const maxWidth = 300;
+      const ratio = dims.width > maxWidth ? maxWidth / dims.width : 1;
+
+      return [
+        new Paragraph({
+          alignment: AlignmentType.CENTER,
+          children: [
+            new ImageRun({
+              data: buffer,
+              type: "jpg",
+              transformation: {
+                width: Math.round(dims.width * ratio),
+                height: Math.round(dims.height * ratio),
+              },
+            }),
+          ],
+        }),
+        new Paragraph({
+          alignment: AlignmentType.CENTER,
+          children: [
+            new ExternalHyperlink({
+              link: watchUrl,
+              children: [
+                new TextRun({
+                  text: "▶ Watch on YouTube",
+                  underline: {},
+                  color: "2563EB",
+                }),
+              ],
+            }),
+          ],
+        }),
+      ];
+    } catch {
+      return [new Paragraph({ children: [new TextRun(watchUrl)] })];
+    }
+  }
+
+  return [];
+}
+
 
 /* -----------------------------
    Image helpers
@@ -278,74 +433,100 @@ function convertBlobToPng(blob: Blob): Promise<Blob> {
   });
 }
 
-async function extractParagraphs(nodes: TipTapNode[]): Promise<Paragraph[]> {
-  const paragraphs: Paragraph[] = [];
+async function extractParagraphs(
+  nodes: TipTapNode[]
+): Promise<(Paragraph | DocxTable)[]> {
+  const blocks: (Paragraph | DocxTable)[] = [];
 
   for (let i = 0; i < nodes.length; i++) {
     const node = nodes[i];
 
+/* ------------------ TABLES ------------------ */
+if (node.type === "table") {
+  const rows = node.content ?? [];
+  const rowsResult: DocxTableRow[] = [];
+
+  for (const rowNode of rows) {
+    const cells: DocxTableCell[] = [];
+
+    for (const cellNode of rowNode.content ?? []) {
+      const isHeader = cellNode.type === "tableHeader" || cellNode.attrs?.isHeader === true;
+      const cellParagraphs: Paragraph[] = [];
+
+      for (const cellContent of cellNode.content ?? []) {
+        const paras = await paragraphsFromNode(cellContent, isHeader);
+        cellParagraphs.push(...paras);
+      }
+
+      cells.push(
+        new DocxTableCell({
+          children: cellParagraphs.length > 0 ? cellParagraphs : [new Paragraph("")],
+          shading: isHeader ? { fill: "E6DCCB" } : undefined,
+        })
+      );
+    }
+
+    rowsResult.push(new DocxTableRow({ children: cells }));
+  }
+
+  blocks.push(
+    new DocxTable({
+      width: { size: 100, type: WidthType.PERCENTAGE },
+      rows: rowsResult,
+    })
+  );
+
+  continue;
+}
+
+
+
     /* ------------------ YOUTUBE EMBEDS ------------------ */
     if (node.type === "youtube" || node.type === "youtubeEmbed") {
       const embedSrc = node.attrs?.src;
-      if (!embedSrc) {
-        continue;
-      }
+      if (!embedSrc) continue;
 
-      // Extract video id if present (embed or watch formats)
-      const vidMatch = embedSrc.match(/(?:embed\/|v=|youtu\.be\/)([\w-]{11})/);
+      const vidMatch = embedSrc.match(
+        /(?:embed\/|v=|youtu\.be\/)([\w-]{11})/
+      );
       const videoId = vidMatch ? vidMatch[1] : null;
-      const watchUrl = videoId ? `https://www.youtube.com/watch?v=${videoId}` : embedSrc;
+      const watchUrl = videoId
+        ? `https://www.youtube.com/watch?v=${videoId}`
+        : embedSrc;
 
-      // Use placeholder from public folder (served at /youtube-placeholder.jpg)
-      const placeholderPath = '/assets/images/articleEditor/youtube-placeholder.jpg';
+      const placeholderPath =
+        "/assets/images/articleEditor/youtube-placeholder.jpg";
+
       try {
         const res = await fetch(placeholderPath);
-        if (!res.ok) throw new Error(`Failed to fetch placeholder: ${res.status}`);
+        if (!res.ok) throw new Error("placeholder fetch failed");
 
         const blob = await res.blob();
-        const arrayBuffer = await blob.arrayBuffer();
-        const uint8 = new Uint8Array(arrayBuffer);
+        const buffer = new Uint8Array(await blob.arrayBuffer());
         const dims = await getImageDimensions(blob);
 
-        // Scale like other images (maxWidth same as image handling above)
         const maxWidth = 300;
-        let outWidth = dims.width;
-        let outHeight = dims.height;
-        if (dims.width > maxWidth) {
-          const ratio = maxWidth / dims.width;
-          outWidth = Math.round(dims.width * ratio);
-          outHeight = Math.round(dims.height * ratio);
-        }
+        const ratio =
+          dims.width > maxWidth ? maxWidth / dims.width : 1;
 
-        // Add placeholder image paragraph
-        paragraphs.push(
+        blocks.push(
           new Paragraph({
             alignment: AlignmentType.CENTER,
-            spacing: {
-              before: 240,
-              after: 120,
-            },
+            spacing: { before: 240, after: 120 },
             children: [
               new ImageRun({
-                data: uint8,
-                type: 'jpg',
+                data: buffer,
+                type: "jpg",
                 transformation: {
-                  width: outWidth,
-                  height: outHeight,
+                  width: Math.round(dims.width * ratio),
+                  height: Math.round(dims.height * ratio),
                 },
               }),
             ],
-          })
-        );
-
-        // Add a link paragraph under the image
-        paragraphs.push(
+          }),
           new Paragraph({
             alignment: AlignmentType.CENTER,
-            spacing: {
-              before: 60,
-              after: 240,
-            },
+            spacing: { before: 60, after: 240 },
             children: [
               new ExternalHyperlink({
                 link: watchUrl,
@@ -353,20 +534,15 @@ async function extractParagraphs(nodes: TipTapNode[]): Promise<Paragraph[]> {
                   new TextRun({
                     text: watchUrl,
                     underline: {},
-                    color: '2563EB',
+                    color: "2563EB",
                   }),
                 ],
               }),
             ],
           })
         );
-      } catch (err) {
-        // fallback: just add the link text
-        paragraphs.push(
-          new Paragraph({
-            children: [new TextRun({ text: watchUrl })]
-          })
-        );
+      } catch {
+        blocks.push(new Paragraph({ children: [new TextRun(watchUrl)] }));
       }
 
       continue;
@@ -375,95 +551,73 @@ async function extractParagraphs(nodes: TipTapNode[]): Promise<Paragraph[]> {
     /* ---------- TEXT / HEADINGS / CODE ---------- */
     const para = paragraphFromNode(node);
     if (para) {
-      paragraphs.push(para);
+      blocks.push(para);
       continue;
     }
 
     /* ------------------ IMAGES ------------------ */
-    if (node.type === "imageWithRemove" || node.type === 'image') {
+    if (node.type === "imageWithRemove" || node.type === "image") {
       try {
         const src = node.attrs?.src;
-        if (!src) {
-          continue;
-        }
+        if (!src) continue;
 
-        const { buffer, type, width, height } = await fetchImageAsBufferAndInfo(src);
+        const { buffer, type, width, height } =
+          await fetchImageAsBufferAndInfo(src);
 
-        // Scale width to max 600 while keeping aspect ratio
         const maxWidth = 300;
-        let outWidth = width;
-        let outHeight = height;
-        if (width > maxWidth) {
-          const ratio = maxWidth / width;
-          outWidth = Math.round(width * ratio);
-          outHeight = Math.round(height * ratio);
-        }
+        const ratio = width > maxWidth ? maxWidth / width : 1;
 
         const altText = node.attrs?.alt?.trim();
 
-      paragraphs.push(
-        new Paragraph({
-          alignment: AlignmentType.CENTER,
-          spacing: {
-            before: 240,
-            after: 240,
-          },
-          children: [
-            new ImageRun({
-              data: buffer,
-              type: type === "png" ? "png" : "jpg",
-              transformation: {
-                width: outWidth,
-                height: outHeight,
-              },
+        blocks.push(
+          new Paragraph({
+            alignment: AlignmentType.CENTER,
+            spacing: { before: 240, after: 240 },
+            children: [
+              new ImageRun({
+                data: buffer,
+                type: type === "png" ? "png" : "jpg",
+                transformation: {
+                  width: Math.round(width * ratio),
+                  height: Math.round(height * ratio),
+                },
+                altText: altText
+                  ? { name: altText, description: altText }
+                  : undefined,
+              }),
+            ],
+          })
+        );
 
-              // ✅ REAL DOCX ALT TEXT
-           altText: altText
-            ? {
-                name: altText,          // REQUIRED
-                description: altText,   // REQUIRED
-              }
-            : undefined,
-            }),
-          ],
-        })
-      );
-
-      if (altText) {
-      paragraphs.push(
-        new Paragraph({
-          alignment: AlignmentType.CENTER,
-          spacing: {
-            before: 60,
-            after: 180,
-          },
-          children: [
-            new TextRun({
-              text: altText,
-              italics: false,
-              size: 28,
-              color: "555555",
-              font: "Inter",
-            }),
-          ],
-        })
-      );
-    }
-
-      } catch (err) {
-        // Skip image on error
+        if (altText) {
+          blocks.push(
+            new Paragraph({
+              alignment: AlignmentType.CENTER,
+              spacing: { before: 60, after: 180 },
+              children: [
+                new TextRun({
+                  text: altText,
+                  size: 28,
+                  color: "555555",
+                  font: "Inter",
+                }),
+              ],
+            })
+          );
+        }
+      } catch {
+        /* skip image */
       }
+
       continue;
     }
 
     /* ------------------ LISTS ------------------ */
     if (node.type === "bulletList" || node.type === "orderedList") {
-      const listItems = node.content || [];
-      
-      for (const item of listItems) {
-        const textNodes = item.content?.[0]?.content || [];
-        
-        paragraphs.push(
+      for (const item of node.content ?? []) {
+        const textNodes = item.content?.[0]?.content ?? [];
+
+        blocks.push(
           new Paragraph({
             style: "ListParagraph",
             children: textNodes.flatMap(textRunsFromNode),
@@ -476,9 +630,10 @@ async function extractParagraphs(nodes: TipTapNode[]): Promise<Paragraph[]> {
       }
     }
   }
-  
-  return paragraphs;
+
+  return blocks;
 }
+
 
 /* -----------------------------
    Public API

@@ -6,6 +6,7 @@ export function validateArticle(article: {
   body: any;
   tags: string[];
   status: "draft" | "published";
+  metaDescription: string; // NEW
 }): Record<string, string> | null {
   const errors: Record<string, string> = {};
 
@@ -31,7 +32,7 @@ export function validateArticle(article: {
   }
 
   // -------------------------
-  // Cover Image Alt Text (NEW)
+  // Cover Image Alt Text
   // -------------------------
   if (article.coverImage) {
     const alt = article.coverImageAlt?.trim() || "";
@@ -45,7 +46,7 @@ export function validateArticle(article: {
   }
 
   // -------------------------
-  // Body (TipTap JSON)
+  // Body
   // -------------------------
   const hasContent =
     article.body &&
@@ -58,24 +59,21 @@ export function validateArticle(article: {
   }
 
   // -------------------------
-  // Tags (OPTIONAL but validated)
+  // Tags
   // -------------------------
   if (!Array.isArray(article.tags)) {
     errors.tags = "Tags must be an array.";
   } else {
     const tags = article.tags.map((t) => t.trim().toLowerCase());
 
-    // Require at least one tag ONLY when publishing
     if (article.status === "published" && tags.length === 0) {
       errors.tags = "At least one tag is required to publish an article.";
     }
 
-    // Max tag count
     if (tags.length > 8) {
       errors.tags = "You can add up to 8 tags only.";
     }
 
-    // Validate each tag
     const invalidTag = tags.find(
       (tag) =>
         tag.length < 2 ||
@@ -88,7 +86,6 @@ export function validateArticle(article: {
         "Tags must be 2–30 characters and contain only letters, numbers, or hyphens.";
     }
 
-    // Prevent duplicates
     const uniqueTags = new Set(tags);
     if (uniqueTags.size !== tags.length) {
       errors.tags = "Duplicate tags are not allowed.";
@@ -100,6 +97,23 @@ export function validateArticle(article: {
   // -------------------------
   if (!["draft", "published"].includes(article.status)) {
     errors.status = "Status must be either 'draft' or 'published'.";
+  }
+
+  // -------------------------
+  // Meta Description (NEW)
+  // -------------------------
+  const meta = article.metaDescription?.trim() || "";
+
+  if (article.status === "published") {
+    if (!meta) {
+      errors.metaDescription = "Meta description is required for published articles.";
+    } else if (meta.length < 50 || meta.length > 160) {
+      errors.metaDescription =
+        "Meta description must be between 50 and 160 characters.";
+    }
+  } else if (meta && meta.length > 160) {
+    // Optional max length check for drafts
+    errors.metaDescription = "Meta description cannot exceed 160 characters.";
   }
 
   return Object.keys(errors).length > 0 ? errors : null;
