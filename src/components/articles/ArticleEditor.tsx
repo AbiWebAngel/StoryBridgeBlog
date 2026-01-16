@@ -28,9 +28,6 @@ import { TableRow } from "@tiptap/extension-table-row";
 import { TableCell } from "@tiptap/extension-table-cell";
 import { TableHeader } from "@tiptap/extension-table-header";
 
-
-
-
 interface ArticleEditorProps {
   value: any;
   articleId: string;
@@ -47,14 +44,11 @@ export default function ArticleEditor({ value, articleId, onChange, onImageUploa
   const [youtubeUrl, setYoutubeUrl] = useState('');
   const [tableMenuOpen, setTableMenuOpen] = useState(false);
 
-
-  // 🔹 Safe position helper
   const getSafePos = (pos: number | undefined, editor: ReturnType<typeof useEditor>): number => {
     if (typeof pos === "number" && Number.isFinite(pos)) return pos;
-    return editor?.state.selection.from ?? 0; // fallback to 0
+    return editor?.state.selection.from ?? 0;
   };
 
-  // 🔹 Upload image
   const uploadImageToR2 = async (file: File): Promise<string> => {
     const formData = new FormData();
     formData.append("file", file);
@@ -67,67 +61,28 @@ export default function ArticleEditor({ value, articleId, onChange, onImageUploa
     return data.url;
   };
 
-  const applyYouTube = () => {
-    if (!editor) return;
-
-    const url = youtubeUrl.trim();
-    if (!url) return;
-
-    // Robust regex for most YouTube URLs
-    const match = url.match(
-      /(?:youtu\.be\/|youtube(?:-nocookie)?\.com\/(?:watch\?v=|embed\/))([\w-]{11})/
-    );
-
-    if (!match) {
-      alert("Invalid YouTube URL. Paste a proper YouTube link.");
-      return;
-    }
-
-    const videoId = match[1];
-    const embedUrl = `https://www.youtube.com/embed/${videoId}`;
-
-    // Insert YouTube node with src
-    editor.chain().focus().insertContent({
-      type: 'youtube',
-      attrs: {
-        src: embedUrl,
-        width: 640,
-        height: 360,
-        allowFullscreen: true,
-      },
-    }).run();
-
-    console.log("YouTube node:", editor.getJSON());
-
-    // Close modal, clear input, and refocus
-    setYoutubeModalOpen(false);
-    setYoutubeUrl('');
-    editor.view.focus();
-  };
   const DisableImagePaste = Extension.create({
-  addProseMirrorPlugins() {
-    return [
-      new Plugin({
-        props: {
-          handlePaste(view, event) {
-            const items = event.clipboardData?.items;
-            if (!items) return false;
+    addProseMirrorPlugins() {
+      return [
+        new Plugin({
+          props: {
+            handlePaste(view, event) {
+              const items = event.clipboardData?.items;
+              if (!items) return false;
 
-            for (const item of items) {
-              if (item.type.startsWith('image/')) {
-                // 👈 block default image insertion
-                return true;
+              for (const item of items) {
+                if (item.type.startsWith('image/')) {
+                  return true;
+                }
               }
-            }
-            return false;
+              return false;
+            },
           },
-        },
-      }),
-    ];
-  },
-});
+        }),
+      ];
+    },
+  });
 
-  // 🔹 Editor instance
   const editor = useEditor({
     immediatelyRender: false,
     extensions: [
@@ -139,10 +94,10 @@ export default function ArticleEditor({ value, articleId, onChange, onImageUploa
         orderedList: false,
         listItem: false,
       }),
-        Table.configure({
-      resizable: true,
-      HTMLAttributes: {
-        class: "tiptap-table",
+      Table.configure({
+        resizable: true,
+        HTMLAttributes: {
+          class: "tiptap-table",
         },
       }),
       TableRow,
@@ -151,7 +106,7 @@ export default function ArticleEditor({ value, articleId, onChange, onImageUploa
           class: "tiptap-table-cell",
         },
       }),
-          TableHeader.configure({
+      TableHeader.configure({
         HTMLAttributes: {
           class: "tiptap-table-header",
         },
@@ -209,26 +164,25 @@ export default function ArticleEditor({ value, articleId, onChange, onImageUploa
       CharacterCount.configure({
         limit: null,
       }),
-      
       FileHandler.configure({
-        allowedMimeTypes: ["image/jpeg", "image/png", "image/webp","image/avif", "image/gif"],
-           onPaste: async (editorInstance, files, pos) => {
-      const safePos =
-        typeof pos === "number"
-          ? pos
-          : editorInstance.state.selection.from ?? 0;
+        allowedMimeTypes: ["image/jpeg", "image/png", "image/webp", "image/avif", "image/gif"],
+        onPaste: async (editorInstance, files, pos) => {
+          const safePos =
+            typeof pos === "number"
+              ? pos
+              : editorInstance.state.selection.from ?? 0;
 
-      await handleFileInsert(editorInstance, files, safePos);
-    },
-     onDrop: async (editorInstance, files, pos) => {
-      const safePos =
-        typeof pos === "number"
-          ? pos
-          : editorInstance.state.selection.from ?? 0;
+          await handleFileInsert(editorInstance, files, safePos);
+        },
+        onDrop: async (editorInstance, files, pos) => {
+          const safePos =
+            typeof pos === "number"
+              ? pos
+              : editorInstance.state.selection.from ?? 0;
 
-      await handleFileInsert(editorInstance, files, safePos);
-    },
-  }),
+          await handleFileInsert(editorInstance, files, safePos);
+        },
+      }),
     ],
     content: value,
     onUpdate: ({ editor }) => onChange(editor.getJSON()),
@@ -237,7 +191,6 @@ export default function ArticleEditor({ value, articleId, onChange, onImageUploa
     },
   });
 
-  // 🔹 Insert image helper
   const handleFileInsert = async (editorInstance: typeof editor, files: File[], pos?: number) => {
     if (!editorInstance || files.length === 0) return;
     const file = files[0];
@@ -252,7 +205,7 @@ export default function ArticleEditor({ value, articleId, onChange, onImageUploa
       const url = await uploadImageToR2(file);
       const tr = editorInstance.state.tr;
       const defaultAlt =
-  file.name?.replace(/\.[^/.]+$/, "").replace(/[-_]/g, " ") || "";
+        file.name?.replace(/\.[^/.]+$/, "").replace(/[-_]/g, " ") || "";
 
       editorInstance.state.doc.descendants((node: ProseMirrorNode, p: number) => {
         if (node.type.name === "imageLoading" && typeof node.attrs.id === "string" && node.attrs.id === tempId) {
@@ -260,9 +213,9 @@ export default function ArticleEditor({ value, articleId, onChange, onImageUploa
             p,
             p + node.nodeSize,
             editorInstance.schema.nodes.imageWithRemove.create({
-            src: url,
-            alt: defaultAlt,
-          })
+              src: url,
+              alt: defaultAlt,
+            })
           );
         }
       });
@@ -307,6 +260,41 @@ export default function ArticleEditor({ value, articleId, onChange, onImageUploa
     setLinkUrl(previousUrl);
     setLinkModalOpen(true);
   }, [editor]);
+
+  const applyYouTube = () => {
+    if (!editor) return;
+
+    const url = youtubeUrl.trim();
+    if (!url) return;
+
+    const match = url.match(
+      /(?:youtu\.be\/|youtube(?:-nocookie)?\.com\/(?:watch\?v=|embed\/))([\w-]{11})/
+    );
+
+    if (!match) {
+      alert("Invalid YouTube URL. Paste a proper YouTube link.");
+      return;
+    }
+
+    const videoId = match[1];
+    const embedUrl = `https://www.youtube.com/embed/${videoId}`;
+
+    editor.chain().focus().insertContent({
+      type: 'youtube',
+      attrs: {
+        src: embedUrl,
+        width: 640,
+        height: 360,
+        allowFullscreen: true,
+      },
+    }).run();
+
+    console.log("YouTube node:", editor.getJSON());
+
+    setYoutubeModalOpen(false);
+    setYoutubeUrl('');
+    editor.view.focus();
+  };
 
   const insertYouTube = useCallback((url: string) => {
     if (!editor) return;
@@ -370,17 +358,12 @@ export default function ArticleEditor({ value, articleId, onChange, onImageUploa
       })
     );
   }, [editor]);
-    const [blockButtonPos, setBlockButtonPos] = useState<{
-    top: number;
-    left: number;
-  } | null>(null);
-
 
   useEffect(() => {
-  const closeOnClick = () => setTableMenuOpen(false);
-  if (tableMenuOpen) {
-    document.addEventListener("click", closeOnClick);
-  }
+    const closeOnClick = () => setTableMenuOpen(false);
+    if (tableMenuOpen) {
+      document.addEventListener("click", closeOnClick);
+    }
     return () => document.removeEventListener("click", closeOnClick);
   }, [tableMenuOpen]);
 
@@ -392,23 +375,21 @@ export default function ArticleEditor({ value, articleId, onChange, onImageUploa
     return () => document.removeEventListener("keydown", onKey);
   }, []);
 
-
   const isHeading = editor?.isActive('heading');
 
   if (!editor) return null;
 
   return (
     <div className="space-y-3">
-      {/* Toolbar */}
       <div className="flex flex-wrap gap-2 p-2 border rounded bg-white" style={{ borderColor: "#D8CDBE" }}>
-        <button 
-          onClick={() => editor.chain().focus().toggleBold().run()} 
+        <button
+          onClick={() => editor.chain().focus().toggleBold().run()}
           className={`px-2 py-1 rounded ${editor.isActive("bold") ? "bg-[#E6DCCB]" : "bg-white"} font-sans!`}
         >
           B
         </button>
-        <button 
-          onClick={() => editor.chain().focus().toggleItalic().run()} 
+        <button
+          onClick={() => editor.chain().focus().toggleItalic().run()}
           className={`px-2 py-1 rounded ${editor.isActive("italic") ? "bg-[#E6DCCB]" : "bg-white"} font-sans!`}
         >
           I
@@ -425,7 +406,7 @@ export default function ArticleEditor({ value, articleId, onChange, onImageUploa
             width="24px"
             fill="black"
           >
-            <path d="M432.31-298.46H281.54q-75.34 0-128.44-53.1Q100-404.65 100-479.98q0-75.33 53.1-128.44 53.1-53.12 128.44-53.12h150.77v60H281.54q-50.39 0-85.96 35.58Q160-530.38 160-480q0 50.38 35.58 85.96 35.57 35.58 85.96 35.58h150.77v60ZM330-450v-60h300v60H330Zm197.69 151.54v-60h150.77q50.39 0 85.96-35.58Q800-429.62 800-480q0-50.38-35.58-85.96-35.57-35.58-85.96-35.58H527.69v-60h150.77q75.34 0 128.44 53.1Q860-555.35 860-480.02q0 75.33-53.1 128.44-53.1 53.12-128.44 53.12H527.69Z"/>
+            <path d="M432.31-298.46H281.54q-75.34 0-128.44-53.1Q100-404.65 100-479.98q0-75.33 53.1-128.44 53.1-53.12 128.44-53.12h150.77v60H281.54q-50.39 0-85.96 35.58Q160-530.38 160-480q0 50.38 35.58 85.96 35.57 35.58 85.96 35.58h150.77v60ZM330-450v-60h300v60H330Zm197.69 151.54v-60h150.77q50.39 0 85.96-35.58Q800-429.62 800-480q0-50.38-35.58-85.96-35.57-35.58-85.96-35.58H527.69v-60h150.77q75.34 0 128.44 53.1Q860-555.35 860-480.02q0 75.33-53.1 128.44-53.1 53.12-128.44 53.12H527.69Z" />
           </svg>
         </button>
         <button
@@ -440,66 +421,65 @@ export default function ArticleEditor({ value, articleId, onChange, onImageUploa
             width="24px"
             fill="red"
           >
-            <path d="M256-213.85 213.85-256l224-224-224-224L256-746.15l224 224 224-224L746.15-704l-224 224 224 224L704-213.85l-224-224-224 224Z"/>
+            <path d="M256-213.85 213.85-256l224-224-224-224L256-746.15l224 224 224-224L746.15-704l-224 224 224 224L704-213.85l-224-224-224 224Z" />
           </svg>
         </button>
-        <button 
-          onClick={() => editor.chain().focus().toggleUnderline().run()} 
+        <button
+          onClick={() => editor.chain().focus().toggleUnderline().run()}
           className={`px-2 py-1 rounded ${editor.isActive("underline") ? "bg-[#E6DCCB]" : "bg-white"} font-sans!`}
         >
           U
         </button>
-        <button 
-          onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()} 
+        <button
+          onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
           className={`px-2 py-1 rounded ${editor.isActive("heading", { level: 1 }) ? "bg-[#E6DCCB]" : "bg-white"} font-sans!`}
         >
           H1
         </button>
-        <button 
-          onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()} 
+        <button
+          onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
           className={`px-2 py-1 rounded ${editor.isActive("heading", { level: 2 }) ? "bg-[#E6DCCB]" : "bg-white"} font-sans!`}
         >
           H2
         </button>
-        <button 
-          onClick={() => editor.chain().focus().toggleList('bulletList','listItem').run()} 
-          className={`px-2 py-1 rounded ${editor.isActive('list',{ type: 'bulletList'}) ? "bg-[#E6DCCB]":"bg-white"} font-sans!`}
+        <button
+          onClick={() => editor.chain().focus().toggleList('bulletList', 'listItem').run()}
+          className={`px-2 py-1 rounded ${editor.isActive('list', { type: 'bulletList' }) ? "bg-[#E6DCCB]" : "bg-white"} font-sans!`}
         >
           • List
         </button>
-        <button 
-          onClick={() => editor.chain().focus().toggleList('orderedList','listItem').run()} 
-          className={`px-2 py-1 rounded ${editor.isActive('list',{ type: 'orderedList'}) ? "bg-[#E6DCCB]":"bg-white"} font-sans!`}
+        <button
+          onClick={() => editor.chain().focus().toggleList('orderedList', 'listItem').run()}
+          className={`px-2 py-1 rounded ${editor.isActive('list', { type: 'orderedList' }) ? "bg-[#E6DCCB]" : "bg-white"} font-sans!`}
         >
           1. List
         </button>
         <div className="relative">
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            setTableMenuOpen(v => !v);
-          }}
-          className={`px-2 py-1 rounded bg-white hover:bg-[#E6DCCB] font-sans! ${
-            editor.isActive("table") ? "bg-[#E6DCCB]" : ""
-          }`}
-        >
-          ⌗ Table
-        </button>
-
-        {tableMenuOpen && (
-          <div
-            onClick={(e) => e.stopPropagation()}
-            className="absolute z-50 mt-1 w-48 rounded border bg-white shadow"
-            style={{ borderColor: "#D8CDBE" }}
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              setTableMenuOpen(v => !v);
+            }}
+            className={`px-2 py-1 rounded bg-white hover:bg-[#E6DCCB] font-sans! ${editor.isActive("table") ? "bg-[#E6DCCB]" : ""
+              }`}
           >
-            <TableMenu editor={editor} close={() => setTableMenuOpen(false)} />
-          </div>
-        )}
-      </div>
+            ⌗ Table
+          </button>
 
-        <button 
-          onClick={() => editor.chain().focus().toggleCodeBlock().run()} 
-          className={`px-2 py-1 rounded ${editor.isActive("codeBlock") ? "bg-[#E6DCCB]":"bg-white"} font-sans!`}
+          {tableMenuOpen && (
+            <div
+              onClick={(e) => e.stopPropagation()}
+              className="absolute z-50 mt-1 w-48 rounded border bg-white shadow"
+              style={{ borderColor: "#D8CDBE" }}
+            >
+              <TableMenu editor={editor} close={() => setTableMenuOpen(false)} />
+            </div>
+          )}
+        </div>
+
+        <button
+          onClick={() => editor.chain().focus().toggleCodeBlock().run()}
+          className={`px-2 py-1 rounded ${editor.isActive("codeBlock") ? "bg-[#E6DCCB]" : "bg-white"} font-sans!`}
         >
           {"</>"}
         </button>
@@ -514,7 +494,7 @@ export default function ArticleEditor({ value, articleId, onChange, onImageUploa
             width="24px"
             fill="black"
           >
-            <path d="M212.31-140Q182-140 161-161q-21-21-21-51.31v-535.38Q140-778 161-799q21-21 51.31-21h535.38Q778-820 799-799q21 21 21 51.31v535.38Q820-182 799-161q-21 21-51.31 21H212.31Zm0-60h535.38q4.62 0 8.46-3.85 3.85-3.84 3.85-8.46v-535.38q0-4.62-3.85-8.46-3.84-3.85-8.46-3.85H212.31q-4.62 0-8.46 3.85-3.85 3.84-3.85 8.46v535.38q0 4.62 3.85 8.46 3.84 3.85 8.46 3.85ZM270-290h423.07L561.54-465.38 449.23-319.23l-80-102.31L270-290Zm-70 90v-560 560Z"/>
+            <path d="M212.31-140Q182-140 161-161q-21-21-21-51.31v-535.38Q140-778 161-799q21-21 51.31-21h535.38Q778-820 799-799q21 21 21 51.31v535.38Q820-182 799-161q-21 21-51.31 21H212.31Zm0-60h535.38q4.62 0 8.46-3.85 3.85-3.84 3.85-8.46v-535.38q0-4.62-3.85-8.46-3.84-3.85-8.46-3.85H212.31q-4.62 0-8.46 3.85-3.85 3.84-3.85 8.46v535.38q0 4.62 3.85 8.46 3.84 3.85 8.46 3.85ZM270-290h423.07L561.54-465.38 449.23-319.23l-80-102.31L270-290Zm-70 90v-560 560Z" />
           </svg>
         </button>
         <button
@@ -534,7 +514,7 @@ export default function ArticleEditor({ value, articleId, onChange, onImageUploa
             width="24px"
             fill="black"
           >
-            <path d="M288.08-220v-60h287.07q62.62 0 107.77-41.35 45.16-41.34 45.16-102.11 0-60.77-45.16-101.93-45.15-41.15-107.77-41.15H294.31l111.3 111.31-42.15 42.15L180-596.54 363.46-780l42.15 42.15-111.3 111.31h280.84q87.77 0 150.35 58.58t62.58 144.5q0 85.92-62.58 144.69Q662.92-220 575.15-220H288.08Z"/>
+            <path d="M288.08-220v-60h287.07q62.62 0 107.77-41.35 45.16-41.34 45.16-102.11 0-60.77-45.16-101.93-45.15-41.15-107.77-41.15H294.31l111.3 111.31-42.15 42.15L180-596.54 363.46-780l42.15 42.15-111.3 111.31h280.84q87.77 0 150.35 58.58t62.58 144.5q0 85.92-62.58 144.69Q662.92-220 575.15-220H288.08Z" />
           </svg>
         </button>
         <button
@@ -548,24 +528,21 @@ export default function ArticleEditor({ value, articleId, onChange, onImageUploa
             width="24px"
             fill="black"
           >
-            <path d="M384.85-220q-87.77 0-150.35-58.77t-62.58-144.69q0-85.92 62.58-144.5t150.35-58.58h280.84l-111.3-111.31L596.54-780 780-596.54 596.54-413.08l-42.15-42.15 111.3-111.31H384.85q-62.62 0-107.77 41.15-45.16 41.16-45.16 101.93 0 60.77 45.16 102.11Q322.23-280 384.85-280h287.07v60H384.85Z"/>
+            <path d="M384.85-220q-87.77 0-150.35-58.77t-62.58-144.69q0-85.92 62.58-144.5t150.35-58.58h280.84l-111.3-111.31L596.54-780 780-596.54 596.54-413.08l-42.15-42.15 111.3-111.31H384.85q-62.62 0-107.77 41.15-45.16 41.16-45.16 101.93 0 60.77 45.16 102.11Q322.23-280 384.85-280h287.07v60H384.85Z" />
           </svg>
         </button>
 
-         <div className="flex-1" /> {/* flex spacer */}
+        <div className="flex-1" />
 
-          <button
-            onClick={() => exportArticleToDocx(editor.getJSON())}
-            className="px-3 py-1 rounded border border-[#4A3820] text-[#4A3820] bg-white shadow hover:bg-[#f9f9f9] font-sans!"
-            title="Export article to DOCX"
-          >
-            Export docx
-          </button>
-
-            
+        <button
+          onClick={() => exportArticleToDocx(editor.getJSON())}
+          className="px-3 py-1 rounded border border-[#4A3820] text-[#4A3820] bg-white shadow hover:bg-[#f9f9f9] font-sans!"
+          title="Export article to DOCX"
+        >
+          Export docx
+        </button>
       </div>
 
-      {/* Color Picker */}
       <div className="flex gap-1">
         {[
           '#E53935',
@@ -581,7 +558,6 @@ export default function ArticleEditor({ value, articleId, onChange, onImageUploa
           '#F472B6',
           '#000000',
           '#4B5563',
-              // Black added at the end
         ].map(color => (
           <button
             key={color}
@@ -595,18 +571,17 @@ export default function ArticleEditor({ value, articleId, onChange, onImageUploa
               opacity: isHeading ? 0.5 : 1,
               cursor: isHeading ? 'not-allowed' : 'pointer'
             }}
-            className={`border ${editor?.isActive('textStyle',{ color }) ? 'border-black':'border-gray-300 mt-1'}`}
+            className={`border ${editor?.isActive('textStyle', { color }) ? 'border-black' : 'border-gray-300 mt-1'}`}
           />
         ))}
-        <button 
-          onClick={() => editor.chain().focus().unsetColor().run()} 
+        <button
+          onClick={() => editor.chain().focus().unsetColor().run()}
           className="px-2 py-1 border rounded ml-2 font-sans!"
         >
           Reset
         </button>
       </div>
 
-      {/* Link Modal */}
       {linkModalOpen && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
           <div className="bg-white p-4 rounded w-80 space-y-3">
@@ -649,7 +624,6 @@ export default function ArticleEditor({ value, articleId, onChange, onImageUploa
         </div>
       )}
 
-      {/* YouTube Modal */}
       {youtubeModalOpen && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
           <div className="bg-white p-4 rounded w-80 space-y-3">
@@ -684,19 +658,15 @@ export default function ArticleEditor({ value, articleId, onChange, onImageUploa
               >
                 Insert
               </button>
-
-              
             </div>
           </div>
         </div>
       )}
 
-      {/* Editor */}
       <div className="relative border rounded bg-white p-4 min-h-75 editor-content max-w-none" style={{ borderColor: "#D8CDBE" }}>
         <EditorContent editor={editor} />
       </div>
 
-      {/* Word/Character Count */}
       <div className="text-sm text-gray-600 mt-2 font-sans!">
         {(() => {
           const text = editor.getText() || "";
@@ -707,10 +677,9 @@ export default function ArticleEditor({ value, articleId, onChange, onImageUploa
       </div>
     </div>
   );
-
 }
 
- function TableMenu({
+function TableMenu({
   editor,
   close,
 }: {
@@ -720,29 +689,28 @@ export default function ArticleEditor({ value, articleId, onChange, onImageUploa
   if (!editor) return null;
 
   const can = editor.can();
+  const inTable = editor.isActive("table");
 
-const inTable = editor.isActive("table");
-const Item = ({
-  label,
-  onClick,
-  disabled = false,
-}: {
-  label: string;
-  onClick: () => void;
-  disabled?: boolean;
-}) => (
-  <button
-    onClick={() => {
-      onClick();
-      close();
-    }}
-    disabled={disabled}
-    className="w-full text-left px-3 py-2 text-sm hover:bg-[#F3EEE7] disabled:opacity-50 font-sans!"
-  >
-    {label}
-  </button>
-);
-
+  const Item = ({
+    label,
+    onClick,
+    disabled = false,
+  }: {
+    label: string;
+    onClick: () => void;
+    disabled?: boolean;
+  }) => (
+    <button
+      onClick={() => {
+        onClick();
+        close();
+      }}
+      disabled={disabled}
+      className="w-full text-left px-3 py-2 text-sm hover:bg-[#F3EEE7] disabled:opacity-50 font-sans!"
+    >
+      {label}
+    </button>
+  );
 
   return (
     <div className="flex flex-col">
@@ -800,7 +768,6 @@ const Item = ({
         disabled={!can.mergeCells()}
         onClick={() => editor.chain().focus().mergeCells().run()}
       />
-
 
       <Item
         label="Split cell"

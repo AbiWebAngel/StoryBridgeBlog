@@ -13,7 +13,10 @@ import { findUnusedAssets } from "@/lib/articles/findUnusedAssets"; // 🔥 NEW
 import { useAuth } from "@/context/AuthContext";
 
 import { X } from "lucide-react";
+
+import FloatingAutosaveIndicator from "@/components/admin/FloatingAutosaveIndicator";
 import FloatingSaveBar from "@/components/admin/FloatingSaveBar";
+
 import { useRef } from "react";
 
 export default function NewArticlePage() {
@@ -34,15 +37,72 @@ export default function NewArticlePage() {
 
   // 🔥 NEW: Track ALL uploaded asset URLs
   const [uploadedAssets, setUploadedAssets] = useState<string[]>([]);
-
+  
   // Errors + UI
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
-  const articleIdRef = useRef<string>(crypto.randomUUID());
-  const articleId = articleIdRef.current;
+  const articleIdRef = useRef<string | null>(null);
   const hasSavedOnceRef = useRef(false);
   const [pageReady, setPageReady] = useState(false);
+  
+  // -------------------------
+// AUTOSAVE UI STATE
+// -------------------------
+const [autosaving, setAutosaving] = useState(false);
+const [lastLocalSave, setLastLocalSave] = useState<number | null>(null);
+const [lastServerSave, setLastServerSave] = useState<number | null>(null);
+const [articleReady, setArticleReady] = useState(false);
+const [now, setNow] = useState(Date.now());
+
+
+const [isDocked, setIsDocked] = useState(false);
+
+const getAutosaveKey = () => {
+  const id = articleIdRef.current;
+  return id ? `article-draft-${id}` : null;
+};
+
+useEffect(() => {
+  if (!articleReady) return;   // 👈 ONLY this check
+  if (!pageReady) return;      // 👈 this one is fine as a secondary check
+
+  const key = getAutosaveKey();
+  if (!key) return;
+
+  const timeout = setTimeout(() => {
+    const draft = {
+      title,
+      slug,
+      metaDescription,
+      coverImage,
+      coverImageAlt,
+      body,
+      tags,
+      status,
+      uploadedAssets,
+    };
+
+    localStorage.setItem(key, JSON.stringify(draft));
+    setLastLocalSave(Date.now());
+    autosaveToServer();
+    console.log("💾 Local draft autosaved");
+  }, 800);
+
+  return () => clearTimeout(timeout);
+}, [
+  title,
+  slug,
+  metaDescription,
+  coverImage,
+  coverImageAlt,
+  body,
+  tags,
+  status,
+  uploadedAssets,
+  articleReady,   // 👈 correct dependency
+  pageReady,      // optional
+]);
 
   // -------------------------
   // AUTO GENERATE SLUG
@@ -68,6 +128,113 @@ useEffect(() => {
   }
 }, [coverImage]);
 
+
+
+
+
+useEffect(() => {
+  const storedId = localStorage.getItem("active-article-id");
+
+  if (storedId) {
+    articleIdRef.current = storedId;
+  } else {
+    const newId = crypto.randomUUID();
+    articleIdRef.current = newId;
+    localStorage.setItem("active-article-id", newId);
+  }
+
+  setArticleReady(true); // 👈 now we know the ID is ready
+}, []);
+
+useEffect(() => {
+  if (!articleReady) return;        // 👈 wait until ID exists
+
+  const key = getAutosaveKey();
+  if (!key) return;
+
+  const raw = localStorage.getItem(key);
+  if (!raw) return;
+
+  try {
+    const draft = JSON.parse(raw);
+
+    setTitle(draft.title ?? "");
+    setSlug(draft.slug ?? "");
+    setMetaDescription(draft.metaDescription ?? "");
+    setCoverImage(draft.coverImage ?? null);
+    setCoverImageAlt(draft.coverImageAlt ?? "");
+    setBody(draft.body ?? null);
+    setTags(draft.tags ?? []);
+    setStatus("draft");
+    setUploadedAssets(draft.uploadedAssets ?? []);
+
+    console.log("♻️ Restored local draft");
+  } catch {
+    console.warn("Failed to restore local draft");
+  }
+}, [articleReady]); // 👈 IMPORTANT
+
+const autosaveToServer = async () => {
+  const articleId = articleIdRef.current;
+  if (!currentAuthUser || !body || !articleId) return;
+
+  setAutosaving(true);
+
+  try {
+    await setDoc(
+      doc(db, "articles", articleId),
+      {
+        title,
+        slug,
+        metaDescription,
+        coverImage,
+        coverImageAlt,
+        body,
+        tags,
+        status: "draft",
+        authorId: currentAuthUser.uid,
+        updatedAt: serverTimestamp(),
+        autosaved: true,
+      },
+      { merge: true }
+    );
+
+    setLastServerSave(Date.now());
+    console.log("☁️ Server autosave complete");
+  } catch (err) {
+    console.warn("Server autosave failed", err);
+  } finally {
+    setAutosaving(false);
+  }
+};
+
+
+useEffect(() => {
+  if (!currentAuthUser) return;
+
+  const interval = setInterval(() => {
+    autosaveToServer();
+  }, 5 * 60 * 1000); // 5 minutes
+
+  return () => clearInterval(interval);
+}, [currentAuthUser]); // ← only depends on user
+
+
+useEffect(() => {
+  const interval = setInterval(() => {
+    setNow(Date.now());
+  }, 1000);
+
+  return () => clearInterval(interval);
+}, []);
+
+
+
+if (!articleIdRef.current) {
+  return null; // or a small loading placeholder
+}
+
+
   // -------------------------
   // TAG HELPERS
   // -------------------------
@@ -89,6 +256,16 @@ const handleAddTag = (e: React.KeyboardEvent<HTMLInputElement>) => {
   }
 };
 
+const handlePreview = () => {
+  const articleId = articleIdRef.current;
+  if (!articleId) return;
+
+  window.open(`/preview/article/${articleId}`, "_blank");
+};
+
+
+
+
 
 
   const handleRemoveTag = (tag: string) => {
@@ -98,6 +275,7 @@ const handleAddTag = (e: React.KeyboardEvent<HTMLInputElement>) => {
  function resetForm() {
   setTitle("");
   setSlug("");
+  setMetaDescription("");
   setCoverImageAlt("");
   setCoverImage(null);
   setBody(null);
@@ -107,8 +285,9 @@ const handleAddTag = (e: React.KeyboardEvent<HTMLInputElement>) => {
   setUploadedAssets([]);
 
   // 🔥 REGENERATE ARTICLE ID AFTER SAVE
-  articleIdRef.current = crypto.randomUUID();
-
+  const newId = crypto.randomUUID();
+  articleIdRef.current = newId;
+  localStorage.setItem("active-article-id", newId);
   hasSavedOnceRef.current = false;
 }
 
@@ -116,6 +295,13 @@ const handleAddTag = (e: React.KeyboardEvent<HTMLInputElement>) => {
   // SAVE ARTICLE
   // -------------------------
   const handleSave = async () => {
+    const articleId = articleIdRef.current;
+    const autosaveKey = articleId ? `article-draft-${articleId}` : null;
+    if (!articleId) {
+      setErrors({ general: "Article ID not ready yet." });
+      return;
+    }
+
     if (!currentAuthUser) {
       setErrors({ general: "Please log in to save changes." });
       return;
@@ -176,15 +362,17 @@ const handleAddTag = (e: React.KeyboardEvent<HTMLInputElement>) => {
       updatedAt: serverTimestamp(),
     },
     { merge: true }
+
+    
   );
 
 
 
-      const shouldCleanup = hasSavedOnceRef.current;
-      if (!hasSavedOnceRef.current) {
-        hasSavedOnceRef.current = true;
-        console.log("First save — skipping asset cleanup");
-      }
+    const shouldCleanup = hasSavedOnceRef.current;
+    if (!hasSavedOnceRef.current) {
+      hasSavedOnceRef.current = true;
+      console.log("First save — skipping asset cleanup");
+    }
 
     if (shouldCleanup) {
   let canCleanup = true;
@@ -228,15 +416,35 @@ const handleAddTag = (e: React.KeyboardEvent<HTMLInputElement>) => {
 
       setSaving(false);
 
+      if (autosaveKey) {
+        localStorage.removeItem(autosaveKey);
+      }
+
+      localStorage.removeItem("active-article-id");
       // Reset form
       resetForm();
+      
+      // 🔄 Reset autosave UI state after manual save
+      setAutosaving(false);
+      setLastLocalSave(null);
+      setLastServerSave(null);
+
 
       setTimeout(() => setSuccessMessage(""), 2500);
+
+  
+
+      const key = getAutosaveKey();
+      if (key) localStorage.removeItem(key);
+
     } catch (err: any) {
       console.error("Error saving article:", err);
       setErrors({ general: err.message || "Failed to save article." });
       setSaving(false);
     }
+
+ 
+
   };
 
 if (!pageReady) {
@@ -350,7 +558,7 @@ if (!pageReady) {
               </label>
            <CoverUpload
               value={coverImage}
-              articleId={articleId}   // 👈 ADD THIS
+              articleId={articleIdRef.current!}   // 👈 ADD THIS
               onChange={setCoverImage}
              onUploaded={(url) => {
               setUploadedAssets((prev) =>
@@ -393,20 +601,32 @@ if (!pageReady) {
 
             {/* BODY EDITOR */}
             <div className="bg-white rounded-lg border border-[#D8CDBE] p-5 shadow-md">
-              <label className="block text-lg font-bold text-[#4A3820] mb-3 font-sans!">
-                Article Content
-              </label>
-             <ArticleEditor
-              key={editorKey}
-              value={body}
-              articleId={articleId}   // 👈 ADD
-              onChange={setBody}
-              onImageUploaded={(url) =>
-              setUploadedAssets((prev) =>
-                prev.includes(url) ? prev : [...prev, url]
-              )
-            }
-            />
+              <div className="flex items-center justify-between mb-3">
+                <label className="text-lg font-bold text-[#4A3820] font-sans!">
+                  Article Content
+                </label>
+
+                <button
+                  type="button"
+                  onClick={handlePreview}
+                  className="flex items-center gap-2 px-3 py-1.5 text-sm bg-[#4A3820] text-white rounded-md hover:bg-[#3A2D18] transition font-sans!"
+                  title="Preview article"
+                >
+                  Preview
+                </button>
+              </div>
+
+              <ArticleEditor
+                key={editorKey}
+                value={body}
+                articleId={articleIdRef.current!}
+                onChange={setBody}
+                onImageUploaded={(url) =>
+                  setUploadedAssets((prev) =>
+                    prev.includes(url) ? prev : [...prev, url]
+                  )
+                }
+              />
 
               {errors.body && (
                 <p className="mt-2 text-red-600 font-medium">{errors.body}</p>
@@ -462,9 +682,28 @@ if (!pageReady) {
             </div>
           </div>
         </div>
-        
-        
-        <FloatingSaveBar onClick={handleSave} saving={saving} label="Save Article" />
+           
+           <div className="fixed bottom-24 right-4 bg-black text-white px-3 py-2 rounded-lg text-sm opacity-80 z-50">
+            <div>⏱️ Local last: {lastLocalSave ? ((now - lastLocalSave) / 1000).toFixed(0) + "s ago" : "—"}</div>
+            <div>☁️ Server last: {lastServerSave ? ((now - lastServerSave) / 1000).toFixed(0) + "s ago" : "—"}</div>
+          </div>
+
+<FloatingSaveBar
+  onClick={handleSave}
+  saving={saving}
+  label="Save Article"
+  onDockChange={setIsDocked}
+>
+  <FloatingAutosaveIndicator
+    autosaving={autosaving}
+    lastLocalSave={lastLocalSave}
+    lastServerSave={lastServerSave}
+    docked={isDocked} // true when bar is docked
+  />
+</FloatingSaveBar>
+
+
+
       </div>
     </div>
   );

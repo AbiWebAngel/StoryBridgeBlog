@@ -23,18 +23,20 @@ export default function ImageNodeView({ node, editor, getPos, updateAttributes }
 
   return (
     <NodeViewWrapper className="group w-full flex flex-col items-center relative my-6">
-      <img
-        src={src}
-        alt={alt || ""}
-        className="rounded-lg"
-        style={{
-          maxWidth: "600px",
-          width: "100%",
-          height: "auto",
-          display: "block",
-          margin: "0 auto",
-        }}
-      />
+   <img
+    src={src}
+    alt={alt || ""}
+    className="rounded-lg"
+    style={{
+      maxWidth: "600px",
+      maxHeight: "400px", // ✅ safe
+      width: "100%",
+      height: "auto",
+      display: "block",
+      margin: "0 auto",
+      objectFit: "contain", // ⭐ highly recommended
+    }}
+  />
 
       {/* 🧠 Alt text input */}
       <input
