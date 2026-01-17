@@ -20,6 +20,7 @@ const roleProtectedRoutes: Record<string, string[]> = {
   author: [
     "/dashboard/articles",
     "/dashboard/articles/new",
+    "/dashboard/articles/preview",
     "/dashboard/analytics",
   ],
   admin: [

@@ -27,15 +27,26 @@ import { Table } from "@tiptap/extension-table";
 import { TableRow } from "@tiptap/extension-table-row";
 import { TableCell } from "@tiptap/extension-table-cell";
 import { TableHeader } from "@tiptap/extension-table-header";
+import type { JSONContent } from "@tiptap/core";
+import type { Editor } from "@tiptap/core";
+
 
 interface ArticleEditorProps {
-  value: any;
+  value: JSONContent | null;
   articleId: string;
-  onChange: (json: any) => void;
+  resetToken?: number;
+  onChange: (value: JSONContent) => void;
   onImageUploaded?: (url: string) => void;
 }
 
-export default function ArticleEditor({ value, articleId, onChange, onImageUploaded }: ArticleEditorProps) {
+export default function ArticleEditor({
+  value,
+  articleId,
+  resetToken,
+  onChange,
+  onImageUploaded,
+}: ArticleEditorProps) {
+
   const uploadedImagesRef = useRef<Set<string>>(new Set());
   const [linkModalOpen, setLinkModalOpen] = useState(false);
   const [linkUrl, setLinkUrl] = useState("");
@@ -184,11 +195,21 @@ export default function ArticleEditor({ value, articleId, onChange, onImageUploa
         },
       }),
     ],
-    content: value,
-    onUpdate: ({ editor }) => onChange(editor.getJSON()),
-    onSelectionUpdate: ({ editor }) => {
-      setHasSelection(!editor.state.selection.empty);
-    },
+   onUpdate: ({ editor }) => {
+  const json = editor.getJSON();
+
+  if (value && JSON.stringify(json) === JSON.stringify(value)) return;
+
+  queueMicrotask(() => {
+    onChange(json);
+  });
+},
+
+   onSelectionUpdate: ({ editor }) => {
+  const hasSel = !editor.state.selection.empty;
+  queueMicrotask(() => setHasSelection(hasSel));
+},
+
   });
 
   const handleFileInsert = async (editorInstance: typeof editor, files: File[], pos?: number) => {
@@ -333,6 +354,18 @@ export default function ArticleEditor({ value, articleId, onChange, onImageUploa
     editor?.chain().focus().unsetLink().run();
   }, [editor]);
 
+  
+
+useEffect(() => {
+  if (!editor) return;
+  if (!value) return;
+  if (!editor.isEmpty) return;
+
+  editor.commands.setContent(value, { emitUpdate: false });
+}, [editor]);
+ // intentionally NOT watching `value`
+
+
   useEffect(() => {
     if (!editor) return;
 
@@ -374,6 +407,11 @@ export default function ArticleEditor({ value, articleId, onChange, onImageUploa
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
   }, []);
+
+  useEffect(() => {
+  if (!editor) return;
+  editor.commands.clearContent(true);
+}, [resetToken]);
 
   const isHeading = editor?.isActive('heading');
 

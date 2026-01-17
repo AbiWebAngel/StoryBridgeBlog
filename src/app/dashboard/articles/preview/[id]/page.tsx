@@ -17,27 +17,66 @@ export default function PreviewArticlePage() {
     if (!id) return;
 
     const fetchArticle = async () => {
-      const snap = await getDoc(doc(db, "articles", id as string));
-      if (!snap.exists()) {
-        setPost(null);
-      } else {
-        const data = snap.data();
-        // Add mock author and date for preview
-        setPost({
-          ...data,
-          author: "Author Name", // You can customize this or get from user data
-          date: new Date().toISOString()
-        });
-      }
-      setLoading(false);
-    };
+        const snap = await getDoc(doc(db, "articles", id as string));
+        if (!snap.exists()) {
+            setPost(null);
+        } else {
+            const data = snap.data();
+
+            let authorName = "Unknown Author";
+
+            // 🔥 Fetch the author's profile from Firestore
+            if (data.authorId) {
+            const authorRef = doc(db, "users", data.authorId);
+            const authorSnap = await getDoc(authorRef);
+
+            if (authorSnap.exists()) {
+                const authorData = authorSnap.data();
+                authorName = [
+                authorData.firstName,
+                authorData.lastName
+                ].filter(Boolean).join(" ") || authorData.initials || authorName;
+            }
+            }
+
+            let body = data.body;
+
+            if (typeof body === "string") {
+            try {
+                body = JSON.parse(body);
+            } catch {
+                body = null;
+            }
+            }
+
+            // Ensure TipTap root node exists
+            if (body && body.type !== "doc") {
+            body = {
+                type: "doc",
+                content: body.content ?? [],
+            };
+            }
+
+
+           setPost({
+            ...data,
+            body,
+            author: authorName,
+            date: data.updatedAt?.toDate().toISOString() ?? new Date().toISOString(),
+            });
+
+        }
+
+        setLoading(false);
+        };
+
 
     fetchArticle();
   }, [id]);
 
   if (loading) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-[#F0E8DB]">
+      <div className="min-h-screen flex flex-col items-center justify-center ">
         <div className="w-48 h-2 bg-[#E0D6C7] rounded-full overflow-hidden">
           <div className="h-full w-full animate-pulse bg-[#4A3820]"></div>
         </div>
@@ -68,6 +107,7 @@ export default function PreviewArticlePage() {
   return (
     <div className="min-h-screen bg-[#ECE1CF] py-4">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+
         {/* Back button - exact design from blog page */}
         <button 
           onClick={() => window.close()}
@@ -90,10 +130,10 @@ export default function PreviewArticlePage() {
             <span className="font-semibold">{post.author || "Author"}</span>
             <span className="hidden sm:inline">•</span>
             <span>
-              {post.date ? new Date(post.date).toLocaleDateString('en-US', {
-                year: 'numeric',
+              {post.date ? new Date(post.date).toLocaleDateString('en-GB', {
+                day: '2-digit',
                 month: 'long',
-                day: 'numeric'
+                year: 'numeric'
               }) : "Draft"}
             </span>
             <span className="hidden sm:inline">•</span>
@@ -120,6 +160,7 @@ export default function PreviewArticlePage() {
           <article className="max-w-none font-inter text-[#413320]">
             {post.body && <ArticleRenderer content={post.body} />}
           </article>
+
         </div>
       </div>
     </div>

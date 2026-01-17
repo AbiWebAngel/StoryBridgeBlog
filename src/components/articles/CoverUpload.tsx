@@ -162,7 +162,7 @@ export default function CoverUpload({
 
       {value && !uploading && (
         <button
-          className="text-red-600 text-sm underline !font-sans"
+          className="text-red-600 text-sm underline font-sans!"
           onClick={async () => {
             // try to delete remote asset
             try {

@@ -294,3 +294,47 @@ textarea.scrollable-description::-webkit-scrollbar-thumb:hover {
   scrollbar-width: thin;
   scrollbar-color: #D1BDA1 #EDE5D8;
 }
+
+.article-content table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+.article-content th,
+.article-content td {
+  border: 1px solid #c7b89d;
+  padding: 0.5rem 0.75rem;
+  vertical-align: top;
+}
+
+.article-content th {
+  background-color: #f0e8db;
+  font-weight: 600;
+}
+
+.article-content tr:nth-child(even) td {
+  background-color: #faf7f2;
+}
+
+/* === Responsive table handling for preview === */
+
+.article-content table {
+  max-width: 100%;
+  width: max-content;   /* table fits content */
+  border-collapse: collapse;
+   margin-left: auto;
+  margin-right: auto;
+}
+
+.article-content {
+  overflow-x: auto;
+}
+
+/* Prevent ultra-long text from exploding columns */
+.article-content td,
+.article-content th {
+  word-break: break-word;
+  white-space: normal;
+}
+
+

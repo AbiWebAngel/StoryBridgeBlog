@@ -21,6 +21,13 @@ import { useRef } from "react";
 
 export default function NewArticlePage() {
   const { user: currentAuthUser } = useAuth();
+  const getActiveArticleIdKey = (uid: string) =>
+  `active-article-id:${uid}`;
+
+const getAutosaveKey = (uid: string, articleId: string) =>
+  `article-draft:${uid}:${articleId}`;
+const [resetEditorToken, setResetEditorToken] = useState(0);
+
 
   // -------------------------
   // FORM STATE
@@ -58,16 +65,20 @@ const [now, setNow] = useState(Date.now());
 
 const [isDocked, setIsDocked] = useState(false);
 
-const getAutosaveKey = () => {
-  const id = articleIdRef.current;
-  return id ? `article-draft-${id}` : null;
-};
+
 
 useEffect(() => {
   if (!articleReady) return;   // 👈 ONLY this check
   if (!pageReady) return;      // 👈 this one is fine as a secondary check
 
-  const key = getAutosaveKey();
+if (!currentAuthUser) return;
+if (!articleIdRef.current) return;
+
+const key = getAutosaveKey(
+  currentAuthUser.uid,
+  articleIdRef.current
+);
+
   if (!key) return;
 
   const timeout = setTimeout(() => {
@@ -132,24 +143,37 @@ useEffect(() => {
 
 
 useEffect(() => {
-  const storedId = localStorage.getItem("active-article-id");
+  if (!currentAuthUser) return;
 
-  if (storedId) {
-    articleIdRef.current = storedId;
-  } else {
-    const newId = crypto.randomUUID();
-    articleIdRef.current = newId;
-    localStorage.setItem("active-article-id", newId);
-  }
+  const key = getActiveArticleIdKey(currentAuthUser.uid);
+  const storedId = localStorage.getItem(key);
 
-  setArticleReady(true); // 👈 now we know the ID is ready
-}, []);
+if (storedId) {
+  articleIdRef.current = storedId;
+} else {
+  const newId = crypto.randomUUID();
+  articleIdRef.current = newId;
+
+  localStorage.setItem(
+    getActiveArticleIdKey(currentAuthUser.uid),
+    newId
+  );
+}
+
+
+  setArticleReady(true);
+}, [currentAuthUser]);
+
 
 useEffect(() => {
-  if (!articleReady) return;        // 👈 wait until ID exists
+  if (!currentAuthUser) return;
+  if (!articleReady) return;
+  if (!articleIdRef.current) return;
 
-  const key = getAutosaveKey();
-  if (!key) return;
+  const key = getAutosaveKey(
+    currentAuthUser.uid,
+    articleIdRef.current
+  );
 
   const raw = localStorage.getItem(key);
   if (!raw) return;
@@ -167,17 +191,19 @@ useEffect(() => {
     setStatus("draft");
     setUploadedAssets(draft.uploadedAssets ?? []);
 
-    console.log("♻️ Restored local draft");
+    console.log("♻️ Draft restored for user", currentAuthUser.uid);
   } catch {
-    console.warn("Failed to restore local draft");
+    console.warn("Failed to restore draft");
   }
-}, [articleReady]); // 👈 IMPORTANT
+}, [currentAuthUser, articleReady]);
+; // 👈 IMPORTANT
 
-const autosaveToServer = async () => {
+const autosaveToServer = async (force = false) => {
   const articleId = articleIdRef.current;
-  if (!currentAuthUser || !body || !articleId) return;
+  if (!currentAuthUser || !articleId) return;
 
-  if (!title && !body) return;
+  // 👇 prevent empty junk saves unless forced
+  if (!force && !title && !body && !coverImage) return;
 
   setAutosaving(true);
 
@@ -204,10 +230,12 @@ const autosaveToServer = async () => {
     console.log("☁️ Server autosave complete");
   } catch (err) {
     console.warn("Server autosave failed", err);
+    throw err; // 👈 important so preview knows it failed
   } finally {
     setAutosaving(false);
   }
 };
+
 
 
 useEffect(() => {
@@ -257,12 +285,21 @@ const handleAddTag = (e: React.KeyboardEvent<HTMLInputElement>) => {
   }
 };
 
-const handlePreview = () => {
+const handlePreview = async () => {
   const articleId = articleIdRef.current;
   if (!articleId) return;
 
-  window.open(`/dashboard/articles/preview/${articleId}`, "_blank");
+  try {
+    // 🛑 Ensure latest content is on the server
+    await autosaveToServer(true);
+
+    // 🚀 Only open preview AFTER save completes
+    window.open(`/dashboard/articles/preview/${articleId}`, "_blank");
+  } catch {
+    alert("Preview failed — could not save article to server.");
+  }
 };
+
 
 
 
@@ -270,31 +307,42 @@ const handlePreview = () => {
     setTags(tags.filter((t) => t !== tag));
   };
 
- function resetForm() {
+function resetForm() {
+    setArticleReady(false);
   setTitle("");
   setSlug("");
   setMetaDescription("");
   setCoverImageAlt("");
   setCoverImage(null);
   setBody(null);
+
+  setResetEditorToken((v) => v + 1);
   setTags([]);
   setStatus("draft");
-  setEditorKey(Date.now());
+  setBody(null);
+  
   setUploadedAssets([]);
-
-  // 🔥 REGENERATE ARTICLE ID AFTER SAVE
-  const newId = crypto.randomUUID();
-  articleIdRef.current = newId;
-  localStorage.setItem("active-article-id", newId);
   hasSavedOnceRef.current = false;
+
+  if (currentAuthUser) {
+    const newId = crypto.randomUUID();
+    articleIdRef.current = newId;
+
+    localStorage.setItem(
+      getActiveArticleIdKey(currentAuthUser.uid),
+      newId
+    );
+  }
+
+  setArticleReady(true);
 }
+
 
   // -------------------------
   // SAVE ARTICLE
   // -------------------------
   const handleSave = async () => {
     const articleId = articleIdRef.current;
-    const autosaveKey = articleId ? `article-draft-${articleId}` : null;
     if (!articleId) {
       setErrors({ general: "Article ID not ready yet." });
       return;
@@ -413,12 +461,16 @@ const handlePreview = () => {
     );
 
       setSaving(false);
+      if (currentAuthUser && articleId) {
+        localStorage.removeItem(
+          getAutosaveKey(currentAuthUser.uid, articleId)
+        );
 
-      if (autosaveKey) {
-        localStorage.removeItem(autosaveKey);
+        localStorage.removeItem(
+          getActiveArticleIdKey(currentAuthUser.uid)
+        );
       }
 
-      localStorage.removeItem("active-article-id");
       // Reset form
       resetForm();
       
@@ -430,10 +482,7 @@ const handlePreview = () => {
 
       setTimeout(() => setSuccessMessage(""), 2500);
 
-  
 
-      const key = getAutosaveKey();
-      if (key) localStorage.removeItem(key);
 
     } catch (err: any) {
       console.error("Error saving article:", err);
@@ -442,7 +491,6 @@ const handlePreview = () => {
     }
 
  
-
   };
 
 if (!pageReady) {
@@ -522,31 +570,31 @@ if (!pageReady) {
               )}
             </div>
 
-            {/* META DESCRIPTION */}
-      <div className="bg-white rounded-lg border border-[#D8CDBE] p-5 shadow-md">
-        <label className="block text-lg font-bold text-[#4A3820] mb-3 font-sans!">
-          Meta Description
-        </label>
+          {/* META DESCRIPTION */}
+          <div className="bg-white rounded-lg border border-[#D8CDBE] p-5 shadow-md">
+            <label className="block text-lg font-bold text-[#4A3820] mb-3 font-sans!">
+              Meta Description
+            </label>
 
-        <textarea
-          value={metaDescription}
-          onChange={(e) => setMetaDescription(e.target.value)}
-          maxLength={160}
-          rows={3}
-          placeholder="Short summary shown in search results (150–160 chars)"
-          className="w-full px-4 py-3 rounded-lg border-2 border-[#805C2C]"
-        />
+            <textarea
+              value={metaDescription}
+              onChange={(e) => setMetaDescription(e.target.value)}
+              maxLength={160}
+              rows={3}
+              placeholder="Short summary shown in search results (150–160 chars)"
+              className="w-full px-4 py-3 rounded-lg border-2 border-[#805C2C]"
+            />
 
-        <p className="mt-1 text-sm! text-gray-600 font-sans!">
-          {metaDescription.length}/160 characters
-        </p>
+            <p className="mt-1 text-sm! text-gray-600 font-sans!">
+              {metaDescription.length}/160 characters
+            </p>
 
-        {errors.metaDescription && (
-          <p className="mt-2 text-red-600 font-medium">
-            {errors.metaDescription}
-          </p>
-        )}
-      </div>
+            {errors.metaDescription && (
+              <p className="mt-2 text-red-600 font-medium">
+                {errors.metaDescription}
+              </p>
+            )}
+          </div>
 
 
             {/* COVER IMAGE */}
@@ -615,10 +663,10 @@ if (!pageReady) {
               </div>
 
               <ArticleEditor
-                key={editorKey}
                 value={body}
                 articleId={articleIdRef.current!}
                 onChange={setBody}
+                resetToken={resetEditorToken}
                 onImageUploaded={(url) =>
                   setUploadedAssets((prev) =>
                     prev.includes(url) ? prev : [...prev, url]
