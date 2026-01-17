@@ -78,6 +78,7 @@ p, ul, li, span, a {
 .scrollable-description::-webkit-scrollbar,
 textarea.scrollable-description::-webkit-scrollbar {
   width: 6px;
+  height: 4px;
 }
 
 .scrollable-description::-webkit-scrollbar-track,
@@ -269,3 +270,27 @@ textarea.scrollable-description::-webkit-scrollbar-thumb:hover {
   pointer-events: none;
 }
 
+/* Ensures tables don't overflow on small screens */
+.tiptap-editor-wrapper table {
+  width: max-content; /* shrink-to-fit table content */
+  border-collapse: collapse;
+}
+
+.tiptap-editor-wrapper {
+  overflow-x: auto;
+  max-width: 100%;
+}
+
+/* Optional: prevent cells from exploding in width */
+.tiptap-table,
+.tiptap-table-cell,
+.tiptap-table-header {
+  white-space: nowrap;        /* prevent super long words from breaking your layout */
+  max-width: 100%;
+}
+
+/* Firefox scrollbar support */
+.scrollable-description {
+  scrollbar-width: thin;
+  scrollbar-color: #D1BDA1 #EDE5D8;
+}

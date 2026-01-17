@@ -13,25 +13,27 @@ type Props = {
 
 export default function ArticleRenderer({ content }: Props) {
   const editor = useEditor({
-    editable: false,
-    extensions: [
-      StarterKit,
-      Underline,
-      Image.configure({
-        HTMLAttributes: {
-          class: "rounded-lg my-6",
-        },
-      }),
-      Link.configure({
-        openOnClick: true,
-        autolink: true,
-      }),
-      TextAlign.configure({
-        types: ["heading", "paragraph"],
-      }),
-    ],
-    content,
-  });
+  editable: false,
+  immediatelyRender: false, // 👈 REQUIRED for Next.js App Router
+  extensions: [
+    StarterKit,
+    Underline,
+    Image.configure({
+      HTMLAttributes: {
+        class: "rounded-lg my-6",
+      },
+    }),
+    Link.configure({
+      openOnClick: true,
+      autolink: true,
+    }),
+    TextAlign.configure({
+      types: ["heading", "paragraph"],
+    }),
+  ],
+  content,
+});
+
 
   if (!editor) return null;
 

@@ -664,7 +664,9 @@ export default function ArticleEditor({ value, articleId, onChange, onImageUploa
       )}
 
       <div className="relative border rounded bg-white p-4 min-h-75 editor-content max-w-none" style={{ borderColor: "#D8CDBE" }}>
-        <EditorContent editor={editor} />
+        <div className="tiptap-editor-wrapper scrollable-description overflow-x-auto">
+          <EditorContent editor={editor} />
+        </div>
       </div>
 
       <div className="text-sm text-gray-600 mt-2 font-sans!">

@@ -94,7 +94,7 @@ export default function DashboardHome() {
         <div className="w-48 h-2 bg-[#E0D6C7] rounded-full overflow-hidden">
           <div className="h-full w-full animate-pulse bg-[#4A3820]"></div>
         </div>
-        <p className="mt-4 text-[#4A3820] font-medium text-lg !font-sans">Loading dashboard…</p>
+        <p className="mt-4 text-[#4A3820] font-medium text-lg font-sans!">Loading dashboard…</p>
       </div>
     );
   }
@@ -109,13 +109,13 @@ export default function DashboardHome() {
 
   return (
     <>
-      <div className="min-h-screen px-4 sm:px-6 lg:px-8 !font-sans">
+      <div className="min-h-screen px-4 sm:px-6 lg:px-8 font-sans!">
         <div className="max-w-4xl mx-auto">
-          <h1 className="text-3xl font-extrabold text-[#4A3820] mb-2 text-center !font-sans">
+          <h1 className="text-3xl font-extrabold text-[#4A3820] mb-2 text-center font-sans!">
             Welcome to Your Dashboard
           </h1>
-          <p className="!text-3xl text-[#4A3820] mb-8 text-center">
-            Hello {greetingName}, <span className="font-semibold !text-3xl capitalize">{role || "Guest"}</span>
+          <p className="text-3xl! text-[#4A3820] mb-8 text-center">
+            Hello {greetingName}, <span className="font-semibold text-3xl! capitalize">{role || "Guest"}</span>
           </p>
 
           {/* Role-based sections */}
@@ -123,7 +123,7 @@ export default function DashboardHome() {
             {role === "admin" && (
               <div className="space-y-6">
                 <div className="bg-[#F0E8DB] border border-[#D8CDBE] rounded-lg shadow-md p-6 sm:p-8">
-                  <h2 className="text-2xl font-extrabold text-[#4A3820] mb-6 text-center !font-sans">Admin Tools</h2>
+                  <h2 className="text-2xl font-extrabold text-[#4A3820] mb-6 text-center font-sans!">Admin Tools</h2>
                   <div className="flex flex-wrap justify-center gap-4">{adminOptions.map(renderOptionCard)}</div>
                 </div>
               </div>
@@ -132,7 +132,7 @@ export default function DashboardHome() {
             {(role === "author" || role === "admin") && (
               <div className="space-y-6">
                 <div className="bg-[#F0E8DB] border border-[#D8CDBE] rounded-lg shadow-md p-6 sm:p-8">
-                  <h2 className="text-2xl font-extrabold text-[#4A3820] mb-6 text-center !font-sans">Author Tools</h2>
+                  <h2 className="text-2xl font-extrabold text-[#4A3820] mb-6 text-center font-sans!">Author Tools</h2>
                   <div className="flex flex-wrap justify-center gap-4">{authorOptions.map(renderOptionCard)}</div>
                 </div>
               </div>
@@ -140,7 +140,7 @@ export default function DashboardHome() {
 
             <div className="space-y-6">
               <div className="bg-[#F0E8DB] border border-[#D8CDBE] rounded-lg shadow-md p-6 sm:p-8">
-                <h2 className="text-2xl font-extrabold text-[#4A3820] mb-6 text-center !font-sans">My Account</h2>
+                <h2 className="text-2xl font-extrabold text-[#4A3820] mb-6 text-center font-sans!">My Account</h2>
                 <div className="flex flex-wrap justify-center gap-4">{profileOptions.map(renderOptionCard)}</div>
               </div>
             </div>

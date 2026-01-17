@@ -85,7 +85,6 @@ useEffect(() => {
 
     localStorage.setItem(key, JSON.stringify(draft));
     setLastLocalSave(Date.now());
-    autosaveToServer();
     console.log("💾 Local draft autosaved");
   }, 800);
 
@@ -178,6 +177,8 @@ const autosaveToServer = async () => {
   const articleId = articleIdRef.current;
   if (!currentAuthUser || !body || !articleId) return;
 
+  if (!title && !body) return;
+
   setAutosaving(true);
 
   try {
@@ -260,11 +261,8 @@ const handlePreview = () => {
   const articleId = articleIdRef.current;
   if (!articleId) return;
 
-  window.open(`/preview/article/${articleId}`, "_blank");
+  window.open(`/dashboard/articles/preview/${articleId}`, "_blank");
 };
-
-
-
 
 
 
