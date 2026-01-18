@@ -51,6 +51,7 @@ const [resetEditorToken, setResetEditorToken] = useState(0);
   const [successMessage, setSuccessMessage] = useState("");
   const articleIdRef = useRef<string | null>(null);
   const hasSavedOnceRef = useRef(false);
+  const serverSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const [pageReady, setPageReady] = useState(false);
   
   // -------------------------
@@ -236,6 +237,46 @@ const autosaveToServer = async (force = false) => {
   }
 };
 
+const scheduleServerSave = (delay = 15000) => {
+  if (!currentAuthUser || !articleIdRef.current) return;
+  if (autosaving) return; // 👈 add this
+
+  if (serverSaveTimeoutRef.current) {
+    clearTimeout(serverSaveTimeoutRef.current);
+  }
+
+  serverSaveTimeoutRef.current = setTimeout(() => {
+    autosaveToServer();
+  }, delay);
+};
+
+
+useEffect(() => {
+  return () => {
+    if (serverSaveTimeoutRef.current) {
+      clearTimeout(serverSaveTimeoutRef.current);
+    }
+  };
+}, []);
+
+useEffect(() => {
+  if (!articleReady) return;
+  if (!pageReady) return;
+  if (!currentAuthUser) return;
+  if (!articleIdRef.current) return;
+
+  scheduleServerSave();
+}, [
+  title,
+  slug,
+  metaDescription,
+  coverImage,
+  coverImageAlt,
+  body,
+  tags,
+  status,
+  uploadedAssets,
+]);
 
 
 useEffect(() => {
@@ -243,7 +284,7 @@ useEffect(() => {
 
   const interval = setInterval(() => {
     autosaveToServer();
-  }, 5 * 60 * 1000); // 5 minutes
+  }, 10 * 60 * 1000); // 10 min backup
 
   return () => clearInterval(interval);
 }, [currentAuthUser]); // ← only depends on user
@@ -471,6 +512,11 @@ function resetForm() {
         );
       }
 
+      if (serverSaveTimeoutRef.current) {
+        clearTimeout(serverSaveTimeoutRef.current);
+        serverSaveTimeoutRef.current = null;
+      }
+
       // Reset form
       resetForm();
       
@@ -662,8 +708,8 @@ if (!pageReady) {
                 </button>
               </div>
 
-              <ArticleEditor
-                key={currentAuthUser?.uid} 
+             <ArticleEditor
+                key={currentAuthUser?.uid}
                 value={body}
                 articleId={articleIdRef.current!}
                 onChange={setBody}
@@ -673,7 +719,12 @@ if (!pageReady) {
                     prev.includes(url) ? prev : [...prev, url]
                   )
                 }
+                title={title}
+                metaDescription={metaDescription}
+                coverImage={coverImage}
+                coverImageAlt={coverImageAlt}
               />
+
 
               {errors.body && (
                 <p className="mt-2 text-red-600 font-medium">{errors.body}</p>

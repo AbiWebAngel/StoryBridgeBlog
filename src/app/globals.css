@@ -304,7 +304,7 @@ textarea.scrollable-description::-webkit-scrollbar-thumb:hover {
 .article-content td {
   border: 1px solid #c7b89d;
   padding: 0.5rem 0.75rem;
-  vertical-align: top;
+  vertical-align: center;
 }
 
 .article-content th {

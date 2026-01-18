@@ -35,6 +35,12 @@ interface ArticleEditorProps {
   resetToken?: number;
   onChange: (value: JSONContent) => void;
   onImageUploaded?: (url: string) => void;
+
+  // new optional metadata props (passed from parent)
+  title?: string | null;
+  metaDescription?: string | null;
+  coverImage?: string | null;
+  coverImageAlt?: string | null;
 }
 
 export default function ArticleEditor({
@@ -43,6 +49,10 @@ export default function ArticleEditor({
   resetToken,
   onChange,
   onImageUploaded,
+  title, // <-- new
+  metaDescription, // <-- new
+  coverImage, // <-- new
+  coverImageAlt, // <-- new
 }: ArticleEditorProps) {
   const uploadedImagesRef = useRef<Set<string>>(new Set());
   const [linkModalOpen, setLinkModalOpen] = useState(false);
@@ -515,13 +525,21 @@ export default function ArticleEditor({
 
           <div className="flex-1" />
 
-          <button
-            onClick={() => exportArticleToDocx(editor.getJSON())}
-            className="px-3 py-1 rounded border border-[#4A3820] text-[#4A3820] bg-white shadow hover:bg-[#f9f9f9] font-sans!"
-            title="Export article to DOCX"
-          >
-            Export docx
-          </button>
+        <button
+          onClick={() =>
+            exportArticleToDocx(editor.getJSON(), {
+              title,
+              metaDescription,
+              coverImage,
+              coverImageAlt,
+            })
+          }
+          className="px-3 py-1 rounded border border-[#4A3820] text-[#4A3820] bg-white shadow hover:bg-[#f9f9f9] font-sans!"
+          title="Export article to DOCX"
+        >
+          Export docx
+        </button>
+
         </div>
       </div>
 

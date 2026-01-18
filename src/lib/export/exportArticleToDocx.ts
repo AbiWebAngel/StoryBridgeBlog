@@ -9,6 +9,7 @@ import {
 } from "docx";
 import { saveAs } from "file-saver";
 import { AlignmentType } from "docx";
+import { VerticalAlign } from "docx";
 
 import {
   Table as DocxTable,
@@ -154,29 +155,40 @@ function textRunsFromNode(
 
 function paragraphFromNode(
   node: TipTapNode,
-  forceBold: boolean = false
+  forceBold: boolean = false,
+  alignment?: (typeof AlignmentType)[keyof typeof AlignmentType]
 ): Paragraph | null {
   switch (node.type) {
-    case "paragraph":
-      return new Paragraph({
-        style: "NormalParagraph",
-        children: node.content?.flatMap((child: any) =>
-          textRunsFromNode(child, false, forceBold)
-        ) || [],
-      });
+  case "paragraph":
+  return new Paragraph({
+    style: "NormalParagraph",
+    alignment,
+    spacing: forceBold
+    ? { before: 0, after: 0 }
+    : undefined,
+    children:
+      node.content?.flatMap((child: any) =>
+        textRunsFromNode(child, false, forceBold)
+      ) || [],
+  });;
 
-    case "heading":
-      return new Paragraph({
-        style:
-          node.attrs.level === 1
-            ? "Heading1"
-            : node.attrs.level === 2
-            ? "Heading2"
-            : "NormalParagraph",
-        children: node.content?.flatMap((child: any) =>
-          textRunsFromNode(child, true, forceBold)
-        ) || [],
-      });
+  case "heading":
+  return new Paragraph({
+    style:
+      node.attrs.level === 1
+        ? "Heading1"
+        : node.attrs.level === 2
+        ? "Heading2"
+        : "NormalParagraph",
+    alignment,
+    spacing: forceBold
+    ? { before: 0, after: 0 }
+    : undefined,
+    children:
+      node.content?.flatMap((child: any) =>
+        textRunsFromNode(child, true, forceBold)
+      ) || [],
+  });
 
     case "codeBlock":
       return new Paragraph({
@@ -195,10 +207,11 @@ function paragraphFromNode(
 
 async function paragraphsFromNode(
   node: TipTapNode,
-  forceBold: boolean = false
+  forceBold: boolean = false,
+  alignment?: (typeof AlignmentType)[keyof typeof AlignmentType]
 ): Promise<Paragraph[]> {
   // Try normal paragraph / heading / codeBlock first
-  const para = paragraphFromNode(node, forceBold);
+ const para = paragraphFromNode(node, forceBold, alignment);
   if (para) return [para];
 
   // IMAGE
@@ -454,16 +467,41 @@ if (node.type === "table") {
       const cellParagraphs: Paragraph[] = [];
 
       for (const cellContent of cellNode.content ?? []) {
-        const paras = await paragraphsFromNode(cellContent, isHeader);
+        const paras = await paragraphsFromNode(
+        cellContent,
+        isHeader,
+        isHeader ? AlignmentType.CENTER : undefined
+      );
         cellParagraphs.push(...paras);
       }
 
-      cells.push(
-        new DocxTableCell({
-          children: cellParagraphs.length > 0 ? cellParagraphs : [new Paragraph("")],
-          shading: isHeader ? { fill: "E6DCCB" } : undefined,
-        })
-      );
+cells.push(
+  new DocxTableCell({
+    verticalAlign: isHeader ? VerticalAlign.CENTER : undefined,
+    shading: isHeader ? { fill: "E6DCCB" } : undefined,
+
+    margins: isHeader
+      ? {
+          top: 200,
+          bottom: 200,
+          left: 120,
+          right: 120,
+        }
+      : undefined,
+
+    children:
+      cellParagraphs.length > 0
+        ? cellParagraphs
+        : [
+            new Paragraph({
+              alignment: isHeader ? AlignmentType.CENTER : undefined,
+            }),
+          ],
+  })
+);
+
+
+
     }
 
     rowsResult.push(new DocxTableRow({ children: cells }));
@@ -564,7 +602,7 @@ if (node.type === "table") {
         const { buffer, type, width, height } =
           await fetchImageAsBufferAndInfo(src);
 
-        const maxWidth = 300;
+        const maxWidth = 600;
         const ratio = width > maxWidth ? maxWidth / width : 1;
 
         const altText = node.attrs?.alt?.trim();
@@ -639,25 +677,116 @@ if (node.type === "table") {
    Public API
 ----------------------------- */
 
-export async function exportArticleToDocx(body: any) {
+// change signature to accept optional metadata
+export async function exportArticleToDocx(
+  body: any,
+  opts?: {
+    title?: string | null;
+    metaDescription?: string | null;
+    coverImage?: string | null;
+    coverImageAlt?: string | null;
+  }
+) {
   if (!body?.content) {
     alert("Nothing to export 😅");
     return;
   }
 
+  const { title, metaDescription, coverImage, coverImageAlt } = opts ?? {};
+
   try {
     const paragraphs = await extractParagraphs(body.content);
-    
+
+    // Prepare header blocks (title, description, cover image) — keep separately so we can place them above content
+    const coverPageChildren: Paragraph[] = [];
+
+    // 1) Title
+    if (title) {
+    coverPageChildren.push(
+      new Paragraph({
+        style: "ArticleTitle",
+        children: [new TextRun({ text: title })],
+      })
+    );
+  }
+
+  // 2) Cover image
+  if (coverImage) {
+  const { buffer, type, width, height } =
+    await fetchImageAsBufferAndInfo(coverImage);
+
+  const maxWidth = 620;
+  const ratio = width > maxWidth ? maxWidth / width : 1;
+
+  coverPageChildren.push(
+    new Paragraph({
+      alignment: AlignmentType.CENTER,
+      spacing: { before: 240, after: 240 },
+      children: [
+        new ImageRun({
+          data: buffer,
+          type: type === "png" ? "png" : "jpg",
+          transformation: {
+            width: Math.round(width * ratio),
+            height: Math.round(height * ratio),
+          },
+          altText: coverImageAlt
+            ? { name: coverImageAlt, description: coverImageAlt }
+            : undefined,
+        }),
+      ],
+    })
+  );
+}
+    // 3) Meta description (subtitle)
+ if (metaDescription) {
+  coverPageChildren.push(
+    new Paragraph({
+      alignment: AlignmentType.CENTER,
+      spacing: { before: 120 },
+      children: [
+        new TextRun({
+          text: metaDescription,
+          italics: true,
+          size: 30,
+          font: "Inter",
+          color: "555555",
+        }),
+      ],
+    })
+  );
+}
+
+
+
+    // Build final children array: header blocks followed by content paragraphs
     const doc = new Document({
       styles: {
         paragraphStyles: [
+          {
+            id: "ArticleTitle",
+            name: "Article Title",
+            basedOn: "Normal",
+            quickFormat: true,
+          run: {
+                font: "Cinzel Black",
+                size: 56,
+                bold: true,
+                allCaps: true,
+              },
+
+            paragraph: {
+              alignment: AlignmentType.CENTER,
+              spacing: { after: 360 },
+            },
+          },
           {
             id: "NormalParagraph",
             name: "Normal Paragraph",
             basedOn: "Normal",
             quickFormat: true,
-            run: { 
-              font: "Inter", 
+            run: {
+              font: "Inter",
               size: 36,
             },
             paragraph: {
@@ -669,13 +798,13 @@ export async function exportArticleToDocx(body: any) {
             name: "Heading 1",
             basedOn: "Normal",
             quickFormat: true,
-            run: { 
-              font: "Inter", 
+            run: {
+              font: "Inter",
               size: 44,
-              bold: true 
+              bold: true,
             },
-            paragraph: { 
-              spacing: { after: 200 } 
+            paragraph: {
+              spacing: { after: 200 },
             },
           },
           {
@@ -683,48 +812,48 @@ export async function exportArticleToDocx(body: any) {
             name: "Heading 2",
             basedOn: "Normal",
             quickFormat: true,
-            run: { 
-              font: "Inter", 
+            run: {
+              font: "Inter",
               size: 40,
-              bold: true 
+              bold: true,
             },
-            paragraph: { 
-              spacing: { after: 200 } 
+            paragraph: {
+              spacing: { after: 200 },
             },
           },
           {
             id: "CodeBlock",
             name: "Code Block",
             basedOn: "Normal",
-            run: { 
-              font: "Courier New", 
+            run: {
+              font: "Courier New",
               size: 36,
             },
-            paragraph: { 
-              spacing: { before: 200, after: 200 } 
+            paragraph: {
+              spacing: { before: 200, after: 200 },
             },
           },
           {
             id: "ListParagraph",
             name: "List Paragraph",
             basedOn: "Normal",
-            run: { 
-              font: "Inter", 
+            run: {
+              font: "Inter",
               size: 36,
             },
             paragraph: {},
           },
         ],
         characterStyles: [
-          {
-            id: "HyperlinkStyle",
-            name: "Hyperlink",
-            run: {
-              color: "2563EB",
-              underline: {},
-            },
+        {
+          id: "Hyperlink",
+          name: "Hyperlink",
+          run: {
+            color: "2563EB",
+            underline: {},
           },
-        ],
+        },
+      ],
       },
 
       numbering: {
@@ -736,29 +865,45 @@ export async function exportArticleToDocx(body: any) {
           {
             reference: "num",
             levels: [{ level: 0, format: "decimal", text: "%1." }],
-        },
+          },
         ],
       },
+sections: [
+{
+  children: coverPageChildren,
+  properties: {
+    verticalAlign: VerticalAlign.CENTER,
+    page: {
+      margin: {
+        top: 1440,
+        right: 1440,
+        bottom: 1440,
+        left: 1440,
+      },
+    },
+  },
+},
 
-      sections: [
-        {
-          children: paragraphs,
-          properties: {
-            page: {
-              margin: {
-                top: 1440,
-                right: 1440,
-                bottom: 1440,
-                left: 1440,
-              },
-            },
-          },
+
+  {
+    children: paragraphs,
+    properties: {
+      page: {
+        margin: {
+          top: 1440,
+          right: 1440,
+          bottom: 1440,
+          left: 1440,
         },
-      ],
+      },
+    },
+  },
+],
+
     });
 
     const blob = await Packer.toBlob(doc);
-    
+
     const fileName = `${generateArticleFileName()}.docx`;
     saveAs(blob, fileName);
   } catch (err) {
