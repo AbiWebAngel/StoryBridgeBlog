@@ -13,7 +13,7 @@ import YouTube from "@tiptap/extension-youtube";
 import { DraggableParagraph } from "@/components/editor/extensions/DraggableParagraph";
 import { DraggableHeading } from "@/components/editor/extensions/DraggableHeading";
 import { DraggableCodeBlock } from "@/components/editor/extensions/DraggableCodeBlock";
-
+import Color from "@tiptap/extension-color";
 import { TextStyle } from "@tiptap/extension-text-style";
 
 
@@ -29,9 +29,10 @@ export default function ArticleRenderer({ content }: Props) {
 const editor = useEditor({
   editable: false,
   immediatelyRender: false,
-  extensions: [
+extensions: [
   StarterKit,
-  TextStyle, // 👈 REQUIRED because your JSON contains textStyle
+  TextStyle,
+  Color, // 👈 THIS is the missing piece
   Underline,
   Link.configure({
     openOnClick: true,
@@ -52,12 +53,12 @@ const editor = useEditor({
   TableCell,
   YouTube,
 
-  // Custom nodes MUST be included
   ImageWithRemove,
   DraggableParagraph,
   DraggableHeading,
   DraggableCodeBlock,
 ],
+
 
 });
 

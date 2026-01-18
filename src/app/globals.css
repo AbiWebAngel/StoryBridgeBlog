@@ -368,3 +368,8 @@ textarea.scrollable-description::-webkit-scrollbar-thumb:hover {
   text-decoration: underline;
   text-underline-offset: 2px;
 }
+
+.article-content a span {
+  text-decoration-line: underline;
+  text-decoration-color: currentColor;
+}
