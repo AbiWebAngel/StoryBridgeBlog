@@ -54,6 +54,7 @@ export default function ArticleEditor({
   const [youtubeModalOpen, setYoutubeModalOpen] = useState(false);
   const [youtubeUrl, setYoutubeUrl] = useState('');
   const [tableMenuOpen, setTableMenuOpen] = useState(false);
+  const hasHydratedRef = useRef(false);
 
   const getSafePos = (pos: number | undefined, editor: ReturnType<typeof useEditor>): number => {
     if (typeof pos === "number" && Number.isFinite(pos)) return pos;
@@ -359,10 +360,12 @@ export default function ArticleEditor({
 useEffect(() => {
   if (!editor) return;
   if (!value) return;
-  if (!editor.isEmpty) return;
+  if (hasHydratedRef.current) return;
 
   editor.commands.setContent(value, { emitUpdate: false });
-}, [editor]);
+  hasHydratedRef.current = true;
+}, [editor, value]);
+
  // intentionally NOT watching `value`
 
 

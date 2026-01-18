@@ -663,6 +663,7 @@ if (!pageReady) {
               </div>
 
               <ArticleEditor
+                key={currentAuthUser?.uid} 
                 value={body}
                 articleId={articleIdRef.current!}
                 onChange={setBody}
