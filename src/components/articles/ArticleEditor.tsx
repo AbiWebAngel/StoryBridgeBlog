@@ -625,21 +625,32 @@ export default function ArticleEditor({
       )}
 
       <div className="relative border rounded bg-white p-4 min-h-75 editor-content max-w-none" style={{ borderColor: "#D8CDBE" }}>
-        <div className="tiptap-editor-wrapper scrollable-description overflow-x-auto">
+        <div className="tiptap-editor-wrapper py-8 scrollable-description overflow-x-auto">
           {editor && (
-            <BubbleMenu
-              editor={editor}
-              shouldShow={({ editor }) => {
-                if (editor.state.selection.empty) return false;
-                if (editor.isActive("heading")) return false;
-                return true;
-              }}
-              options={{ placement: "top" }}
-            >
+          <BubbleMenu
+            editor={editor}
+            shouldShow={({ editor, from }) => {
+              if (editor.state.selection.empty) return false;
+              if (editor.isActive("heading")) return false;
+
+              const coords = editor.view.coordsAtPos(from);
+
+              // toolbar height ≈ 64–72px + breathing room
+              const TOOLBAR_SAFE_ZONE = 120;
+
+              return coords.top > TOOLBAR_SAFE_ZONE;
+            }}
+          >
               <div
-                className="flex items-center gap-1 p-2 bg-white border rounded shadow"
+                className="
+                  flex items-center gap-1 p-2 bg-white border rounded shadow
+                  max-w-[90vw]
+                  overflow-x-auto
+                  scrollbar-thin
+                "
                 style={{ borderColor: "#D8CDBE" }}
               >
+
                 {[
                   "#E53935",
                   "#059669",
