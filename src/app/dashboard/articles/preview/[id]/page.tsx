@@ -157,9 +157,10 @@ export default function PreviewArticlePage() {
           )}
 
           {/* Article Content */}
-          <article className="max-w-none font-inter text-[#413320]">
+          <article className="article-content">
             {post.body && <ArticleRenderer content={post.body} />}
           </article>
+
 
         </div>
       </div>
