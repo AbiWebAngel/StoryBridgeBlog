@@ -62,6 +62,10 @@ export default function ArticleEditor({
   const [youtubeUrl, setYoutubeUrl] = useState('');
   const [tableMenuOpen, setTableMenuOpen] = useState(false);
   const hasHydratedRef = useRef(false);
+  const TOOLBAR_BTN_BASE =
+  "px-2 py-1 rounded bg-white font-sans! transition-colors duration-150";
+  const TOOLBAR_BTN_HOVER =
+  "hover:bg-[#E6DCCB] disabled:opacity-50 disabled:hover:bg-white";
 
   const getSafePos = (pos: number | undefined, editor: ReturnType<typeof useEditor>): number => {
     if (typeof pos === "number" && Number.isFinite(pos)) return pos;
@@ -375,20 +379,25 @@ export default function ArticleEditor({
         >
           <button
             onClick={() => editor.chain().focus().toggleBold().run()}
-            className={`px-2 py-1 rounded ${editor.isActive("bold") ? "bg-[#E6DCCB]" : "bg-white"} font-sans!`}
+            className={`${TOOLBAR_BTN_BASE} ${TOOLBAR_BTN_HOVER} ${
+            editor.isActive("bold") ? "bg-[#E6DCCB]" : ""
+          }`}
           >
             B
           </button>
           <button
             onClick={() => editor.chain().focus().toggleItalic().run()}
-            className={`px-2 py-1 rounded ${editor.isActive("italic") ? "bg-[#E6DCCB]" : "bg-white"} font-sans!`}
+            className={`${TOOLBAR_BTN_BASE} ${TOOLBAR_BTN_HOVER} ${
+            editor.isActive("italic") ? "bg-[#E6DCCB]" : ""
+          }`}
+
           >
             I
           </button>
           <button
             onClick={setLink}
             disabled={!hasSelection}
-            className="px-2 py-1 rounded bg-white disabled:opacity-50"
+            className={`${TOOLBAR_BTN_BASE} ${TOOLBAR_BTN_HOVER}`}
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -403,7 +412,7 @@ export default function ArticleEditor({
           <button
             onClick={unsetLink}
             disabled={!hasSelection}
-            className="px-2 py-1 rounded bg-white disabled:opacity-50"
+            className={`${TOOLBAR_BTN_BASE} ${TOOLBAR_BTN_HOVER}`}
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -417,31 +426,45 @@ export default function ArticleEditor({
           </button>
           <button
             onClick={() => editor.chain().focus().toggleUnderline().run()}
-            className={`px-2 py-1 rounded ${editor.isActive("underline") ? "bg-[#E6DCCB]" : "bg-white"} font-sans!`}
+            className={`${TOOLBAR_BTN_BASE} ${TOOLBAR_BTN_HOVER} ${
+           editor.isActive("underline") ? "bg-[#E6DCCB]" : "" }`}
+
           >
             U
           </button>
           <button
             onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
-            className={`px-2 py-1 rounded ${editor.isActive("heading", { level: 1 }) ? "bg-[#E6DCCB]" : "bg-white"} font-sans!`}
+           className={`${TOOLBAR_BTN_BASE} ${TOOLBAR_BTN_HOVER} ${
+            editor.isActive("heading", { level: 1 }) ? "bg-[#E6DCCB]" : ""
+          }`}
+
           >
             H1
           </button>
           <button
             onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
-            className={`px-2 py-1 rounded ${editor.isActive("heading", { level: 2 }) ? "bg-[#E6DCCB]" : "bg-white"} font-sans!`}
+            className={`${TOOLBAR_BTN_BASE} ${TOOLBAR_BTN_HOVER} ${
+            editor.isActive("heading", { level: 2 }) ? "bg-[#E6DCCB]" : ""
+            }`}
+
           >
             H2
           </button>
           <button
             onClick={() => editor.chain().focus().toggleList('bulletList', 'listItem').run()}
-            className={`px-2 py-1 rounded ${editor.isActive('list', { type: 'bulletList' }) ? "bg-[#E6DCCB]" : "bg-white"} font-sans!`}
+            className={`${TOOLBAR_BTN_BASE} ${TOOLBAR_BTN_HOVER} ${
+            editor.isActive("list", { type: "bulletList" }) ? "bg-[#E6DCCB]" : ""
+          }`}
+
           >
             • List
           </button>
           <button
             onClick={() => editor.chain().focus().toggleList('orderedList', 'listItem').run()}
-            className={`px-2 py-1 rounded ${editor.isActive('list', { type: 'orderedList' }) ? "bg-[#E6DCCB]" : "bg-white"} font-sans!`}
+           className={`${TOOLBAR_BTN_BASE} ${TOOLBAR_BTN_HOVER} ${
+            editor.isActive("list", { type: "orderedList" }) ? "bg-[#E6DCCB]" : ""
+          }`}
+
           >
             1. List
           </button>
@@ -451,8 +474,10 @@ export default function ArticleEditor({
                 e.stopPropagation();
                 setTableMenuOpen(v => !v);
               }}
-              className={`px-2 py-1 rounded bg-white hover:bg-[#E6DCCB] font-sans! ${editor.isActive("table") ? "bg-[#E6DCCB]" : ""
-                }`}
+              className={`${TOOLBAR_BTN_BASE} ${TOOLBAR_BTN_HOVER} ${
+                editor.isActive("table") ? "bg-[#E6DCCB]" : ""
+              }`}
+
             >
               ⌗ Table
             </button>
@@ -470,13 +495,17 @@ export default function ArticleEditor({
 
           <button
             onClick={() => editor.chain().focus().toggleCodeBlock().run()}
-            className={`px-2 py-1 rounded ${editor.isActive("codeBlock") ? "bg-[#E6DCCB]" : "bg-white"} font-sans!`}
+           className={`${TOOLBAR_BTN_BASE} ${TOOLBAR_BTN_HOVER} ${
+              editor.isActive("codeBlock")
+            ? "bg-[#E6DCCB]" : ""
+            }`}
+
           >
             {"</>"}
           </button>
           <button
             onClick={addImage}
-            className="px-2 py-1 rounded bg-white hover:bg-[#E6DCCB] disabled:opacity-50"
+           className={`${TOOLBAR_BTN_BASE} ${TOOLBAR_BTN_HOVER}`}
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -490,13 +519,13 @@ export default function ArticleEditor({
           </button>
           <button
             onClick={() => setYoutubeModalOpen(true)}
-            className="px-2 py-1 rounded bg-white hover:bg-[#E6DCCB] font-sans!"
+            className={`${TOOLBAR_BTN_BASE} ${TOOLBAR_BTN_HOVER}`}
           >
             🎬
           </button>
           <button
             onClick={() => editor.chain().focus().undo().run()}
-            className="px-2 py-1 rounded bg-white hover:bg-[#E6DCCB] disabled:opacity-50"
+            className={`${TOOLBAR_BTN_BASE} ${TOOLBAR_BTN_HOVER}`}
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -510,7 +539,7 @@ export default function ArticleEditor({
           </button>
           <button
             onClick={() => editor.chain().focus().redo().run()}
-            className="px-2 py-1 rounded bg-white hover:bg-[#E6DCCB] disabled:opacity-50"
+           className={`${TOOLBAR_BTN_BASE} ${TOOLBAR_BTN_HOVER}`}
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
