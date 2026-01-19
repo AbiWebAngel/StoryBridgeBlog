@@ -14,6 +14,8 @@ import CoverUpload from "@/components/articles/CoverUpload";
 import ArticleEditor from "@/components/articles/ArticleEditor";
 import FloatingAutosaveIndicator from "@/components/admin/FloatingAutosaveIndicator";
 import FloatingSaveBar from "@/components/admin/FloatingSaveBar";
+import { getDoc } from "firebase/firestore";
+
 
 // Constants
 const BACKUP_AUTOSAVE_INTERVAL = 10 * 60 * 1000; // 10 minutes
@@ -23,12 +25,14 @@ const BACKUP_AUTOSAVE_INTERVAL = 10 * 60 * 1000; // 10 minutes
 const getActiveArticleIdKey = (uid: string) => `active-article-id:${uid}`;
 const getAutosaveKey = (uid: string, articleId: string) => `article-draft:${uid}:${articleId}`;
 
+
 export default function NewArticlePage() {
   const { user: currentAuthUser } = useAuth();
   
   // Refs
   const articleIdRef = useRef<string | null>(null);
   const hasSavedOnceRef = useRef(false);
+  const hasRestoredRef = useRef(false);
   const serverSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const [nextServerSaveAt, setNextServerSaveAt] = useState<number | null>(null);
   const backupIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -68,6 +72,9 @@ export default function NewArticlePage() {
     setArticleData(prev => ({ ...prev, ...updates }));
   }, []);
   
+
+
+
 const scheduleNextServerSave = useCallback(() => {
   const next = Date.now() + BACKUP_AUTOSAVE_INTERVAL;
   setNextServerSaveAt(next);
@@ -86,21 +93,57 @@ const scheduleNextServerSave = useCallback(() => {
     }
   }, [coverImage, updateArticleData]);
 
-  useEffect(() => {
-    if (!currentAuthUser) return;
+useEffect(() => {
+  if (!currentAuthUser) return;
 
-    const key = getActiveArticleIdKey(currentAuthUser.uid);
-    const storedId = localStorage.getItem(key);
-    
-    const newId = storedId || crypto.randomUUID();
-    articleIdRef.current = newId;
+  let cancelled = false;
 
-    if (!storedId) {
-      localStorage.setItem(key, newId);
+  const initArticleId = async () => {
+    const uid = currentAuthUser.uid;
+    const localKey = getActiveArticleIdKey(uid);
+
+    // 1️⃣ LOCAL STORAGE (highest priority)
+    const localId = localStorage.getItem(localKey);
+    if (localId) {
+      articleIdRef.current = localId;
+      console.log("🔁 Resuming LOCAL active article ID", localId);
+      setArticleReady(true);
+      return;
     }
 
+    // 2️⃣ FIREBASE (cross-device resume)
+    try {
+      const userSnap = await getDoc(doc(db, "users", uid));
+      const remoteId = userSnap.data()?.lastActiveArticleId;
+
+      if (!cancelled && remoteId) {
+        articleIdRef.current = remoteId;
+        localStorage.setItem(localKey, remoteId);
+        console.log("🌐 Resuming FIREBASE active article ID", remoteId);
+        setArticleReady(true);
+        return;
+      }
+    } catch (err) {
+      console.warn("Failed to fetch lastActiveArticleId", err);
+    }
+
+    // 3️⃣ BRAND NEW ARTICLE
+    const newId = crypto.randomUUID();
+    articleIdRef.current = newId;
+    localStorage.setItem(localKey, newId);
+    console.log("🆕 Created NEW article ID", newId);
     setArticleReady(true);
-  }, [currentAuthUser]);
+  };
+
+  initArticleId();
+
+  return () => {
+    cancelled = true;
+  };
+}, [currentAuthUser]);
+
+
+
 
   // Auto-generate slug
   useEffect(() => {
@@ -116,60 +159,112 @@ const scheduleNextServerSave = useCallback(() => {
   }, [title, updateArticleData]);
 
   // Local autosave
-  useEffect(() => {
-    if (!articleReady || !pageReady || !currentAuthUser || !articleIdRef.current) return;
+useEffect(() => {
+  if (
+    !hasRestoredRef.current ||
+    !articleReady ||
+    !pageReady ||
+    !currentAuthUser
+  ) return;
 
-    const timeout = setTimeout(() => {
-      const draft = {
-        ...articleData,
-        uploadedAssets,
-      };
 
-      const key = getAutosaveKey(currentAuthUser.uid, articleIdRef.current!);
-      localStorage.setItem(key, JSON.stringify(draft));
-      setLastLocalSave(Date.now());
-    }, 800);
 
-    return () => clearTimeout(timeout);
-  }, [articleData, uploadedAssets, articleReady, pageReady, currentAuthUser]);
+  const timeout = setTimeout(() => {
+    const key = getAutosaveKey(currentAuthUser.uid, articleIdRef.current!);
+    localStorage.setItem(
+      key,
+      JSON.stringify({ ...articleData, uploadedAssets })
+    );
+    setLastLocalSave(Date.now());
+  }, 800);
 
-  // Restore draft
-  useEffect(() => {
-    if (!currentAuthUser || !articleReady || !articleIdRef.current) return;
+  return () => clearTimeout(timeout);
+}, [articleData, uploadedAssets]);
 
-    const key = getAutosaveKey(currentAuthUser.uid, articleIdRef.current);
-    const raw = localStorage.getItem(key);
-    
-    if (!raw) return;
 
-    try {
-      const draft = JSON.parse(raw);
-      setArticleData({
-        title: draft.title ?? "",
-        slug: draft.slug ?? "",
-        metaDescription: draft.metaDescription ?? "",
-        coverImage: draft.coverImage ?? null,
-        coverImageAlt: draft.coverImageAlt ?? "",
-        body: draft.body ?? null,
-        tags: draft.tags ?? [],
-        status: "draft",
-      });
-      setUploadedAssets(draft.uploadedAssets ?? []);
-    } catch {
-      console.warn("Failed to restore draft");
+  // Local restore
+useEffect(() => {
+  if (!currentAuthUser || !articleReady || !articleIdRef.current) return;
+
+  const articleId = articleIdRef.current;
+  const localKey = getAutosaveKey(currentAuthUser.uid, articleId);
+
+  const restore = async () => {
+    console.log("🔄 Starting restore flow", articleId);
+
+    // 1️⃣ LOCAL (highest priority)
+    const raw = localStorage.getItem(localKey);
+    if (raw) {
+      try {
+        const draft = JSON.parse(raw);
+        console.log("💾 Restored from LOCAL");
+
+        setArticleData({
+          title: draft.title ?? "",
+          slug: draft.slug ?? "",
+          metaDescription: draft.metaDescription ?? "",
+          coverImage: draft.coverImage ?? null,
+          coverImageAlt: draft.coverImageAlt ?? "",
+          body: draft.body ?? null,
+          tags: draft.tags ?? [],
+          status: "draft",
+        });
+
+        setUploadedAssets(draft.uploadedAssets ?? []);
+        hasRestoredRef.current = true;
+        return;
+      } catch {
+        console.warn("⚠️ Local draft corrupted, ignoring");
+      }
     }
-  }, [currentAuthUser, articleReady]);
+
+    // 2️⃣ FIREBASE (fallback)
+    console.log("📡 Checking Firebase…");
+
+    const snap = await getDoc(doc(db, "articles", articleId));
+    if (snap.exists()) {
+      const data = snap.data();
+      console.log("📡 Restored from Firebase");
+
+      setArticleData({
+        title: data.title ?? "",
+        slug: data.slug ?? "",
+        metaDescription: data.metaDescription ?? "",
+        coverImage: data.coverImage ?? null,
+        coverImageAlt: data.coverImageAlt ?? "",
+        body: data.body ?? null,
+        tags: data.tags ?? [],
+        status: data.status ?? "draft",
+      });
+
+      setUploadedAssets(data.uploadedAssets ?? []);
+    } else {
+      console.log("🆕 No draft found — starting fresh");
+    }
+
+    hasRestoredRef.current = true;
+  };
+
+  restore();
+}, [currentAuthUser, articleReady]);
+
+
+
 
   // Server autosave
-  const autosaveToServer = useCallback(async (force = false) => {
-    const articleId = articleIdRef.current;
-    if (!currentAuthUser || !articleId) return;
+const autosaveToServer = useCallback(async (force = false) => {
+  if (!hasRestoredRef.current) return;
+  if (!currentAuthUser) return;
 
-    if (!force && !title && !body && !coverImage) return;
+  const articleId = articleIdRef.current;
+  if (!articleId) return;
+
+  if (!force && !title && !body && !coverImage) return;
 
     setAutosaving(true);
 
     try {
+      
       await setDoc(
         doc(db, "articles", articleId),
         {
@@ -180,6 +275,12 @@ const scheduleNextServerSave = useCallback(() => {
         },
         { merge: true }
       );
+          await setDoc(
+        doc(db, "users", currentAuthUser.uid),
+        { lastActiveArticleId: articleId },
+        { merge: true }
+      );
+
 
       setLastServerSave(Date.now());
       scheduleNextServerSave();
@@ -277,6 +378,7 @@ const timeUntilNextSave =
 
   // Form reset
   const resetForm = useCallback(() => {
+    hasRestoredRef.current = false;
     setArticleReady(false);
     setArticleData({
       title: "",
@@ -329,12 +431,14 @@ const timeUntilNextSave =
       if (token.claims.role !== "admin" && token.claims.role !== "author") {
         throw new Error("Insufficient permissions. Admin or author role required.");
       }
+    
 
       let unusedAssets: string[] = [];
       if (body && typeof body === "object") {
         const usedAssets = extractArticleAssets({ coverImage, body });
         unusedAssets = findUnusedAssets(uploadedAssets, usedAssets);
       }
+
 
       await setDoc(
         doc(db, "articles", articleIdRef.current),
@@ -345,6 +449,12 @@ const timeUntilNextSave =
         },
         { merge: true }
       );
+
+    await setDoc(
+      doc(db, "users", currentAuthUser.uid),
+      { lastActiveArticleId: null },
+      { merge: true }
+    );
 
       const shouldCleanup = hasSavedOnceRef.current;
       if (!hasSavedOnceRef.current) {
