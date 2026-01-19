@@ -51,7 +51,37 @@ extensions: [
   TableRow,
   TableHeader,
   TableCell,
-  YouTube,
+  YouTube.extend({
+  addNodeView() {
+    return ({ node, HTMLAttributes }) => {
+      // Log node + attrs again for safety
+      console.log("🔥 YouTube Node:", node);
+      console.log("🔥 YouTube ATTRS:", node.attrs);
+
+      // Create wrapper
+      const wrapper = document.createElement("div");
+      wrapper.className = "youtube-embed-debug";
+
+      // Create iframe
+      const iframe = document.createElement("iframe");
+      iframe.src = node.attrs.src;
+      iframe.width = node.attrs.width || 640;
+      iframe.height = node.attrs.height || 360;
+      iframe.setAttribute("frameborder", "0");
+      iframe.setAttribute("allowfullscreen", "true");
+
+      wrapper.appendChild(iframe);
+
+      // Log the DOM node AFTER it's created
+      console.log("🔥 Rendered DOM:", wrapper);
+
+      return {
+        dom: wrapper,
+      };
+    };
+  },
+}),
+
 
   ImageWithRemove,
   DraggableParagraph,
@@ -91,7 +121,7 @@ useEffect(() => {
   if (!editor) return null;
 
   return (
-    <div className="article-content max-w-none text-[#413320]">
+    <div className="article-content max-w-none">
       <EditorContent editor={editor} />
     </div>
   );

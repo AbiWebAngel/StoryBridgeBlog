@@ -81,7 +81,7 @@ export default function PreviewArticlePage() {
           <div className="h-full w-full animate-pulse bg-[#4A3820]"></div>
         </div>
 
-        <p className="mt-4 text-[#4A3820] font-medium text-lg font-sans">
+        <p className="mt-4 font-medium text-lg font-sans">
           Loading preview…
         </p>
       </div>
@@ -92,7 +92,7 @@ export default function PreviewArticlePage() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#ECE1CF]">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-[#413320]">Preview not found</h1>
+          <h1 className="text-2xl font-bold">Preview not found</h1>
           <button
             onClick={() => router.back()}
             className="mt-4 px-6 py-2 bg-[#CF822A] text-white rounded-lg hover:bg-[#B36F24] transition"
@@ -119,14 +119,14 @@ export default function PreviewArticlePage() {
         </button>
 
         {/* Article Card - exact design from blog page */}
-        <div className="bg-[#F2ECE3] rounded-[30px] text-[#413320] shadow-xl p-6 sm:p-8">
+        <div className="bg-[#F2ECE3] rounded-[30px] shadow-xl p-6 sm:p-8">
           {/* Article Header */}
-          <h1 className="font-cinzel text-[22px] sm:text-[26px] lg:text-[30px] font-bold min-w-0 wrap-break-word text-[#413320] text-center mb-4">
+          <h1 className="font-cinzel text-[22px] sm:text-[26px] lg:text-[30px] font-bold min-w-0 wrap-break-wordtext-center mb-4">
             {post.title || "Untitled draft"}
           </h1>
           
           {/* Article Meta - with preview indicator */}
-          <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4 text-[#413320] font-inter mb-6 justify-center text-center">
+          <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4 font-inter mb-6 justify-center text-center">
             <span className="font-semibold">{post.author || "Author"}</span>
             <span className="hidden sm:inline">•</span>
             <span>

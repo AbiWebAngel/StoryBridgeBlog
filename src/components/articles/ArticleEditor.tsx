@@ -336,7 +336,8 @@ export default function ArticleEditor({
     }
 
     const videoId = match[1];
-    const embedUrl = `https://www.youtube.com/embed/${videoId}`;
+    const embedUrl = `https://www.youtube-nocookie.com/embed/${videoId}`;
+
 
     editor.chain().focus().insertContent({
       type: 'youtube',

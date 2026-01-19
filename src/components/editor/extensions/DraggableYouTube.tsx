@@ -3,13 +3,24 @@ import { ReactNodeViewRenderer, NodeViewWrapper } from '@tiptap/react';
 
 export const DraggableYouTube = YouTube.extend({
   addAttributes() {
-    return {
-      src: { default: null },
-      width: { default: 640 },
-      height: { default: 360 },
-      allowFullscreen: { default: true },
-    };
-  },
+  return {
+    ...this.parent?.(),
+
+    src: {
+      default: null,
+    },
+    width: {
+      default: 640,
+    },
+    height: {
+      default: 360,
+    },
+    allowFullscreen: {
+      default: true,
+    },
+  };
+},
+
 
   addNodeView() {
     return ReactNodeViewRenderer(({ node, editor, getPos }) => {

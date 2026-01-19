@@ -163,9 +163,10 @@ function paragraphFromNode(
   return new Paragraph({
     style: "NormalParagraph",
     alignment,
-    spacing: forceBold
-    ? { before: 0, after: 0 }
-    : undefined,
+    spacing: {
+    before: 0,
+    after: 0,
+    },
     children:
       node.content?.flatMap((child: any) =>
         textRunsFromNode(child, false, forceBold)
@@ -181,9 +182,10 @@ function paragraphFromNode(
         ? "Heading2"
         : "NormalParagraph",
     alignment,
-    spacing: forceBold
-    ? { before: 0, after: 0 }
-    : undefined,
+    spacing: {
+    before: 0,
+    after: 0,
+  },
     children:
       node.content?.flatMap((child: any) =>
         textRunsFromNode(child, true, forceBold)
@@ -477,7 +479,7 @@ if (node.type === "table") {
 
 cells.push(
   new DocxTableCell({
-    verticalAlign: isHeader ? VerticalAlign.CENTER : undefined,
+    verticalAlign: VerticalAlign.CENTER,
     shading: isHeader ? { fill: "E6DCCB" } : undefined,
 
     margins: isHeader
@@ -494,8 +496,13 @@ cells.push(
         ? cellParagraphs
         : [
             new Paragraph({
-              alignment: isHeader ? AlignmentType.CENTER : undefined,
-            }),
+            alignment: isHeader ? AlignmentType.CENTER : undefined,
+            spacing: {
+              before: 0,
+              after: 0,
+            },
+          })
+
           ],
   })
 );
@@ -504,7 +511,16 @@ cells.push(
 
     }
 
-    rowsResult.push(new DocxTableRow({ children: cells }));
+      rowsResult.push(
+    new DocxTableRow({
+      height: {
+        value: 600,      // minimum height
+        rule: "atLeast", // 👈 key change
+      },
+      children: cells,
+    })
+  );
+
   }
 
   blocks.push(
@@ -543,7 +559,7 @@ cells.push(
         const buffer = new Uint8Array(await blob.arrayBuffer());
         const dims = await getImageDimensions(blob);
 
-        const maxWidth = 300;
+        const maxWidth = 600;
         const ratio =
           dims.width > maxWidth ? maxWidth / dims.width : 1;
 

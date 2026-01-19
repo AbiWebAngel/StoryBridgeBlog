@@ -4,49 +4,23 @@
   --background: #ECE1CF;
   --foreground: #171717;
 
-  /* font variables defined by next/font (from layout.tsx) */
+  /* Font variables defined by next/font (from layout.tsx) */
   --font-cinzel: var(--font-cinzel);
   --font-body: var(--font-jacques-francois);
-  --font-inter: var(--font-inter); /* REMOVE THIS LINE if you want it cleaner */
-  
+  --font-inter: var(--font-inter);
+
   --color-brand-light: #805C2C;
   --color-brand-dark: #403727;
 }
 
-.font-inter {
-  font-family: var(--font-inter), sans-serif;
-}
-
-.navbar {
-  background-color: var(--color-brand-light);
-  color: white;
-}
-
-.navbar-mobile-menu {
-  background-color: var(--color-brand-light);
-  font-family: 'Cinzel', serif;
-}
-
-.navbar-link {
-  font-family: 'Cinzel', serif;
-}
-
-.footer-brand-dark {
-  background-color: var(--color-brand-dark); 
-  color: white;
-  font-family: 'Cinzel', serif;
-}
-
-.footer-contact {
-  font-family: 'Inter', serif;
-}
-
+/* ===== BASE STYLES ===== */
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-body);
 }
 
+/* Typography */
 h1, h2, h3, h4, h5, h6, button {
   font-family: var(--font-cinzel);
   font-weight: 700;
@@ -62,16 +36,57 @@ p, ul, li, span, a {
 @media (min-width: 1024px) { p { font-size: 19.5px; } }
 @media (min-width: 1280px) { p { font-size: 20px; } }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+/* Font utility classes */
+.font-inter {
+  font-family: var(--font-inter), sans-serif;
 }
 
+/* ===== COMPONENTS ===== */
+/* Navigation */
+.navbar {
+  background-color: var(--color-brand-light);
+  color: white;
+}
+
+.navbar-mobile-menu,
+.navbar-link,
+.footer-brand-dark {
+  font-family: 'Cinzel', serif;
+}
+
+.navbar-mobile-menu,
+.navbar {
+  background-color: var(--color-brand-light);
+}
+
+/* Footer */
+.footer-brand-dark {
+  background-color: var(--color-brand-dark);
+  color: white;
+}
+
+.footer-contact {
+  font-family: 'Inter', serif;
+}
+
+/* ===== UTILITIES ===== */
 .two-column-grid {
   display: grid;
-  grid-template-columns: minmax(0,1fr) minmax(0,1fr);
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   column-gap: 4px;
   row-gap: 10px;
+}
+
+.reveal-mask {
+  mask-image: linear-gradient(
+    to right,
+    black 0%,
+    black var(--reveal, 0%),
+    transparent var(--reveal, 0%)
+  );
+  mask-size: 100% 100%;
+  mask-repeat: no-repeat;
+  transition: none;
 }
 
 /* Custom scrollbar */
@@ -98,26 +113,20 @@ textarea.scrollable-description::-webkit-scrollbar-thumb:hover {
   background: #8B7355;
 }
 
-.reveal-mask {
-  mask-image: linear-gradient(
-    to right,
-    black 0%,
-    black var(--reveal, 0%),
-    transparent var(--reveal, 0%)
-  );
-  mask-size: 100% 100%;
-  mask-repeat: no-repeat;
-  transition: none;
+/* Firefox scrollbar support */
+.scrollable-description {
+  scrollbar-width: thin;
+  scrollbar-color: #D1BDA1 #EDE5D8;
 }
 
-/* Editor font + sizes */
+/* ===== EDITOR STYLES ===== */
 .editor-content {
   font-family: var(--font-inter), sans-serif;
   font-size: 18px;
   line-height: 1.7;
 }
 
-/* ensures your font-size always applies even if NodeViewWrapper adds a div */
+/* Headings */
 .editor-content [data-level="1"],
 .editor-content [data-level="1"] h1 {
   font-size: 22px;
@@ -130,7 +139,7 @@ textarea.scrollable-description::-webkit-scrollbar-thumb:hover {
   font-weight: 600;
 }
 
-
+/* Typography */
 .editor-content p,
 .editor-content li,
 .editor-content span {
@@ -138,7 +147,15 @@ textarea.scrollable-description::-webkit-scrollbar-thumb:hover {
   font-size: 18px;
 }
 
-/* TipTap list fix */
+.editor-content > p {
+  margin-left: 1.5rem; /* For drag handle spacing */
+}
+
+.editor-content li > p {
+  margin-left: 0; /* Remove extra space inside lists */
+}
+
+/* Lists */
 .editor-content ul {
   list-style-type: disc !important;
   margin-left: 0;
@@ -156,29 +173,14 @@ textarea.scrollable-description::-webkit-scrollbar-thumb:hover {
   padding-left: 0;
 }
 
-/* Only add left margin for paragraphs not inside a list */
-.editor-content > p {
-  margin-left: 1.5rem; /* for drag handle spacing */
-}
-
-.editor-content li > p {
-  margin-left: 0; /* remove extra space inside lists */
-}
-
-
-/* Optional: remove focus outline on nodes */
-.editor-content .ProseMirror:focus {
-  outline: none;
-}
-
+/* Links */
 .editor-content a {
   color: inherit;
   font-size: 18px;
-  text-decoration: underline;           /* add this */
-  text-decoration-color: currentColor;  /* keeps color consistent */
+  text-decoration: underline;
+  text-decoration-color: currentColor;
   text-underline-offset: 2px;
 }
-
 
 .editor-content a span {
   text-decoration-line: underline;
@@ -186,41 +188,76 @@ textarea.scrollable-description::-webkit-scrollbar-thumb:hover {
   text-underline-offset: 2px;
 }
 
-
 .editor-content a:hover {
   opacity: 0.85;
 }
 
+/* Focus state */
+.editor-content .ProseMirror:focus {
+  outline: none;
+}
 
-/* Header styling */
+/* ===== TABLE STYLES (Editor & Preview) ===== */
+/* Shared table styles */
+.article-content table,
+.tiptap-editor-wrapper table {
+  border-collapse: collapse;
+  width: max-content; /* Shrink-to-fit table content */
+}
+
+.tiptap-editor-wrapper {
+  overflow-x: auto;
+  max-width: 100%;
+}
+
+.tiptap-table,
+.tiptap-table-cell,
 .tiptap-table-header {
+  white-space: nowrap;
+  max-width: 100%;
+}
+
+/* Table cells */
+.tiptap-table-cell,
+.article-content td {
+  border: 1px solid #cfcfcf;
+  position: relative;
+  overflow: visible !important;
+  padding: 8px 8px 8px 14px;
+}
+
+.article-content td {
+  border-color: #c7b89d;
+  padding: 0.5rem 0.75rem;
+  vertical-align: center;
+  word-break: break-word;
+  white-space: normal;
+}
+
+/* Table headers */
+.tiptap-table-header,
+.article-content th {
   background: #E6DCCB;
   font-weight: bold;
   border: 1px solid #cfcfcf;
   padding: 4px;
-  font-weight: bold;
 }
 
-/* Cells */
-.tiptap-table-cell {
-  border: 1px solid #cfcfcf;
-  position: relative;                 /* same here */
-  overflow: visible !important;  
-  padding: 8px 8px 8px 14px;      /* ensures the handle is not clipped */
+.article-content th {
+  background-color: #f0e8db;
+  border-color: #c7b89d;
+  padding: 0.5rem 0.75rem;
 }
 
-
-/* REQUIRED for column resizing */
+/* Column resizing */
 .ProseMirror {
   position: relative;
 }
 
-/* Disable text cursor near resize handle */
 .ProseMirror table {
   user-select: none;
 }
 
-/* ProseMirror column resize handle */
 .ProseMirror .column-resize-handle {
   position: absolute;
   right: -3px;
@@ -232,35 +269,21 @@ textarea.scrollable-description::-webkit-scrollbar-thumb:hover {
   pointer-events: auto;
 }
 
-/* Visible guide while resizing */
 .ProseMirror.resize-cursor {
   cursor: col-resize !important;
 }
 
-/* TipTap editor link underline follows text color */
-.ProseMirror a {
-  text-decoration-color: currentColor;
-}
-
-/* ===== Table selection visibility ===== */
-
-/* Individual selected cells */
+/* Table selection */
 .ProseMirror td.selectedCell,
 .ProseMirror th.selectedCell {
   background-color: rgba(128, 92, 44, 0.18);
 }
 
-/* Column selection overlay */
-.ProseMirror .columnSelected {
-  background-color: rgba(128, 92, 44, 0.12);
-}
-
-/* Row selection overlay */
+.ProseMirror .columnSelected,
 .ProseMirror .rowSelected {
   background-color: rgba(128, 92, 44, 0.12);
 }
 
-/* Selection border for clarity */
 .ProseMirror td.selectedCell::after,
 .ProseMirror th.selectedCell::after {
   content: "";
@@ -270,80 +293,17 @@ textarea.scrollable-description::-webkit-scrollbar-thumb:hover {
   pointer-events: none;
 }
 
-/* Ensures tables don't overflow on small screens */
-.tiptap-editor-wrapper table {
-  width: max-content; /* shrink-to-fit table content */
-  border-collapse: collapse;
-}
-
-.tiptap-editor-wrapper {
-  overflow-x: auto;
-  max-width: 100%;
-}
-
-/* Optional: prevent cells from exploding in width */
-.tiptap-table,
-.tiptap-table-cell,
-.tiptap-table-header {
-  white-space: nowrap;        /* prevent super long words from breaking your layout */
-  max-width: 100%;
-}
-
-/* Firefox scrollbar support */
-.scrollable-description {
-  scrollbar-width: thin;
-  scrollbar-color: #D1BDA1 #EDE5D8;
-}
-
-.article-content table {
-  border-collapse: collapse;
-  width: 100%;
-}
-
-.article-content th,
-.article-content td {
-  border: 1px solid #c7b89d;
-  padding: 0.5rem 0.75rem;
-  vertical-align: center;
-}
-
-.article-content th {
-  background-color: #f0e8db;
-  font-weight: 600;
-}
-
-.article-content tr:nth-child(even) td {
-  background-color: #faf7f2;
-}
-
-/* === Responsive table handling for preview === */
-
-.article-content table {
-  max-width: 100%;
-  width: max-content;   /* table fits content */
-  border-collapse: collapse;
-   margin-left: auto;
-  margin-right: auto;
-}
-
-.article-content {
-  overflow-x: auto;
-}
-
-/* Prevent ultra-long text from exploding columns */
-.article-content td,
-.article-content th {
-  word-break: break-word;
-  white-space: normal;
-}
-
-
-/* ===== Preview article typography (matches editor) ===== */
-
+/* ===== ARTICLE CONTENT (Preview) ===== */
 .article-content {
   font-family: var(--font-inter), sans-serif;
   font-size: 18px;
   line-height: 1.7;
+  overflow-x: auto;
+}
+
+.article-content table {
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .article-content p,
@@ -372,4 +332,41 @@ textarea.scrollable-description::-webkit-scrollbar-thumb:hover {
 .article-content a span {
   text-decoration-line: underline;
   text-decoration-color: currentColor;
+}
+
+.article-content tr:nth-child(even) td {
+  background-color: #faf7f2;
+}
+
+/* ===== EMBEDS ===== */
+/* YouTube & block embeds */
+.youtube-embed,
+.youtube-embed-debug,
+.article-content > div[youtube-embed],
+.article-content .youtube-embed-debug,
+.article-content .youtube-embed,
+.article-content iframe[src*="youtube"] {
+  display: flex !important;
+  justify-content: center !important;
+  width: 100%;
+  margin: 2rem 0;
+}
+
+.youtube-embed iframe,
+.youtube-embed-debug iframe {
+  width: 100%;
+  max-width: 800px;
+  aspect-ratio: 16 / 9;
+  border-radius: 12px;
+}
+
+.article-content > div {
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+}
+
+/* ===== THEME ===== */
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
 }
