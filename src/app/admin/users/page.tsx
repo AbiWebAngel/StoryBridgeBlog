@@ -278,7 +278,7 @@ useEffect(() => {
   // Show loading until Firebase has finished initializing
   if (!authReady || loading) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-[#F0E8DB]">
+      <div className="min-h-screen flex flex-col items-center justify-center ">
         <div className="w-48 h-2 bg-[#E0D6C7] rounded-full overflow-hidden">
           <div className="h-full w-full animate-pulse bg-[#4A3820]"></div>
         </div>
