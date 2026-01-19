@@ -61,11 +61,16 @@ export default function ArticleEditor({
   const [youtubeModalOpen, setYoutubeModalOpen] = useState(false);
   const [youtubeUrl, setYoutubeUrl] = useState('');
   const [tableMenuOpen, setTableMenuOpen] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
+  const [exportProgress, setExportProgress] = useState(0);
+
   const hasHydratedRef = useRef(false);
   const TOOLBAR_BTN_BASE =
   "px-2 py-1 rounded bg-white font-sans! transition-colors duration-150";
   const TOOLBAR_BTN_HOVER =
   "hover:bg-[#E6DCCB] disabled:opacity-50 disabled:hover:bg-white";
+
+
 
   const getSafePos = (pos: number | undefined, editor: ReturnType<typeof useEditor>): number => {
     if (typeof pos === "number" && Number.isFinite(pos)) return pos;
@@ -258,6 +263,39 @@ export default function ArticleEditor({
       console.error("Image upload failed:", err);
     }
   };
+
+  const handleExportDocx = async () => {
+  if (!editor || isExporting) return;
+
+  try {
+    setIsExporting(true);
+    setExportProgress(10);
+
+    // small delay so UI paints before heavy work
+    await new Promise(r => setTimeout(r, 50));
+    setExportProgress(30);
+
+    await exportArticleToDocx(editor.getJSON(), {
+      title,
+      metaDescription,
+      coverImage,
+      coverImageAlt,
+      // OPTIONAL: pass a progress callback later if you want finer control
+      // onProgress: setExportProgress,
+    });
+
+    setExportProgress(100);
+  } catch (err) {
+    console.error("DOCX export failed:", err);
+  } finally {
+    // let users see 100% briefly
+    setTimeout(() => {
+      setIsExporting(false);
+      setExportProgress(0);
+    }, 400);
+  }
+};
+
 
   const addImage = useCallback(() => {
     if (!editor) return;
@@ -554,20 +592,36 @@ export default function ArticleEditor({
 
           <div className="flex-1" />
 
-        <button
-          onClick={() =>
-            exportArticleToDocx(editor.getJSON(), {
-              title,
-              metaDescription,
-              coverImage,
-              coverImageAlt,
-            })
-          }
-          className="px-3 py-1 rounded border border-[#4A3820] text-[#4A3820] bg-white shadow hover:bg-[#f9f9f9] font-sans!"
-          title="Export article to DOCX"
-        >
-          Export docx
-        </button>
+     <button
+  onClick={handleExportDocx}
+  disabled={isExporting}
+  className={`
+    relative px-3 py-1 rounded border border-[#4A3820]
+    text-[#4A3820] bg-white shadow font-sans!
+    ${isExporting ? "cursor-not-allowed opacity-70" : "hover:bg-[#f9f9f9]"}
+  `}
+  title="Export article to DOCX"
+>
+  {/* Label */}
+  <span className={`text-sm! ${isExporting ? "opacity-0" : "opacity-100"}`}>
+    Export docx
+  </span>
+
+  {/* Spinner */}
+  {isExporting && (
+    <span className="absolute inset-0 flex items-center justify-center">
+      <span className="
+        h-4 w-4
+        border-2 border-[#4A3820]/30
+        border-t-[#4A3820]
+        rounded-full
+        animate-spin
+      " />
+    </span>
+  )}
+</button>
+
+
 
         </div>
       </div>
