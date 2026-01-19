@@ -89,6 +89,38 @@ export default function ArticleEditor({
     return data.url;
   };
 
+  const pendingSaveRef = useRef<JSONContent | null>(null);
+const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+// how often we force a server commit
+const COMMIT_INTERVAL_MS = 3 * 60 * 1000; // 3 minutes (use 5 * 60 * 1000 if you prefer)
+
+// interval handle
+const commitIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+
+const scheduleSave = (json: JSONContent) => {
+  pendingSaveRef.current = json;
+
+  if (saveTimeoutRef.current) return;
+
+  saveTimeoutRef.current = setTimeout(() => {
+    if (pendingSaveRef.current) {
+      onChange(pendingSaveRef.current);
+      pendingSaveRef.current = null;
+    }
+    saveTimeoutRef.current = null;
+  }, 800); // 👈 tune this (500–1200ms works well)
+};
+
+const flushSave = useCallback(() => {
+  if (!pendingSaveRef.current) return;
+
+  onChange(pendingSaveRef.current);
+  pendingSaveRef.current = null;
+}, [onChange]);
+
+
   const DisableImagePaste = Extension.create({
     addProseMirrorPlugins() {
       return [
@@ -212,14 +244,11 @@ export default function ArticleEditor({
         },
       }),
     ],
-    onUpdate: ({ editor }) => {
-      const json = editor.getJSON();
+      onUpdate: ({ editor, transaction }) => {
+      // Ignore selection-only changes
+      if (!transaction.docChanged) return;
 
-      if (value && JSON.stringify(json) === JSON.stringify(value)) return;
-
-      queueMicrotask(() => {
-        onChange(json);
-      });
+      scheduleSave(editor.getJSON());
     },
     onSelectionUpdate: ({ editor }) => {
       const hasSel = !editor.state.selection.empty;
@@ -259,6 +288,7 @@ export default function ArticleEditor({
       editorInstance.view.dispatch(tr);
       uploadedImagesRef.current.add(url);
       onImageUploaded?.(url);
+      flushSave();
     } catch (err) {
       console.error("Image upload failed:", err);
     }
@@ -377,14 +407,43 @@ export default function ArticleEditor({
     editor?.chain().focus().unsetLink().run();
   }, [editor]);
 
-  useEffect(() => {
-    if (!editor) return;
-    if (!value) return;
-    if (hasHydratedRef.current) return;
+useEffect(() => {
+  if (!editor) return;
 
+  commitIntervalRef.current = setInterval(() => {
+    flushSave();
+  }, COMMIT_INTERVAL_MS);
+
+  return () => {
+    if (commitIntervalRef.current) {
+      clearInterval(commitIntervalRef.current);
+      commitIntervalRef.current = null;
+    }
+  };
+}, [editor, flushSave]);
+
+
+useEffect(() => {
+  if (!editor) return;
+  if (!value) return;
+  if (hasHydratedRef.current) return;
+
+  queueMicrotask(() => {
     editor.commands.setContent(value, { emitUpdate: false });
     hasHydratedRef.current = true;
-  }, [editor, value]);
+  });
+}, [editor, value]);
+
+useEffect(() => {
+  return () => {
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current);
+      saveTimeoutRef.current = null;
+    }
+
+    flushSave();
+  };
+}, [flushSave]);
 
   useEffect(() => {
     const closeOnClick = () => setTableMenuOpen(false);
@@ -406,6 +465,16 @@ export default function ArticleEditor({
     if (!editor) return;
     editor.commands.clearContent(true);
   }, [resetToken]);
+
+  useEffect(() => {
+  const handleBeforeUnload = () => {
+    flushSave();
+  };
+
+  window.addEventListener("beforeunload", handleBeforeUnload);
+  return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+}, [flushSave]);
+
 
   if (!editor) return null;
 

@@ -5,22 +5,25 @@ interface FloatingAutosaveIndicatorProps {
   autosaving: boolean;
   lastLocalSave?: number | null;
   lastServerSave?: number | null;
+  timeUntilNextSave?: number | null; // 👈 NEW
   docked: boolean;
 }
+
 
 export default function FloatingAutosaveIndicator({
   autosaving,
   lastLocalSave,
   lastServerSave,
+  timeUntilNextSave,
   docked,
 }: FloatingAutosaveIndicatorProps) {
-  // Render inline — the parent (FloatingSaveBar) is responsible for positioning
   return (
     <div className="flex items-center">
       <AutosaveBubble
         autosaving={autosaving}
         lastLocalSave={lastLocalSave}
         lastServerSave={lastServerSave}
+        timeUntilNextSave={timeUntilNextSave}
         forceOpen={docked}
       />
     </div>
@@ -32,13 +35,18 @@ function AutosaveBubble({
   autosaving,
   lastLocalSave,
   lastServerSave,
+  timeUntilNextSave,
   forceOpen = false,
 }: {
   autosaving: boolean;
   lastLocalSave?: number | null;
   lastServerSave?: number | null;
+  timeUntilNextSave?: number | null;
   forceOpen?: boolean;
 }) {
+
+const shouldOpen = forceOpen;
+
   return (
     <div
       className="
@@ -51,28 +59,57 @@ function AutosaveBubble({
       "
       aria-hidden
     >
-      <div
-        className={`
-          absolute left-0 top-1/2
-          -translate-y-1/2
-          h-10
-          flex items-center
-          rounded-full
-          bg-white border border-[#D8CDBE] shadow-md
-          overflow-hidden
-          transition-all duration-200 ease-out
-          pl-7 pr-3
-          whitespace-nowrap
-          ${forceOpen ? "max-w-xs opacity-100" : "max-w-10 opacity-0 group-hover:max-w-xs group-hover:opacity-100"}
-        `}
-      >
-        <span className="text-xs text-[#4A3820]">
-          {autosaving && "Autosaving…"}
-          {!autosaving && lastServerSave &&
-            `Cloud draft saved · ${timeAgo(lastServerSave)}`}
-          {!autosaving && !lastServerSave && lastLocalSave &&
-            "Draft saved locally"}
+  <div
+  className={`
+    absolute left-0 top-1/2
+    -translate-y-1/2
+    h-10
+    flex items-center
+    rounded-full
+    bg-white border border-[#D8CDBE] shadow-md
+    overflow-hidden
+    origin-left transform
+    transition-[opacity,transform] duration-150 ease-out
+    pl-7 pr-3
+    whitespace-nowrap
+    ${shouldOpen
+      ? "opacity-100 scale-x-100"
+      : "opacity-0 scale-x-0 group-hover:opacity-100 group-hover:scale-x-100"
+    }
+  `}
+>
+
+<span className="text-xs text-[#4A3820] flex items-center gap-1">
+  {autosaving && "Autosaving…"}
+
+  {!autosaving &&
+    lastLocalSave &&
+    typeof timeUntilNextSave === "number" &&
+    timeUntilNextSave > 0 && (
+      <>
+        <span>Draft saved locally</span>
+        <span className="opacity-60">·</span>
+        <span className="opacity-70">
+          Cloud sync in {formatDuration(timeUntilNextSave)}
         </span>
+      </>
+    )}
+
+  {!autosaving &&
+    typeof timeUntilNextSave === "number" &&
+    timeUntilNextSave <= 0 &&
+    lastServerSave && (
+      <>Cloud draft saved · {timeAgo(lastServerSave)}</>
+    )}
+
+  {!autosaving &&
+    timeUntilNextSave == null &&
+    lastLocalSave && <span>Draft saved locally</span>}
+</span>
+
+
+
+
       </div>
 
       <span
@@ -93,4 +130,15 @@ function timeAgo(ts: number) {
   if (diff < 60) return "just now";
   if (diff < 3600) return `${Math.floor(diff / 60)} min ago`;
   return `${Math.floor(diff / 3600)}h ago`;
+}
+
+function formatDuration(ms: number) {
+  const totalSeconds = Math.ceil(ms / 1000);
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+
+  if (minutes > 0) {
+    return `${minutes}m ${seconds}s`;
+  }
+  return `${seconds}s`;
 }

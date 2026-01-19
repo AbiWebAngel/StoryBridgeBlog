@@ -121,7 +121,7 @@ export default function PreviewArticlePage() {
         {/* Article Card - exact design from blog page */}
         <div className="bg-[#F2ECE3] rounded-[30px] shadow-xl p-6 sm:p-8">
           {/* Article Header */}
-          <h1 className="font-cinzel text-[22px] sm:text-[26px] lg:text-[30px] font-bold min-w-0 wrap-break-wordtext-center mb-4">
+          <h1 className="font-cinzel text-[22px] sm:text-[26px] lg:text-[30px] font-bold min-w-0 wrap-break-word text-center mb-4">
             {post.title || "Untitled draft"}
           </h1>
           

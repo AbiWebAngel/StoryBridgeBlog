@@ -16,8 +16,8 @@ import FloatingAutosaveIndicator from "@/components/admin/FloatingAutosaveIndica
 import FloatingSaveBar from "@/components/admin/FloatingSaveBar";
 
 // Constants
-const SERVER_AUTOSAVE_DELAY = 15000; // 15 seconds
 const BACKUP_AUTOSAVE_INTERVAL = 10 * 60 * 1000; // 10 minutes
+
 
 // Helper functions
 const getActiveArticleIdKey = (uid: string) => `active-article-id:${uid}`;
@@ -30,7 +30,9 @@ export default function NewArticlePage() {
   const articleIdRef = useRef<string | null>(null);
   const hasSavedOnceRef = useRef(false);
   const serverSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  
+  const [nextServerSaveAt, setNextServerSaveAt] = useState<number | null>(null);
+  const backupIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
   // State
   const [articleData, setArticleData] = useState({
     title: "",
@@ -65,6 +67,12 @@ export default function NewArticlePage() {
   const updateArticleData = useCallback((updates: Partial<typeof articleData>) => {
     setArticleData(prev => ({ ...prev, ...updates }));
   }, []);
+  
+const scheduleNextServerSave = useCallback(() => {
+  const next = Date.now() + BACKUP_AUTOSAVE_INTERVAL;
+  setNextServerSaveAt(next);
+  return next;
+}, []);
 
   // Initialization effects
   useEffect(() => {
@@ -174,6 +182,7 @@ export default function NewArticlePage() {
       );
 
       setLastServerSave(Date.now());
+      scheduleNextServerSave();
     } catch (err) {
       console.warn("Server autosave failed", err);
       throw err;
@@ -182,34 +191,28 @@ export default function NewArticlePage() {
     }
   }, [articleData, currentAuthUser, title, body, coverImage]);
 
-  const scheduleServerSave = useCallback((delay = SERVER_AUTOSAVE_DELAY) => {
-    if (!currentAuthUser || !articleIdRef.current || autosaving) return;
-
-    if (serverSaveTimeoutRef.current) {
-      clearTimeout(serverSaveTimeoutRef.current);
-    }
-
-    serverSaveTimeoutRef.current = setTimeout(() => {
-      autosaveToServer();
-    }, delay);
-  }, [autosaveToServer, currentAuthUser, autosaving]);
-
-  // Schedule server autosave on changes
-  useEffect(() => {
-    if (!articleReady || !pageReady || !currentAuthUser || !articleIdRef.current) return;
-    scheduleServerSave();
-  }, [articleData, uploadedAssets, articleReady, pageReady, currentAuthUser, scheduleServerSave]);
 
   // Periodic backup autosave
-  useEffect(() => {
-    if (!currentAuthUser) return;
+useEffect(() => {
+  if (!currentAuthUser) return;
 
-    const interval = setInterval(() => {
-      autosaveToServer();
-    }, BACKUP_AUTOSAVE_INTERVAL);
+  scheduleNextServerSave();
 
-    return () => clearInterval(interval);
-  }, [currentAuthUser, autosaveToServer]);
+  backupIntervalRef.current = setInterval(async () => {
+    await autosaveToServer();
+    scheduleNextServerSave();
+  }, BACKUP_AUTOSAVE_INTERVAL);
+
+  return () => {
+    if (backupIntervalRef.current) {
+      clearInterval(backupIntervalRef.current);
+      backupIntervalRef.current = null;
+    }
+    setNextServerSaveAt(null);
+  };
+}, [currentAuthUser, autosaveToServer, scheduleNextServerSave]);
+
+
 
   // Cleanup
   useEffect(() => {
@@ -267,6 +270,9 @@ const handlePreview = async () => {
     alert("Preview failed — could not save article to server.");
   }
 };
+
+const timeUntilNextSave =
+  nextServerSaveAt ? Math.max(0, nextServerSaveAt - now) : null;
 
 
   // Form reset
@@ -599,12 +605,14 @@ const handlePreview = async () => {
           label="Save Article"
           onDockChange={setIsDocked}
         >
-          <FloatingAutosaveIndicator
+         <FloatingAutosaveIndicator
             autosaving={autosaving}
             lastLocalSave={lastLocalSave}
             lastServerSave={lastServerSave}
+            timeUntilNextSave={timeUntilNextSave}
             docked={isDocked}
           />
+
         </FloatingSaveBar>
       </div>
     </div>
