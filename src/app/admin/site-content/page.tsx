@@ -5,8 +5,7 @@ import { FiFileText, FiUsers, FiHome, FiAward      } from "react-icons/fi";
 import { IconType } from "react-icons";
 import { useAuth, } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
-import FloatingSaveBar from "@/components/admin/FloatingSaveBar";
+
 
 interface Option {
   label: string;
@@ -15,7 +14,7 @@ interface Option {
 }
 
 export default function SiteContentDashboard() {
-  const { user, role, authReady } = useAuth();
+  const { user,authReady } = useAuth();
   const router = useRouter();
  
 
@@ -65,7 +64,7 @@ export default function SiteContentDashboard() {
 // Show loading until Firebase has finished initializing
 if (!authReady) {
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-[#F0E8DB]">
+    <div className="min-h-screen flex flex-col items-center justify-center">
       <div className="w-48 h-2 bg-[#E0D6C7] rounded-full overflow-hidden">
         <div className="h-full w-full animate-pulse bg-[#4A3820]"></div>
       </div>
@@ -80,8 +79,8 @@ if (!authReady) {
 // Only show login message if initialized AND user is null
 if (!user) {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#F0E8DB]">
-      <p className="text-[#4A3820] text-xl font-semibold">
+    <div className="min-h-screen flex items-center justify-center">
+      <p className="text-[#4A3820] text-xl font-semibold font-sans!">
         You must be logged in to access this page.
       </p>
     </div>

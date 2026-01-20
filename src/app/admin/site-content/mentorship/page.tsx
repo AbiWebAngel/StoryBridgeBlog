@@ -13,7 +13,7 @@ import { extractAssetUrlsFromMentorship } from "@/lib/extractAssetUrls";
 import FloatingSaveBar from "@/components/admin/FloatingSaveBar";
 
 export default function AdminMentorshipPage() {
-  const { user: currentAuthUser } = useAuth();
+  const { user } = useAuth();
   
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -89,7 +89,7 @@ export default function AdminMentorshipPage() {
   // Load Firestore data
   useEffect(() => {
     async function loadContent() {
-      if (!currentAuthUser) {
+      if (!user) {
         setLoading(false);
         return;
       }
@@ -169,7 +169,7 @@ export default function AdminMentorshipPage() {
     }
 
     loadContent();
-  }, [currentAuthUser]);
+  }, [user]);
 
   async function uploadAsset(
     file: File,
@@ -279,7 +279,7 @@ export default function AdminMentorshipPage() {
 
   // Save to Firestore
   async function handleSave() {
-    if (!currentAuthUser) {
+    if (!user) {
       setErrorMessage("Please log in to save changes.");
       return;
     }
@@ -296,7 +296,7 @@ export default function AdminMentorshipPage() {
     setSuccessMessage("");
 
     try {
-      const token = await currentAuthUser.getIdTokenResult();
+      const token = await user.getIdTokenResult();
 
       if (token.claims.role !== "admin" && token.claims.role !== "author") {
         throw new Error("Insufficient permissions. Admin or author role required.");
@@ -507,9 +507,19 @@ export default function AdminMentorshipPage() {
     }));
   };
 
+     if (!user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-[#4A3820] text-xl font-semibold font-sans!">
+          You must be logged in to access this page.
+        </p>
+      </div>
+    );
+  }
+
 if (loading) {
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-[#F0E8DB]">
+    <div className="min-h-screen flex flex-col items-center justify-center">
       <div className="w-48 h-2 bg-[#E0D6C7] rounded-full overflow-hidden">
         <div className="h-full w-full animate-pulse bg-[#4A3820]"></div>
       </div>

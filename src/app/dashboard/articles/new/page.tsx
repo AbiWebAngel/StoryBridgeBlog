@@ -37,6 +37,7 @@ export default function NewArticlePage() {
   const [nextServerSaveAt, setNextServerSaveAt] = useState<number | null>(null);
   const backupIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
+
   // State
   const [articleData, setArticleData] = useState({
     title: "",
@@ -48,7 +49,9 @@ export default function NewArticlePage() {
     tags: [] as string[],
     status: "draft" as "draft" | "published",
   });
-  
+
+  const articleDataRef = useRef(articleData);
+
   const [uploadedAssets, setUploadedAssets] = useState<string[]>([]);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
@@ -74,13 +77,6 @@ export default function NewArticlePage() {
   
 
 
-
-const scheduleNextServerSave = useCallback(() => {
-  const next = Date.now() + BACKUP_AUTOSAVE_INTERVAL;
-  setNextServerSaveAt(next);
-  return next;
-}, []);
-
   // Initialization effects
   useEffect(() => {
     const timer = setTimeout(() => setPageReady(true), 50);
@@ -93,54 +89,49 @@ const scheduleNextServerSave = useCallback(() => {
     }
   }, [coverImage, updateArticleData]);
 
+  useEffect(() => {
+  articleDataRef.current = articleData;
+}, [articleData]);
+
+
 useEffect(() => {
   if (!currentAuthUser) return;
 
-  let cancelled = false;
+  const uid = currentAuthUser.uid;
+  const localKey = getActiveArticleIdKey(uid);
 
-  const initArticleId = async () => {
-    const uid = currentAuthUser.uid;
-    const localKey = getActiveArticleIdKey(uid);
+  const init = async () => {
+    let id = localStorage.getItem(localKey);
 
-    // 1️⃣ LOCAL STORAGE (highest priority)
-    const localId = localStorage.getItem(localKey);
-    if (localId) {
-      articleIdRef.current = localId;
-      console.log("🔁 Resuming LOCAL active article ID", localId);
-      setArticleReady(true);
-      return;
-    }
-
-    // 2️⃣ FIREBASE (cross-device resume)
+    // 1️⃣ Firebase FIRST
     try {
       const userSnap = await getDoc(doc(db, "users", uid));
       const remoteId = userSnap.data()?.lastActiveArticleId;
 
-      if (!cancelled && remoteId) {
-        articleIdRef.current = remoteId;
-        localStorage.setItem(localKey, remoteId);
-        console.log("🌐 Resuming FIREBASE active article ID", remoteId);
-        setArticleReady(true);
-        return;
+      if (remoteId) {
+        id = remoteId;
       }
-    } catch (err) {
-      console.warn("Failed to fetch lastActiveArticleId", err);
+    } catch {
+      // ignore, fallback to local
     }
 
-    // 3️⃣ BRAND NEW ARTICLE
-    const newId = crypto.randomUUID();
-    articleIdRef.current = newId;
-    localStorage.setItem(localKey, newId);
-    console.log("🆕 Created NEW article ID", newId);
+    // 2️⃣ Local fallback
+    if (!id) {
+      id = crypto.randomUUID();
+    }
+
+    // 3️⃣ LOCK IT
+    localStorage.setItem(localKey, id);
+    articleIdRef.current = id;
     setArticleReady(true);
+
+    console.log("🔒 Locked article ID:", id);
   };
 
-  initArticleId();
-
-  return () => {
-    cancelled = true;
-  };
+  init();
 }, [currentAuthUser]);
+
+
 
 
 
@@ -259,59 +250,56 @@ const autosaveToServer = useCallback(async (force = false) => {
   const articleId = articleIdRef.current;
   if (!articleId) return;
 
-  if (!force && !title && !body && !coverImage) return;
+  const data = articleDataRef.current;
 
-    setAutosaving(true);
+  if (!force && !data.title && !data.body && !data.coverImage) return;
 
-    try {
-      
-      await setDoc(
-        doc(db, "articles", articleId),
-        {
-          ...articleData,
-          authorId: currentAuthUser.uid,
-          updatedAt: serverTimestamp(),
-          autosaved: true,
-        },
-        { merge: true }
-      );
-          await setDoc(
-        doc(db, "users", currentAuthUser.uid),
-        { lastActiveArticleId: articleId },
-        { merge: true }
-      );
+  setAutosaving(true);
 
+  try {
+    await setDoc(
+      doc(db, "articles", articleId),
+      {
+        ...data,
+        authorId: currentAuthUser.uid,
+        updatedAt: serverTimestamp(),
+        autosaved: true,
+      },
+      { merge: true }
+    );
 
-      setLastServerSave(Date.now());
-      scheduleNextServerSave();
-    } catch (err) {
-      console.warn("Server autosave failed", err);
-      throw err;
-    } finally {
-      setAutosaving(false);
-    }
-  }, [articleData, currentAuthUser, title, body, coverImage]);
+    await setDoc(
+      doc(db, "users", currentAuthUser.uid),
+      { lastActiveArticleId: articleId },
+      { merge: true }
+    );
+
+    setLastServerSave(Date.now());
+  } catch (err) {
+    console.warn("Server autosave failed", err);
+  } finally {
+    setAutosaving(false);
+  }
+}, [currentAuthUser]);
+
 
 
   // Periodic backup autosave
 useEffect(() => {
   if (!currentAuthUser) return;
 
-  scheduleNextServerSave();
+  setNextServerSaveAt(Date.now() + BACKUP_AUTOSAVE_INTERVAL);
 
-  backupIntervalRef.current = setInterval(async () => {
-    await autosaveToServer();
-    scheduleNextServerSave();
+  backupIntervalRef.current = setInterval(() => {
+    autosaveToServer();
+    setNextServerSaveAt(Date.now() + BACKUP_AUTOSAVE_INTERVAL);
   }, BACKUP_AUTOSAVE_INTERVAL);
 
   return () => {
-    if (backupIntervalRef.current) {
-      clearInterval(backupIntervalRef.current);
-      backupIntervalRef.current = null;
-    }
+    clearInterval(backupIntervalRef.current!);
     setNextServerSaveAt(null);
   };
-}, [currentAuthUser, autosaveToServer, scheduleNextServerSave]);
+}, [currentAuthUser, autosaveToServer]);
 
 
 
@@ -507,9 +495,20 @@ const timeUntilNextSave =
     }
   };
 
+
+ if (!currentAuthUser) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-[#4A3820] text-xl font-semibold font-sans!">
+          You must be logged in to access this page.
+        </p>
+      </div>
+    );
+  }
+
   if (!pageReady) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-[#F0E8DB]">
+      <div className="min-h-screen flex flex-col items-center justify-center">
         <div className="w-48 h-2 bg-[#E0D6C7] rounded-full overflow-hidden">
           <div className="h-full w-full animate-pulse bg-[#4A3820]"></div>
         </div>
@@ -647,18 +646,23 @@ const timeUntilNextSave =
                   Preview
                 </button>
               </div>
-              <ArticleEditor
-                key={currentAuthUser?.uid}
-                value={body}
-                articleId={articleIdRef.current!}
-                onChange={(newBody) => updateArticleData({ body: newBody })}
-                resetToken={resetEditorToken}
-                onImageUploaded={(url) => setUploadedAssets(prev => prev.includes(url) ? prev : [...prev, url])}
-                title={title}
-                metaDescription={metaDescription}
-                coverImage={coverImage}
-                coverImageAlt={coverImageAlt}
-              />
+               {articleReady && articleIdRef.current && (
+                  <ArticleEditor
+                    key={`${currentAuthUser?.uid}:${articleIdRef.current}`}
+                    articleId={articleIdRef.current}
+                    value={body}
+                    onChange={(newBody) => updateArticleData({ body: newBody })}
+                    resetToken={resetEditorToken}
+                    onImageUploaded={(url) =>
+                      setUploadedAssets(prev => prev.includes(url) ? prev : [...prev, url])
+                    }
+                    title={title}
+                    metaDescription={metaDescription}
+                    coverImage={coverImage}
+                    coverImageAlt={coverImageAlt}
+                  />
+                )}
+
               {errors.body && <p className="mt-2 text-red-600 font-medium">{errors.body}</p>}
             </div>
 

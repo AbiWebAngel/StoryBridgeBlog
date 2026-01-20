@@ -15,7 +15,8 @@ import FloatingSaveBar from "@/components/admin/FloatingSaveBar";
 
 
 export default function AdminHomePage() {
-  const { user: currentAuthUser } = useAuth();
+  const { user } = useAuth();
+  
   
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -52,7 +53,7 @@ const [svgUploadProgress, setSvgUploadProgress] =
   // Load Firestore data
   useEffect(() => {
     async function loadContent() {
-      if (!currentAuthUser) {
+      if (!user) {
         setLoading(false);
         return;
       }
@@ -90,7 +91,7 @@ const [svgUploadProgress, setSvgUploadProgress] =
 
     loadContent();
     
-  }, [currentAuthUser]);
+  }, [user]);
 
 async function uploadAsset(
   file: File,
@@ -178,7 +179,7 @@ function validateHomeContent(content: HomeContent): string | null {
 
   // Save to Firestore
 async function handleSave() {
-  if (!currentAuthUser) {
+  if (!user) {
     setErrorMessage("Please log in to save changes.");
     return;
   }
@@ -195,7 +196,7 @@ async function handleSave() {
   setSuccessMessage("");
 
   try {
-    const token = await currentAuthUser.getIdTokenResult();
+    const token = await user.getIdTokenResult();
 
     if (token.claims.role !== "admin" && token.claims.role !== "author") {
       throw new Error("Insufficient permissions. Admin or author role required.");
@@ -341,7 +342,7 @@ if (pendingAssets.length) {
 // Full-page loading screen while fetching content
 if (loading) {
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-[#F0E8DB]">
+    <div className="min-h-screen flex flex-col items-center justify-center">
       <div className="w-48 h-2 bg-[#E0D6C7] rounded-full overflow-hidden">
         <div className="h-full w-full animate-pulse bg-[#4A3820]"></div>
       </div>
@@ -351,7 +352,15 @@ if (loading) {
     </div>
   );
 }
-
+  if (!user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-[#4A3820] text-xl font-semibold font-sans!">
+          You must be logged in to access this page.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="px-6 min-h-screen font-sans">

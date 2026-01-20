@@ -102,7 +102,7 @@ export default function DashboardHome() {
   if (!user) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#F0E8DB]">
-        <p className="text-[#4A3820] text-xl font-semibold">You must be logged in to access this page.</p>
+        <p className="text-[#4A3820] text-xl font-semibold font-sans!">You must be logged in to access this page.</p>
       </div>
     );
   }

@@ -80,7 +80,11 @@ export default function ArticleEditor({
   const uploadImageToR2 = async (file: File): Promise<string> => {
     const formData = new FormData();
     formData.append("file", file);
-    formData.append("articleId", articleId);
+    if (!articleId) {
+  throw new Error("Article ID is missing — upload aborted");
+  }
+  
+  formData.append("articleId", articleId);
     formData.append("assetType", "content");
 
     const res = await fetch("/api/upload", { method: "POST", body: formData });

@@ -282,7 +282,7 @@ useEffect(() => {
         <div className="w-48 h-2 bg-[#E0D6C7] rounded-full overflow-hidden">
           <div className="h-full w-full animate-pulse bg-[#4A3820]"></div>
         </div>
-        <p className="mt-4 text-[#4A3820] font-medium text-lg !font-sans">
+        <p className="mt-4 text-[#4A3820] font-medium text-lg font-sans!">
           Loading users...
         </p>
       </div>
@@ -294,7 +294,7 @@ useEffect(() => {
   <>
     <div className="px-6 min-h-screen font-sans">
       <div className="max-w-5xl mx-auto">
-        <h1 className="text-3xl font-extrabold text-[#4A3820] mb-6 text-center !font-sans">
+        <h1 className="text-3xl font-extrabold text-[#4A3820] mb-6 text-center font-sans!">
           User Management
         </h1> 
         <div className="h-px bg-[#E6DED1] my-6"></div>
@@ -303,7 +303,7 @@ useEffect(() => {
         {!currentAuthUser && (
           <div className="space-y-6 mt-8">
             <div className="bg-[#F0E8DB] border border-[#D8CDBE] rounded-lg shadow-md p-6 sm:p-8">
-              <h2 className="text-2xl font-extrabold text-[#4A3820] mb-6 text-center !font-sans">
+              <h2 className="text-2xl font-extrabold text-[#4A3820] mb-6 text-center font-sans!">
                 Please Log In
               </h2>
               <div className="text-center">
@@ -336,7 +336,7 @@ useEffect(() => {
              <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-6 mb-8">
               {/* LEFT: Heading + counts */}
               <div className="flex flex-col">
-                <h2 className="text-2xl font-medium text-[#4A3820] !font-sans">
+                <h2 className="text-2xl font-medium text-[#4A3820] font-sans!">
                   Users
                 </h2>
                 <p className="text-sm text-[#4A3820]/70 mt-1">
@@ -390,23 +390,23 @@ useEffect(() => {
                               <p className="text-[#4A3820] font-bold">
                                 {u.firstName} {u.lastName}
                                 {isCurrentUser && (
-                                  <span className="ml-2 px-2 py-1 !text-sm bg-amber-100 text-amber-800 rounded-full">You</span>
+                                  <span className="ml-2 px-2 py-1 text-sm! bg-amber-100 text-amber-800 rounded-full">You</span>
                                 )}
                               </p>
                               {/* Role Badges */}
                               {isSuperAdmin && (
-                                <span className="ml-2 px-2 py-1 !text-sm bg-purple-100 text-purple-800 rounded-full">
+                                <span className="ml-2 px-2 py-1 text-sm! bg-purple-100 text-purple-800 rounded-full">
                                   Super Admin
                                 </span>
                               )}
                               {u.role === 'admin' && (
-                                <span className="ml-2 px-2 py-1 !text-sm bg-red-100 text-red-800 rounded-full">Admin</span>
+                                <span className="ml-2 px-2 py-1 text-sm! bg-red-100 text-red-800 rounded-full">Admin</span>
                               )}
                               {u.role === 'author' && (
-                                <span className="ml-2 px-2 py-1 !text-sm bg-blue-100 text-blue-800 rounded-full">Author</span>
+                                <span className="ml-2 px-2 py-1 text-sm! bg-blue-100 text-blue-800 rounded-full">Author</span>
                               )}
                               {u.disabled && (
-                                <span className="ml-2 px-2 py-1 !text-sm bg-gray-200 text-gray-800 rounded-full">
+                                <span className="ml-2 px-2 py-1 text-sm! bg-gray-200 text-gray-800 rounded-full">
                                   Disabled
                                 </span>
                               )}
@@ -453,7 +453,7 @@ useEffect(() => {
                             onClick={() => handleDisableClick(u)}
                             className={`
                               px-4 py-2 rounded-lg font-medium transition-all duration-200
-                              w-full sm:w-auto disabled:opacity-60 disabled:cursor-not-allowed !font-sans
+                              w-full sm:w-auto disabled:opacity-60 disabled:cursor-not-allowed font-sans!
                               ${isSuperAdmin ? 'border-purple-300 text-purple-400 cursor-not-allowed' : ''}
                               ${u.disabled 
                                 ? "border-2 border-emerald-600 text-emerald-600 hover:bg-emerald-600 hover:text-white" 
@@ -480,24 +480,24 @@ useEffect(() => {
     {userToUpdate && (
       <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
         <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
-          <h3 className="!font-sans text-2xl font-bold text-[#4A3820] mb-4">
+          <h3 className="font-sans! text-2xl font-bold text-[#4A3820] mb-4">
             Confirm Role Change
           </h3>
-          <p className="text-[#4A3820] mb-6 !font-sans">
+          <p className="text-[#4A3820] mb-6 font-sans!">
             Are you sure you want to change <strong>{userToUpdate.userName}</strong>'s role from{" "}
-            <span className="font-bold text-[#805C2C] !text-xl !font-sans">{userToUpdate.currentRole}</span> to{" "}
-            <span className="font-bold text-[#805C2C] !text-xl !font-sans">{userToUpdate.newRole}</span>?
+            <span className="font-bold text-[#805C2C] text-xl! font-sans!">{userToUpdate.currentRole}</span> to{" "}
+            <span className="font-bold text-[#805C2C] text-xl! font-sans!">{userToUpdate.newRole}</span>?
           </p>
           <div className="flex justify-end gap-3">
             <button
               onClick={cancelUpdate}
-              className="px-4 py-2 rounded-lg border-2 border-[#D8CDBE] text-[#4A3820] !font-sans hover:bg-[#F0E8DB] transition-colors"
+              className="px-4 py-2 rounded-lg border-2 border-[#D8CDBE] text-[#4A3820] font-sans! hover:bg-[#F0E8DB] transition-colors"
             >
               Cancel
             </button>
             <button
               onClick={confirmUpdateRole}
-              className="px-4 py-2 rounded-lg bg-[#805C2C] text-white !font-sans hover:bg-[#6B4C24] transition-colors"
+              className="px-4 py-2 rounded-lg bg-[#805C2C] text-white font-sans! hover:bg-[#6B4C24] transition-colors"
             >
               Confirm Change
             </button>
@@ -510,10 +510,10 @@ useEffect(() => {
     {userToDisable && (
       <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
         <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
-          <h3 className="!font-sans text-2xl font-bold text-[#4A3820] mb-4">
+          <h3 className="font-sans! text-2xl font-bold text-[#4A3820] mb-4">
             {userToDisable.currentDisabled ? "Enable User" : "Disable User"}
           </h3>
-          <p className="text-[#4A3820] mb-6 !font-sans">
+          <p className="text-[#4A3820] mb-6 font-sans!">
             Are you sure you want to {userToDisable.currentDisabled ? "enable" : "disable"} <strong>{userToDisable.userName}</strong>?
             {!userToDisable.currentDisabled && (
               <span className="block mt-2 text-sm text-red-600">
@@ -529,13 +529,13 @@ useEffect(() => {
           <div className="flex justify-end gap-3">
             <button
               onClick={cancelUpdate}
-              className="px-4 py-2 rounded-lg border-2 border-[#D8CDBE] text-[#4A3820] !font-sans hover:bg-[#F0E8DB] transition-colors"
+              className="px-4 py-2 rounded-lg border-2 border-[#D8CDBE] text-[#4A3820] font-sans! hover:bg-[#F0E8DB] transition-colors"
             >
               Cancel
             </button>
             <button
               onClick={confirmUpdateDisableStatus}
-              className={`px-4 py-2 rounded-lg text-white !font-sans transition-colors ${
+              className={`px-4 py-2 rounded-lg text-white font-sans! transition-colors ${
                 userToDisable.currentDisabled 
                   ? "bg-emerald-600 hover:bg-emerald-700" 
                   : "bg-red-600 hover:bg-red-700"

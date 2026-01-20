@@ -406,11 +406,11 @@ const handleChangeEmail = async (e: React.FormEvent) => {
    // 🔹 Show loading bar while fetching
  if (fetching) {
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-[#F0E8DB]">
+    <div className="min-h-screen flex flex-col items-center justify-center">
       <div className="w-48 h-2 bg-[#E0D6C7] rounded-full overflow-hidden">
         <div className="h-full w-full animate-pulse bg-[#4A3820]"></div>
       </div>
-      <p className="mt-4 text-[#4A3820] font-medium text-lg !font-sans">
+      <p className="mt-4 text-[#4A3820] font-medium text-lg font-sans!">
         Loading email...
       </p>
     </div>
@@ -421,14 +421,14 @@ const handleChangeEmail = async (e: React.FormEvent) => {
   return (
     <div className="min-h-screen px-6 font-sans">
       <div className="max-w-md mx-auto">
-        <h1 className="text-3xl font-extrabold text-[#4A3820] mb-6 text-center !font-sans">
+        <h1 className="text-3xl font-extrabold text-[#4A3820] mb-6 text-center font-sans!">
           Change Email
         </h1>
         
         {/* Information Card */}
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
           <div className="flex items-start">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-blue-500 mr-2 mt-0.5 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-blue-500 mr-2 mt-0.5 shrink-0" viewBox="0 0 20 20" fill="currentColor">
               <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
             </svg>
             <p className="text-sm text-blue-800">
@@ -438,7 +438,7 @@ const handleChangeEmail = async (e: React.FormEvent) => {
         </div>
 
         <div className="bg-[#F0E8DB] border border-[#D8CDBE] rounded-lg shadow-md p-6 sm:p-8">
-          <h1 className={`text-2xl !font-sans font-medium text-[#4A3820] mb-6`}>
+          <h1 className={`text-2xl font-sans! font-medium text-[#4A3820] mb-6`}>
             Update Email Address
           </h1>
           
@@ -464,7 +464,7 @@ const handleChangeEmail = async (e: React.FormEvent) => {
                 <div className="rounded-full border-4 shadow-md px-4 py-2 border-[#805C2C] w-full">
                   <div className="flex items-center">
                     {/* Email Icon */}
-                    <div className="mr-2 flex-shrink-0">
+                    <div className="mr-2 shrink-0">
                       <svg xmlns="http://www.w3.org/2000/svg" height="25px" viewBox="0 -960 960 960" width="25px" fill="#403727">
                         <path d="M172.31-180Q142-180 121-201q-21-21-21-51.31v-455.38Q100-738 121-759q21-21 51.31-21h615.38Q818-780 839-759q21 21 21 51.31v455.38Q860-222 839-201q-21 21-51.31 21H172.31ZM480-457.69L160-662.31v410q0 5.39 3.46 8.85t8.85 3.46h615.38q5.39 0 8.85-3.46t3.46-8.85v-410L480-457.69Zm0-62.31l313.85-200h-627.7L480-520ZM160-662.31V-720v467.69q0 5.39 3.46 8.85t8.85 3.46H160v-422.31Z"/>
                       </svg>
@@ -474,7 +474,7 @@ const handleChangeEmail = async (e: React.FormEvent) => {
                       name="email"
                       value={currentEmail}
                       disabled
-                      className="w-full focus:outline-none text-[#403727] font-bold placeholder-[#403727] border-b-2 border-[#403727] !font-sans text-base md:text-lg bg-transparent opacity-70 cursor-not-allowed"
+                      className="w-full focus:outline-none text-[#403727] font-bold placeholder-[#403727] border-b-2 border-[#403727] font-sans! text-base md:text-lg bg-transparent opacity-70 cursor-not-allowed"
                       required
                     />
                   </div>
@@ -484,7 +484,7 @@ const handleChangeEmail = async (e: React.FormEvent) => {
                     Your current email address
                   </p>
                   {isProviderUser && (
-                    <span className="!text-xs text-gray-600 bg-gray-100 px-2 py-1 rounded-full">
+                    <span className="text-xs! text-gray-600 bg-gray-100 px-2 py-1 rounded-full">
                       {providerName} account
                     </span>
                   )}
@@ -502,8 +502,8 @@ const handleChangeEmail = async (e: React.FormEvent) => {
                     }`}>
                       <div className="flex items-center">
                         {/* Password Icon */}
-                        <div className="mr-2 flex-shrink-0">
-                          <svg xmlns="http://www.w3.org/2000/svg" height="25" className="md:h-[30px]" viewBox="0 -960 960 960" width="25" fill="#403727">
+                        <div className="mr-2 shrink-0">
+                          <svg xmlns="http://www.w3.org/2000/svg" height="25" className="md:h-7.5" viewBox="0 -960 960 960" width="25" fill="#403727">
                             <path d="M252.31-100q-29.92 0-51.12-21.19Q180-142.39 180-172.31v-375.38q0-29.92 21.19-51.12Q222.39-620 252.31-620H300v-80q0-74.92 52.54-127.46Q405.08-880 480-880q74.92 0 127.46 52.54Q660-774.92 660-700v80h47.69q29.92 0 51.12 21.19Q780-577.61 780-547.69v375.38q0 29.92-21.19 51.12Q737.61-100 707.69-100H252.31Zm0-60h455.38q5.39 0 8.85-3.46t3.46-8.85v-375.38q0-5.39-3.46-8.85t-8.85-3.46H252.31q-5.39 0-8.85 3.46t-3.46 8.85v375.38q0 5.39 3.46 8.85t8.85 3.46ZM480-290q29.15 0 49.58-20.42Q550-330.85 550-360t-20.42-49.58Q509.15-430 480-430t-49.58 20.42Q410-389.15 410-360t20.42 49.58Q450.85-290 480-290ZM360-620h240v-80q0-50-35-85t-85-35q-50 0-85 35t-35 85v80ZM240-160v-400 400Z"/>
                           </svg>
                         </div>
@@ -514,7 +514,7 @@ const handleChangeEmail = async (e: React.FormEvent) => {
                           onChange={(e) => handlePasswordChange(e.target.value)}
                           onBlur={handlePasswordBlur}
                           placeholder="Enter your current password"
-                          className="w-full focus:outline-none text-[#403727] font-bold placeholder-[#403727] border-b-2 border-[#403727]  !font-sans text-base md:text-lg bg-transparent"
+                          className="w-full focus:outline-none text-[#403727] font-bold placeholder-[#403727] border-b-2 border-[#403727]  font-sans! text-base md:text-lg bg-transparent"
                           required
                           disabled={loading}
                           autoComplete="current-password"
@@ -526,11 +526,11 @@ const handleChangeEmail = async (e: React.FormEvent) => {
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="flex-shrink-0 text-[#403727] hover:text-[#705431] p-2 h-[44px] w-[44px] md:h-[52px] md:w-[52px] flex items-center justify-center"
+                      className="shrink-0 text-[#403727] hover:text-[#705431] p-2 h-11 w-11 md:h-13 md:w-13 flex items-center justify-center"
                       aria-label={showPassword ? "Hide password" : "Show password"}
                       disabled={loading}
                     >
-                      <svg width="20" height="20" className="md:w-[25px] md:h-[25px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <svg width="20" height="20" className="md:w-6.25 md:h-6.25" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                         {showPassword ? (
                           <>
                             <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
@@ -580,7 +580,7 @@ const handleChangeEmail = async (e: React.FormEvent) => {
                 type="button"
                 onClick={handleReauthentication}
                 disabled={loading || (!isProviderUser && !password) || reauthenticationAttempts >= MAX_REAUTH_ATTEMPTS}
-                className="py-3 px-8  !font-sans bg-[#805C2C] text-[#FFFFFF] rounded-[30px] hover:bg-[#705431] disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors text-base md:text-lg w-full sm:w-auto"
+                className="py-3 px-8  font-sans! bg-[#805C2C] text-[#FFFFFF] rounded-[30px] hover:bg-[#705431] disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors text-base md:text-lg w-full sm:w-auto"
               >
 
                   <span className="text-[#FFFFFF] font-medium flex items-center justify-center gap-2">
@@ -621,7 +621,7 @@ const handleChangeEmail = async (e: React.FormEvent) => {
                 <div className="rounded-full border-4 shadow-md px-4 py-2 border-[#805C2C] w-full">
                   <div className="flex items-center">
                     {/* Email Icon */}
-                    <div className="mr-2 flex-shrink-0">
+                    <div className="mr-2 shrink-0">
                       <svg xmlns="http://www.w3.org/2000/svg" height="25px" viewBox="0 -960 960 960" width="25px" fill="#403727">
                         <path d="M172.31-180Q142-180 121-201q-21-21-21-51.31v-455.38Q100-738 121-759q21-21 51.31-21h615.38Q818-780 839-759q21 21 21 51.31v455.38Q860-222 839-201q-21 21-51.31 21H172.31ZM480-457.69L160-662.31v410q0 5.39 3.46 8.85t8.85 3.46h615.38q5.39 0 8.85-3.46t3.46-8.85v-410L480-457.69Zm0-62.31l313.85-200h-627.7L480-520ZM160-662.31V-720v467.69q0 5.39 3.46 8.85t8.85 3.46H160v-422.31Z"/>
                       </svg>
@@ -631,7 +631,7 @@ const handleChangeEmail = async (e: React.FormEvent) => {
                       name="email"
                       value={currentEmail}
                       disabled
-                      className="w-full focus:outline-none text-[#403727] font-bold placeholder-[#403727] border-b-2 border-[#403727] !font-sans text-base md:text-lg bg-transparent opacity-70 cursor-not-allowed"
+                      className="w-full focus:outline-none text-[#403727] font-bold placeholder-[#403727] border-b-2 border-[#403727] font-sans! text-base md:text-lg bg-transparent opacity-70 cursor-not-allowed"
                       required
                     />
                   </div>
@@ -641,7 +641,7 @@ const handleChangeEmail = async (e: React.FormEvent) => {
                     Your current email address
                   </p>
                   {isProviderUser && (
-                    <span className="!text-xs text-gray-600 bg-gray-100 px-2 py-1 rounded-full">
+                    <span className="text-xs! text-gray-600 bg-gray-100 px-2 py-1 rounded-full">
                       {providerName} account
                     </span>
                   )}
@@ -657,7 +657,7 @@ const handleChangeEmail = async (e: React.FormEvent) => {
                 }`}>
                   <div className="flex items-center">
                     {/* Email Icon */}
-                    <div className="mr-2 flex-shrink-0">
+                    <div className="mr-2 shrink-0">
                       <svg xmlns="http://www.w3.org/2000/svg" height="25px" viewBox="0 -960 960 960" width="25px" fill="#403727">
                         <path d="M172.31-180Q142-180 121-201q-21-21-21-51.31v-455.38Q100-738 121-759q21-21 51.31-21h615.38Q818-780 839-759q21 21 21 51.31v455.38Q860-222 839-201q-21 21-51.31 21H172.31ZM480-457.69L160-662.31v410q0 5.39 3.46 8.85t8.85 3.46h615.38q5.39 0 8.85-3.46t3.46-8.85v-410L480-457.69Zm0-62.31l313.85-200h-627.7L480-520ZM160-662.31V-720v467.69q0 5.39 3.46 8.85t8.85 3.46H160v-422.31Z"/>
                       </svg>
@@ -669,7 +669,7 @@ const handleChangeEmail = async (e: React.FormEvent) => {
                       onChange={(e) => setNewEmail(e.target.value)}
                       onBlur={handleNewEmailBlur}
                       placeholder="New Email Address"
-                      className="w-full focus:outline-none text-[#403727] font-bold placeholder-[#403727] border-b-2 border-[#403727]  !font-sans text-base md:text-lg bg-transparent"
+                      className="w-full focus:outline-none text-[#403727] font-bold placeholder-[#403727] border-b-2 border-[#403727]  font-sans! text-base md:text-lg bg-transparent"
                       required
                       disabled={loading}
                       autoComplete="email"
@@ -692,7 +692,7 @@ const handleChangeEmail = async (e: React.FormEvent) => {
                 }`}>
                   <div className="flex items-center">
                     {/* Check Icon */}
-                    <div className="mr-2 flex-shrink-0">
+                    <div className="mr-2 shrink-0">
                       <svg xmlns="http://www.w3.org/2000/svg" height="25px" viewBox="0 -960 960 960" width="25px" fill="#403727">
                         <path d="m424-312 282-282-56-56-226 226-114-114-56 56 170 170ZM172.31-180Q142-180 121-201q-21-21-21-51.31v-455.38Q100-738 121-759q21-21 51.31-21h615.38Q818-780 839-759q21 21 21 51.31v455.38Q860-222 839-201q-21 21-51.31 21H172.31Z"/>
                       </svg>
@@ -704,7 +704,7 @@ const handleChangeEmail = async (e: React.FormEvent) => {
                       onChange={(e) => setConfirmEmail(e.target.value)}
                       onBlur={handleConfirmEmailBlur}
                       placeholder="Confirm New Email"
-                      className="w-full focus:outline-none text-[#403727] font-bold placeholder-[#403727] border-b-2 border-[#403727] !font-sans text-base md:text-lg bg-transparent"
+                      className="w-full focus:outline-none text-[#403727] font-bold placeholder-[#403727] border-b-2 border-[#403727] font-sans! text-base md:text-lg bg-transparent"
                       required
                       disabled={loading}
                       autoComplete="email"
@@ -723,7 +723,7 @@ const handleChangeEmail = async (e: React.FormEvent) => {
                 <button
                   type="submit"
                   disabled={loading || !newEmail || !confirmEmail}
-                  className="py-3 px-8 !font-sans bg-green-600 text-[#FFFFFF] rounded-[30px] hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors text-base md:text-lg"
+                  className="py-3 px-8 font-sans! bg-green-600 text-[#FFFFFF] rounded-[30px] hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors text-base md:text-lg"
                 >
                   <span className="text-[#FFFFFF] font-medium">
                     {loading ? (
@@ -741,7 +741,7 @@ const handleChangeEmail = async (e: React.FormEvent) => {
                   type="button"
                   onClick={resetForm}
                   disabled={loading}
-                  className="py-3 px-8 !font-sans bg-gray-500 text-[#FFFFFF] rounded-[30px] hover:bg-gray-600 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors text-base md:text-lg"
+                  className="py-3 px-8 font-sans! bg-gray-500 text-[#FFFFFF] rounded-[30px] hover:bg-gray-600 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors text-base md:text-lg"
                 >
                   <span className="text-[#FFFFFF] font-medium">
                     Cancel
