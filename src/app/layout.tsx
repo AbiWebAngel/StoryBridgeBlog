@@ -41,7 +41,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <header>
             <Navbar />
           </header>
-          <main className="flex-grow mt-6 mb-6 pt-2">{children}</main>
+          <main className="grow mt-6 mb-6 pt-2">{children}</main>
           <footer>
             <Footer />
           </footer>

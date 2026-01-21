@@ -21,6 +21,9 @@ export default function DashboardArticlesPage() {
   const [loading, setLoading] = useState(true);
   const [selectedArticle, setSelectedArticle] = useState<Article | null>(null);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [statusFilter, setStatusFilter] = useState<"all" | "published" | "draft">("all");
+  const [dateSort, setDateSort] = useState<"newest" | "oldest">("newest");
+
 
   useEffect(() => {
     const load = async () => {
@@ -79,24 +82,34 @@ export default function DashboardArticlesPage() {
   };
 
   // Basic search (title + tags)
-  useEffect(() => {
-    if (!search.trim()) {
-      setFiltered(articles);
-      return;
-    }
+useEffect(() => {
+  let result = [...articles];
 
+  // Text search
+  if (search.trim()) {
     const lower = search.toLowerCase();
-
-    setFiltered(
-      articles.filter((art) => {
-        return (
-          art.title?.toLowerCase().includes(lower) ||
-          art.slug?.toLowerCase().includes(lower) ||
-          art.tags?.some((t) => t.toLowerCase().includes(lower))
-        );
-      })
+    result = result.filter((art) =>
+      art.title?.toLowerCase().includes(lower) ||
+      art.slug?.toLowerCase().includes(lower) ||
+      art.tags?.some((t) => t.toLowerCase().includes(lower))
     );
-  }, [search, articles]);
+  }
+
+  // Status filter
+  if (statusFilter !== "all") {
+    result = result.filter((art) => art.status === statusFilter);
+  }
+
+  // Date sort
+  result.sort((a, b) => {
+    const aTime = a.updatedAt?.toMillis?.() ?? 0;
+    const bTime = b.updatedAt?.toMillis?.() ?? 0;
+    return dateSort === "newest" ? bTime - aTime : aTime - bTime;
+  });
+
+  setFiltered(result);
+}, [articles, search, statusFilter, dateSort]);
+
 
   // Updated loading state UI
   if (loading) {
@@ -146,9 +159,32 @@ export default function DashboardArticlesPage() {
             onChange={(e) => setSearch(e.target.value)}
             className="w-full p-3 mb-6 rounded-lg border border-[#D8CDBE] bg-white focus:outline-none focus:ring-2 focus:ring-[#CABAA2] text-lg font-sans!"
           />
+          <div className="flex flex-col sm:flex-row gap-4 mb-6">
+        
+        {/* Status */}
+        <select
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value as any)}
+          className="p-3 rounded-lg border border-[#D8CDBE] bg-white focus:outline-none focus:ring-2 focus:ring-[#CABAA2] text-lg font-sans!"
+        >
+          <option value="all">All statuses</option>
+          <option value="published">Published</option>
+          <option value="draft">Draft</option>
+        </select>
+
+        {/* Date */}
+        <select
+          value={dateSort}
+          onChange={(e) => setDateSort(e.target.value as any)}
+          className="p-3 rounded-lg border border-[#D8CDBE] bg-white focus:outline-none focus:ring-2 focus:ring-[#CABAA2] text-lg font-sans!"
+        >
+          <option value="newest">Newest first</option>
+          <option value="oldest">Oldest first</option>
+        </select>
+      </div>
 
           {/* LIST CONTAINER */}
-          <div className="max-h-screen overflow-y-auto pr-2">
+         <div className="pr-2">
             {filtered.length === 0 ? (
               <div className="text-center py-10 text-[#4A3820]/60 font-sans!">
                 No articles found.

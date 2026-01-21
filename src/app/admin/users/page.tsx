@@ -367,7 +367,7 @@ useEffect(() => {
                   </div>
                 ) : (
                 // ADDED: Scrollable container with max height
-               <div className="space-y-6 max-h-[65vh] overflow-y-auto pr-2 scrollable-description">
+               <div className="space-y-6 max-h-[calc(100vh-420px)] overflow-y-auto pr-2">
                   {filteredUsers.map((u) => {
                     const isSuperAdmin = u.uid === "z2Vhrt7WiBSBDLlvnNuJ3PMtsvk2";
                     const isCurrentUser = u.uid === currentAuthUser?.uid;

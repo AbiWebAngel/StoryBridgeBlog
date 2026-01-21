@@ -8,7 +8,7 @@ interface ArticleCardProps {
 
 export default function ArticleCard({ article, onDelete }: ArticleCardProps) {
   return (
-    <div className="bg-white border border-[#D8CDBE] rounded-lg shadow-md p-5 flex flex-col justify-between hover:shadow-lg transition font-sans">
+    <div className="bg-white border border-[#D8CDBE] rounded-lg shadow-md p-5 flex flex-col hover:shadow-lg transition font-sans">
       
       {/* COVER IMAGE */}
       {article.coverImage && (

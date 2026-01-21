@@ -109,14 +109,24 @@ export default function PreviewArticlePage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
         {/* Back button - exact design from blog page */}
-        <button 
-          onClick={() => window.close()}
-          className="mb-6 flex items-center text-[#CF822A] hover:text-[#B36F24] transition font-inter font-bold group relative pb-1"
-        >
-          <span className="relative after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-[#B36F24] after:transition-all after:duration-300 group-hover:after:w-full">
-             Close Preview
-          </span>
-        </button>
+      <button 
+  onClick={() => {
+    // First, try to close the window/tab
+    window.close();
+    
+    // If still open after a short delay, go back
+    setTimeout(() => {
+      if (!window.closed) {
+        window.history.back();
+      }
+    }, 100);
+  }}
+  className="mb-6 flex items-center text-[#CF822A] hover:text-[#B36F24] transition font-inter font-bold group relative pb-1"
+>
+  <span className="relative after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-[#B36F24] after:transition-all after:duration-300 group-hover:after:w-full">
+    Close Preview
+  </span>
+</button>
 
         {/* Article Card - exact design from blog page */}
         <div className="bg-[#F2ECE3] rounded-[30px] shadow-xl p-6 sm:p-8">

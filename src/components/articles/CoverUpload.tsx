@@ -129,123 +129,125 @@ const onPointerMove = (e: React.PointerEvent) => {
 
 
   
-  return (
-    <div className="space-y-3">
-      <div
-        onDragOver={(e) => e.preventDefault()}
-        onDragEnter={(e) => {
-          e.preventDefault();
-          e.currentTarget.classList.add("ring-2", "ring-[#805C2C]");
-        }}
-        onDragLeave={(e) => {
-          e.preventDefault();
-          e.currentTarget.classList.remove("ring-2", "ring-[#805C2C]");
-        }}
-        onDrop={(e) => {
-          e.preventDefault();
-          e.currentTarget.classList.remove("ring-2", "ring-[#805C2C]");
-          handleDrop(e);
-        }}
-        onClick={() => {
-          if (!value) handleBrowse();
-        }}
-        className="cursor-pointer"
-      >
-  {!value ? (
-  <label
-    onClick={handleBrowse}
-    className="
-      flex items-center justify-center
-      w-full px-4 py-6
-      border-2 border-dashed border-[#805C2C]
-      rounded-lg
-      bg-[#F9F5F0]
-      text-[#4A3820]
-      font-medium
-      cursor-pointer
-      hover:bg-[#F0E8DB]
-      hover:border-[#6B4C24]
-      transition-colors
-    "
-  >
-    Click or drag an image here
-  </label>
-) : (
-  <div className="space-y-2">
+ return (
+  <div className="space-y-3">
     <div
-     ref={containerRef}
-  onPointerDown={onPointerDown}
-  onPointerMove={onPointerMove}
-  onPointerUp={onPointerUp}
-  onPointerLeave={onPointerUp}
-      className="
-        relative w-full
-        h-62.5 sm:h-87.5 lg:h-112.5
-        overflow-hidden
-        rounded-[20px]
-        bg-black
-      "
+      onDragOver={(e) => e.preventDefault()}
+      onDragEnter={(e) => {
+        e.preventDefault();
+        e.currentTarget.classList.add("ring-2", "ring-[#805C2C]");
+      }}
+      onDragLeave={(e) => {
+        e.preventDefault();
+        e.currentTarget.classList.remove("ring-2", "ring-[#805C2C]");
+      }}
+      onDrop={(e) => {
+        e.preventDefault();
+        e.currentTarget.classList.remove("ring-2", "ring-[#805C2C]");
+        handleDrop(e);
+      }}
+      onClick={() => {
+        if (!value) handleBrowse();
+      }}
+      className="cursor-pointer"
     >
-      <img
-        src={value}
-        alt="Cover"
-        draggable={false}
-        className="absolute inset-0 w-full h-full object-cover cursor-grab active:cursor-grabbing"
-        style={{
-          objectPosition: `${position.x}% ${position.y}%`,
-        }}
-      />
-
-      <div className="absolute inset-0 flex items-center justify-center text-white text-sm opacity-0 hover:opacity-100 transition">
-        Drag image to reposition
-      </div>
-    </div>
-
-    <button
-      type="button"
-      onClick={handleBrowse}
-      className="text-sm text-[#4A3820]/70 underline font-sans!"
-    >
-      Click to replace image
-    </button>
-  </div>
-)}
-
-      </div>
-
-      <input
-        type="file"
-        ref={fileInputRef}
-        accept=".png, .jpg, .jpeg, .webp, .gif"
-        className="hidden"
-        onChange={handleFileSelect}
-      />
-
-      {uploading && (
-        <div className="w-full bg-gray-200 rounded h-2">
+      {!value ? (
+        <label
+          onClick={handleBrowse}
+          className="
+            flex items-center justify-center
+            w-full px-4 py-6
+            border-2 border-dashed border-[#805C2C]
+            rounded-lg
+            bg-[#F9F5F0]
+            text-[#4A3820]
+            font-medium
+            cursor-pointer
+            hover:bg-[#F0E8DB]
+            hover:border-[#6B4C24]
+            transition-colors
+          "
+        >
+          Click or drag an image here
+        </label>
+      ) : (
+        <div className="space-y-2">
           <div
-            className="bg-[#805C2C] h-2 rounded"
-            style={{ width: `${progress}%` }}
-          ></div>
+            ref={containerRef}
+            onPointerDown={onPointerDown}
+            onPointerMove={onPointerMove}
+            onPointerUp={onPointerUp}
+            onPointerLeave={onPointerUp}
+            className="
+              relative w-full
+              h-62.5 sm:h-87.5 lg:h-112.5
+              overflow-hidden
+              rounded-[20px]
+              bg-black
+            "
+          >
+            <img
+              src={value}
+              alt="Cover"
+              draggable={false}
+              className="absolute inset-0 w-full h-full object-cover cursor-grab active:cursor-grabbing"
+              style={{
+                objectPosition: `${position.x}% ${position.y}%`,
+              }}
+            />
+
+            <div className="absolute inset-0 flex items-center justify-center text-white text-sm opacity-0 hover:opacity-100 transition">
+              Drag image to reposition
+            </div>
+          </div>
+
+          {value && !uploading && (
+            <div className="flex justify-between">
+              <button
+                type="button"
+                onClick={handleBrowse}
+                className="text-sm text-[#4A3820]/70 underline font-sans!"
+              >
+                Click to replace image
+              </button>
+
+              <button
+                type="button"
+                className="text-red-600 text-sm underline font-sans!"
+                onClick={async () => {
+                  try {
+                    await deleteOldAsset(value);
+                  } catch (err) {
+                    console.warn("Failed to delete cover on remove:", err);
+                  }
+                  onChange(null);
+                }}
+              >
+                Remove Cover Image
+              </button>
+            </div>
+          )}
         </div>
       )}
-
-      {value && !uploading && (
-        <button
-          className="text-red-600 text-sm underline font-sans!"
-          onClick={async () => {
-            // try to delete remote asset
-            try {
-              await deleteOldAsset(value);
-            } catch (err) {
-              console.warn("Failed to delete cover on remove:", err);
-            }
-            onChange(null);
-          }}
-        >
-          Remove Cover Image
-        </button>
-      )}
     </div>
-  );
+
+    <input
+      type="file"
+      ref={fileInputRef}
+      accept=".png, .jpg, .jpeg, .webp, .gif"
+      className="hidden"
+      onChange={handleFileSelect}
+    />
+
+    {uploading && (
+      <div className="w-full bg-gray-200 rounded h-2">
+        <div
+          className="bg-[#805C2C] h-2 rounded"
+          style={{ width: `${progress}%` }}
+        ></div>
+      </div>
+    )}
+  </div>
+);
+
 }
