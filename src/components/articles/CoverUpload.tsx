@@ -4,21 +4,26 @@ import { useState, useRef } from "react";
 
 interface CoverUploadProps {
   value: string | null;
-  articleId: string;          // 👈 ADD
+  articleId: string;
+  position: { x: number; y: number };
+  onPositionChange: (pos: { x: number; y: number }) => void;
   onChange: (url: string | null) => void;
   onUploaded?: (url: string) => void;
 }
 
-
 export default function CoverUpload({
   value,
-  articleId,   // 👈 ADD
+  articleId,
+  position,
+  onPositionChange,
   onChange,
   onUploaded,
-}: CoverUploadProps) {
+}: CoverUploadProps)
+ {
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const rafRef = useRef<number | null>(null);
 
   const handleDrop = async (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
@@ -91,7 +96,39 @@ export default function CoverUpload({
       setUploading(false);
     }
   };
+const containerRef = useRef<HTMLDivElement>(null);
 
+const dragging = useRef(false);
+
+const onPointerDown = (e: React.PointerEvent) => {
+  dragging.current = true;
+  // capture pointer ON THE CONTAINER (not the image!)
+  containerRef.current?.setPointerCapture(e.pointerId);
+};
+
+const onPointerUp = (e: React.PointerEvent) => {
+  dragging.current = false;
+  containerRef.current?.releasePointerCapture(e.pointerId);
+};
+
+const onPointerMove = (e: React.PointerEvent) => {
+  if (!dragging.current || !containerRef.current) return;
+
+  const rect = containerRef.current.getBoundingClientRect();
+  const x = ((e.clientX - rect.left) / rect.width) * 100;
+  const y = ((e.clientY - rect.top) / rect.height) * 100;
+
+  onPositionChange({
+    x: Math.min(100, Math.max(0, x)),
+    y: Math.min(100, Math.max(0, y)),
+  });
+};
+
+
+
+
+
+  
   return (
     <div className="space-y-3">
       <div
@@ -109,38 +146,71 @@ export default function CoverUpload({
           e.currentTarget.classList.remove("ring-2", "ring-[#805C2C]");
           handleDrop(e);
         }}
-        onClick={handleBrowse}
+        onClick={() => {
+          if (!value) handleBrowse();
+        }}
         className="cursor-pointer"
       >
-        <label
-          className="
-            flex items-center justify-center
-            w-full px-4 py-6
-            border-2 border-dashed border-[#805C2C]
-            rounded-lg
-            bg-[#F9F5F0]
-            text-[#4A3820]
-            font-medium
-            cursor-pointer
-            hover:bg-[#F0E8DB]
-            hover:border-[#6B4C24]
-            transition-colors
-          "
-        >
-          {!value ? (
-            <span>Click or drag an image here</span>
-          ) : (
-            <div className="space-y-2">
-             <img
-          src={value}
-          alt="Cover"
-          className="w-600 max-h-96 object-cover mx-auto rounded"
-        />
+  {!value ? (
+  <label
+    onClick={handleBrowse}
+    className="
+      flex items-center justify-center
+      w-full px-4 py-6
+      border-2 border-dashed border-[#805C2C]
+      rounded-lg
+      bg-[#F9F5F0]
+      text-[#4A3820]
+      font-medium
+      cursor-pointer
+      hover:bg-[#F0E8DB]
+      hover:border-[#6B4C24]
+      transition-colors
+    "
+  >
+    Click or drag an image here
+  </label>
+) : (
+  <div className="space-y-2">
+    <div
+     ref={containerRef}
+  onPointerDown={onPointerDown}
+  onPointerMove={onPointerMove}
+  onPointerUp={onPointerUp}
+  onPointerLeave={onPointerUp}
+      className="
+        relative w-full
+        h-62.5 sm:h-87.5 lg:h-112.5
+        overflow-hidden
+        rounded-[20px]
+        bg-black
+      "
+    >
+      <img
+        src={value}
+        alt="Cover"
+        draggable={false}
+        className="absolute inset-0 w-full h-full object-cover cursor-grab active:cursor-grabbing"
+        style={{
+          objectPosition: `${position.x}% ${position.y}%`,
+        }}
+      />
 
-              <p className="text-sm text-[#4A3820]/70">Click to replace image</p>
-            </div>
-          )}
-        </label>
+      <div className="absolute inset-0 flex items-center justify-center text-white text-sm opacity-0 hover:opacity-100 transition">
+        Drag image to reposition
+      </div>
+    </div>
+
+    <button
+      type="button"
+      onClick={handleBrowse}
+      className="text-sm text-[#4A3820]/70 underline font-sans!"
+    >
+      Click to replace image
+    </button>
+  </div>
+)}
+
       </div>
 
       <input

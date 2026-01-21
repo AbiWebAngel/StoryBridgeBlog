@@ -145,14 +145,20 @@ export default function PreviewArticlePage() {
           {/* Featured Image */}
           {post.coverImage && (
             <div className="mb-8 flex justify-center">
-              <Image
-                src={post.coverImage}
-                alt={post.coverImageAlt || post.title || "Article cover"}
-                width={1200}
-                height={600}
-                className="w-full h-62.5 sm:h-87.5 lg:h-112.5 object-cover rounded-[20px]"
-                priority
-              />
+             <Image
+              src={post.coverImage}
+              alt={post.coverImageAlt || post.title || "Article cover"}
+              width={1200}
+              height={600}
+              priority
+              className="w-full h-62.5 sm:h-87.5 lg:h-112.5 rounded-[20px]"
+              style={{
+                objectFit: "cover",
+                objectPosition: post.coverImagePosition
+                  ? `${post.coverImagePosition.x}% ${post.coverImagePosition.y}%`
+                  : "50% 50%",
+              }}
+            />
             </div>
           )}
 

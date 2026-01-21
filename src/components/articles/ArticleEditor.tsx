@@ -63,6 +63,7 @@ export default function ArticleEditor({
   const [tableMenuOpen, setTableMenuOpen] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
   const [exportProgress, setExportProgress] = useState(0);
+  const isDraggingRef = useRef(false);
 
   const hasHydratedRef = useRef(false);
   const TOOLBAR_BTN_BASE =
@@ -248,12 +249,13 @@ const flushSave = useCallback(() => {
         },
       }),
     ],
-      onUpdate: ({ editor, transaction }) => {
-      // Ignore selection-only changes
-      if (!transaction.docChanged) return;
+    onUpdate: ({ editor, transaction }) => {
+    if (!transaction.docChanged) return;
+    if (isDraggingRef.current) return; // 👈 key line
 
-      scheduleSave(editor.getJSON());
-    },
+    scheduleSave(editor.getJSON());
+  },
+
     onSelectionUpdate: ({ editor }) => {
       const hasSel = !editor.state.selection.empty;
       queueMicrotask(() => setHasSelection(hasSel));
@@ -790,7 +792,13 @@ useEffect(() => {
               if (editor.state.selection.empty) return false;
               if (editor.isActive("heading")) return false;
 
-              const coords = editor.view.coordsAtPos(from);
+              if (!editor.view || !editor.view.dom) return false;
+            let coords;
+            try {
+              coords = editor.view.coordsAtPos(from);
+            } catch {
+              return false;
+            }
 
               // toolbar height ≈ 64–72px + breathing room
               const TOOLBAR_SAFE_ZONE = 120;

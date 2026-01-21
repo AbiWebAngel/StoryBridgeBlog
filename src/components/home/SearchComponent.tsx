@@ -24,7 +24,7 @@ export default function SearchComponent() {
 
   {/* Search Box positioned above the section */}
   
-  <div className="absolute top-[-22px] right-0 w-80 md:w-96 z-10">
+  <div className="absolute -top-5.5 right-0 w-80 md:w-96 z-10">
     <div className="relative">
       {/* Icon */}
       <div className="absolute left-8 top-1/2 -translate-y-1/2 pointer-events-none z-10">
@@ -48,7 +48,7 @@ export default function SearchComponent() {
       />
 
       {/* Permanent underline */}
-      <div className="absolute left-16 right-2 bottom-3 h-[1px] bg-[#403727] pointer-events-none rounded" />
+      <div className="absolute left-16 right-2 bottom-3 h-px bg-[#403727] pointer-events-none rounded" />
     </div>
   </div>
 

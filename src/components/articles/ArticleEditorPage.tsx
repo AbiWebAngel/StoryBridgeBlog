@@ -16,6 +16,7 @@ import FloatingAutosaveIndicator from "@/components/admin/FloatingAutosaveIndica
 import FloatingSaveBar from "@/components/admin/FloatingSaveBar";
 import { getDoc } from "firebase/firestore";
 
+
 type ArticleEditorPageProps = {
   articleId?: string; // undefined = new article
   mode: "new" | "edit";
@@ -23,6 +24,7 @@ type ArticleEditorPageProps = {
 
 // Constants
 const BACKUP_AUTOSAVE_INTERVAL = 10 * 60 * 1000; // 10 minutes
+const DEFAULT_COVER_POSITION = { x: 50, y: 50 };
 
 
 // Helper functions
@@ -36,7 +38,8 @@ export default function ArticleEditorPage({
 }: ArticleEditorPageProps) {
 
   const { user: currentAuthUser, authReady } = useAuth();
-  
+
+
   // Refs
   const articleIdRef = useRef<string | null>(null);
   const hasSavedOnceRef = useRef(false);
@@ -44,19 +47,22 @@ export default function ArticleEditorPage({
   const serverSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const [nextServerSaveAt, setNextServerSaveAt] = useState<number | null>(null);
   const backupIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const [showSuccessPanel, setShowSuccessPanel] = useState(false);
 
 
   // State
-  const [articleData, setArticleData] = useState({
-    title: "",
-    slug: "",
-    metaDescription: "",
-    coverImage: null as string | null,
-    coverImageAlt: "",
-    body: null as any,
-    tags: [] as string[],
-    status: "draft" as "draft" | "published",
-  });
+const [articleData, setArticleData] = useState({
+  title: "",
+  slug: "",
+  metaDescription: "",
+  coverImage: null as string | null,
+  coverImageAlt: "",
+  coverImagePosition: { x: 50, y: 50 }, // 👈 NEW (percentages)
+  body: null as any,
+  tags: [] as string[],
+  status: "draft" as "draft" | "published",
+});
+
 
   const articleDataRef = useRef(articleData);
 
@@ -203,16 +209,18 @@ useEffect(() => {
         const draft = JSON.parse(raw);
         console.log("💾 Restored from LOCAL");
 
-        setArticleData({
-          title: draft.title ?? "",
-          slug: draft.slug ?? "",
-          metaDescription: draft.metaDescription ?? "",
-          coverImage: draft.coverImage ?? null,
-          coverImageAlt: draft.coverImageAlt ?? "",
-          body: draft.body ?? null,
-          tags: draft.tags ?? [],
-          status: "draft",
-        });
+       setArticleData({
+        title: draft.title ?? "",
+        slug: draft.slug ?? "",
+        metaDescription: draft.metaDescription ?? "",
+        coverImage: draft.coverImage ?? null,
+        coverImageAlt: draft.coverImageAlt ?? "",
+        coverImagePosition: draft.coverImagePosition ?? DEFAULT_COVER_POSITION,
+        body: draft.body ?? null,
+        tags: draft.tags ?? [],
+        status: "draft",
+      });
+
 
         setUploadedAssets(draft.uploadedAssets ?? []);
         hasRestoredRef.current = true;
@@ -230,16 +238,18 @@ useEffect(() => {
       const data = snap.data();
       console.log("📡 Restored from Firebase");
 
-      setArticleData({
-        title: data.title ?? "",
-        slug: data.slug ?? "",
-        metaDescription: data.metaDescription ?? "",
-        coverImage: data.coverImage ?? null,
-        coverImageAlt: data.coverImageAlt ?? "",
-        body: data.body ?? null,
-        tags: data.tags ?? [],
-        status: data.status ?? "draft",
-      });
+    setArticleData({
+    title: data.title ?? "",
+    slug: data.slug ?? "",
+    metaDescription: data.metaDescription ?? "",
+    coverImage: data.coverImage ?? null,
+    coverImageAlt: data.coverImageAlt ?? "",
+    coverImagePosition: data.coverImagePosition ?? DEFAULT_COVER_POSITION,
+    body: data.body ?? null,
+    tags: data.tags ?? [],
+    status: data.status ?? "draft",
+  });
+
 
       setUploadedAssets(data.uploadedAssets ?? []);
     } else {
@@ -382,15 +392,17 @@ const timeUntilNextSave =
     hasRestoredRef.current = false;
     setArticleReady(false);
     setArticleData({
-      title: "",
-      slug: "",
-      metaDescription: "",
-      coverImage: null,
-      coverImageAlt: "",
-      body: null,
-      tags: [],
-      status: "draft",
-    });
+    title: "",
+    slug: "",
+    metaDescription: "",
+    coverImage: null,
+    coverImageAlt: "",
+    coverImagePosition: DEFAULT_COVER_POSITION,
+    body: null,
+    tags: [],
+    status: "draft",
+  });
+
     setUploadedAssets([]);
     setResetEditorToken(v => v + 1);
     hasSavedOnceRef.current = false;
@@ -483,6 +495,8 @@ const timeUntilNextSave =
       setSuccessMessage(
         hasSavedOnceRef.current ? "Article updated successfully!" : "Article created successfully!"
       );
+      
+      setShowSuccessPanel(true);  
 
       if (currentAuthUser && articleIdRef.current) {
         localStorage.removeItem(getAutosaveKey(currentAuthUser.uid, articleIdRef.current));
@@ -549,6 +563,39 @@ if (!currentAuthUser) {
             {successMessage}
           </div>
         )}
+
+        {showSuccessPanel && (
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl shadow-lg p-6 w-[90%] max-w-md text-center">
+            <h2 className="text-2xl font-bold text-[#4A3820] mb-4 font-sans!">
+              Saved Successfully
+            </h2>
+            <p className="text-[#4A3820] mb-6 font-sans!">
+              Your article has been saved. What would you like to do next?
+            </p>
+
+            <div className="flex flex-col gap-3">
+              <button
+                onClick={() => {
+                  setShowSuccessPanel(false);
+                  window.location.href = "/dashboard/articles";
+                }}
+                className="w-full py-3 bg-[#4A3820] text-white rounded-lg hover:bg-[#3A2D18] transition font-sans!"
+              >
+                Go to Articles Dashboard
+              </button>
+
+              <button
+                onClick={() => setShowSuccessPanel(false)}
+                className="w-full py-3 border border-[#4A3820] text-[#4A3820] rounded-lg hover:bg-[#F0E8DB] transition font-sans!"
+              >
+                Keep Editing
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
 
         {errors.general && (
           <div className="mb-6 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg">
@@ -618,16 +665,23 @@ if (!currentAuthUser) {
               <label className="block text-lg font-bold text-[#4A3820] mb-3 font-sans!">
                 Cover Image
               </label>
-              <CoverUpload
-                value={coverImage}
-                articleId={articleIdRef.current!}
-                onChange={(url) => {
-                  updateArticleData({ coverImage: url });
-                  if (url) {
-                    setUploadedAssets(prev => prev.includes(url) ? prev : [...prev, url]);
-                  }
-                }}
-              />
+            <CoverUpload
+              value={coverImage}
+              articleId={articleIdRef.current!}
+              position={articleData.coverImagePosition}
+              onPositionChange={(pos) =>
+                updateArticleData({ coverImagePosition: pos })
+              }
+              onChange={(url) => {
+                updateArticleData({ coverImage: url });
+                if (url) {
+                  setUploadedAssets(prev =>
+                    prev.includes(url) ? prev : [...prev, url]
+                  );
+                }
+              }}
+            />
+
               <div className="mt-4">
                 <label className="block text-sm font-semibold text-[#4A3820] mb-1">
                   Cover Image Alt Text

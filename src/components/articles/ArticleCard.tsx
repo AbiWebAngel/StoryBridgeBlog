@@ -13,13 +13,19 @@ export default function ArticleCard({ article, onDelete }: ArticleCardProps) {
       {/* COVER IMAGE */}
       {article.coverImage && (
         <div className="relative w-full h-48 mb-5 rounded-lg overflow-hidden border border-[#D8CDBE]">
-          <Image
-            src={article.coverImage}
-            alt={article.coverImageAlt || article.title}
-            fill
-            className="object-cover"
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-          />
+         <Image
+          src={article.coverImage}
+          alt={article.coverImageAlt || article.title || "Article cover"}
+          fill
+          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+          className="rounded-lg"
+          style={{
+            objectFit: "cover",
+            objectPosition: article.coverImagePosition
+              ? `${article.coverImagePosition.x}% ${article.coverImagePosition.y}%`
+              : "50% 50%",
+          }}
+        />
         </div>
       )}
 
@@ -54,9 +60,9 @@ export default function ArticleCard({ article, onDelete }: ArticleCardProps) {
         </span>
         <span className="font-medium">
           {article.updatedAt?.toDate
-            ? new Date(article.updatedAt.toDate()).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
+            ? new Date(article.updatedAt.toDate()).toLocaleDateString('en-GB', { year: 'numeric', month: 'short', day: 'numeric' })
             : article.createdAt?.toDate
-            ? new Date(article.createdAt.toDate()).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
+            ? new Date(article.createdAt.toDate()).toLocaleDateString('en-GB', { year: 'numeric', month: 'short', day: 'numeric' })
             : 'No date'}
         </span>
       </div>
