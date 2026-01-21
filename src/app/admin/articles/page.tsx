@@ -81,12 +81,6 @@ export default function AdminArticlesPage() {
   const [selectedArticle, setSelectedArticle] = useState<AdminArticle | null>(null);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
 
-  // Check if user is admin
-  useEffect(() => {
-    if (authReady && (!user || role !== "admin")) {
-      router.push("/");
-    }
-  }, [authReady, user, role, router]);
 
   // Fetch all articles
   useEffect(() => {
@@ -200,7 +194,7 @@ export default function AdminArticlesPage() {
           <div className="h-full w-full animate-pulse bg-[#4A3820]"></div>
         </div>
         <p className="mt-4 text-[#4A3820] font-medium text-lg font-sans!">
-          Loading admin dashboard...
+          Loading All articles...
         </p>
       </div>
     );
@@ -226,7 +220,7 @@ export default function AdminArticlesPage() {
     <div className="px-6 min-h-screen pb-32 font-sans!">
       <div className="max-w-7xl mx-auto">
         <h1 className="text-3xl font-extrabold text-[#4A3820] mb-6 text-center font-sans!">
-          Admin Dashboard
+          All Articles
         </h1>
         
         <div className="bg-[#F0E8DB] border border-[#D8CDBE] rounded-lg shadow-md p-6 sm:p-8 mb-8">

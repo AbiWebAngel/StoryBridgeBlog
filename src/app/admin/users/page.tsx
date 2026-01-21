@@ -433,7 +433,7 @@ useEffect(() => {
                           focus:ring-2 focus:ring-[#805C2C]/40
                           disabled:bg-gray-100 disabled:border-gray-300 disabled:text-gray-500
                           `}
-
+                              value={u.role || "reader"}
                               disabled={isSuperAdmin || isCurrentUser || updatingUid === u.uid}
                               onChange={(e) => handleRoleChange(u.uid, e.target.value, u)}
                             >
