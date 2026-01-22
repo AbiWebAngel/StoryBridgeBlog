@@ -18,7 +18,7 @@ import { useAuth } from "@/context/AuthContext";
 
 
 export default function DashboardArticlesPage() {
-  const { role } = useAuth();
+  const { role, authReady  } = useAuth();
   const [articles, setArticles] = useState<Article[]>([]);
   const [filtered, setFiltered] = useState<Article[]>([]);
   const [search, setSearch] = useState("");
@@ -42,8 +42,6 @@ useEffect(() => {
       const qArticles = query(
         collection(db, "articles"),
         where("authorId", "==", user.uid),
-        where("status", "!=", "draft-hidden"),
-        orderBy("status"),
         orderBy("updatedAt", "desc")
       );
 
@@ -66,18 +64,20 @@ useEffect(() => {
   return () => unsub();
 }, []);
 
-
-
   // Refresh articles after successful deletion
   const handleDeleteSuccess = () => {
     // Re-fetch articles
     const refreshArticles = async () => {
       try {
+       const user = getAuth().currentUser;
+        if (!user) return;
+
         const qArticles = query(
           collection(db, "articles"),
-          where("status", "!=", "draft-hidden"),
+          where("authorId", "==", user.uid),
           orderBy("updatedAt", "desc")
         );
+
 
         const snap = await getDocs(qArticles);
 
@@ -125,7 +125,23 @@ useEffect(() => {
   setFiltered(result);
 }, [articles, search, statusFilter, dateSort]);
 
- if (role !== "admin" && role !== "author") {
+
+
+  // Updated loading state UI
+  if (!authReady || loading) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center">
+        <div className="w-48 h-2 bg-[#E0D6C7] rounded-full overflow-hidden">
+          <div className="h-full w-full animate-pulse bg-[#4A3820]"></div>
+        </div>
+        <p className="mt-4 text-[#4A3820] font-medium text-lg font-sans!">
+          Loading articles...
+        </p>
+      </div>
+    );
+  }
+
+   if (role !== "admin" && role !== "author") {
     return (
       <div className="min-h-screen flex items-center justify-center font-sans!">
         <div className="text-center">
@@ -136,20 +152,6 @@ useEffect(() => {
             Log in as author to access this page.
           </p>
         </div>
-      </div>
-    );
-  }
-
-  // Updated loading state UI
-  if (loading) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center">
-        <div className="w-48 h-2 bg-[#E0D6C7] rounded-full overflow-hidden">
-          <div className="h-full w-full animate-pulse bg-[#4A3820]"></div>
-        </div>
-        <p className="mt-4 text-[#4A3820] font-medium text-lg font-sans!">
-          Loading articles...
-        </p>
       </div>
     );
   }
