@@ -18,7 +18,7 @@ import { useAuth } from "@/context/AuthContext";
 
 
 export default function DashboardArticlesPage() {
-  const { user: currentAuthUser, role } = useAuth();
+  const { role } = useAuth();
   const [articles, setArticles] = useState<Article[]>([]);
   const [filtered, setFiltered] = useState<Article[]>([]);
   const [search, setSearch] = useState("");

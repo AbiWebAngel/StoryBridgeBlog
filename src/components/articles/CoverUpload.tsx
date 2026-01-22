@@ -23,7 +23,8 @@ export default function CoverUpload({
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const rafRef = useRef<number | null>(null);
+  const rafRef = useRef<number | null>(null); 
+  const fileDialogOpenRef = useRef(false);
 
   const handleDrop = async (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
@@ -35,14 +36,28 @@ export default function CoverUpload({
     e.preventDefault();
   };
 
-  const handleBrowse = () => {
-    fileInputRef.current?.click();
-  };
+ const handleBrowse = () => {
+  if (fileDialogOpenRef.current) return;
 
-  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!e.target.files?.length) return;
-    await uploadFile(e.target.files[0]);
-  };
+  fileDialogOpenRef.current = true;
+  fileInputRef.current?.click();
+
+  // allow reopening AFTER the dialog lifecycle finishes
+  setTimeout(() => {
+    fileDialogOpenRef.current = false;
+  }, 500);
+};
+
+
+ const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  if (!e.target.files?.length) return;
+
+  const file = e.target.files[0];
+  e.target.value = ""; // 👈 CRITICAL: clears the input
+
+  await uploadFile(file);
+};
+
 
   const deleteOldAsset = async (url: string) => {
     try {
@@ -123,12 +138,12 @@ const onPointerMove = (e: React.PointerEvent) => {
     y: Math.min(100, Math.max(0, y)),
   });
 };
+const stopClick = (e: React.MouseEvent | React.PointerEvent) => {
+  e.preventDefault();
+  e.stopPropagation();
+};
 
 
-
-
-
-  
  return (
   <div className="space-y-3">
     <div
@@ -174,7 +189,11 @@ const onPointerMove = (e: React.PointerEvent) => {
         <div className="space-y-2">
           <div
             ref={containerRef}
-            onPointerDown={onPointerDown}
+             onClick={stopClick}
+             onPointerDown={(e) => {
+                stopClick(e);
+                onPointerDown(e);
+            }}
             onPointerMove={onPointerMove}
             onPointerUp={onPointerUp}
             onPointerLeave={onPointerUp}

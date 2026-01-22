@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { db } from "@/lib/firebase";
-import { doc, setDoc, serverTimestamp } from "firebase/firestore";
+import { doc, setDoc, serverTimestamp, getDoc } from "firebase/firestore";
 import { X } from "lucide-react";
 
 import { validateArticle } from "@/lib/articles/validateArticle";
@@ -14,62 +14,46 @@ import CoverUpload from "@/components/articles/CoverUpload";
 import ArticleEditor from "@/components/articles/ArticleEditor";
 import FloatingAutosaveIndicator from "@/components/admin/FloatingAutosaveIndicator";
 import FloatingSaveBar from "@/components/admin/FloatingSaveBar";
-import { getDoc } from "firebase/firestore";
-
 
 type ArticleEditorPageProps = {
-  articleId?: string; // undefined = new article
+  articleId?: string;
   mode: "new" | "edit";
 };
 
-// Constants
-const BACKUP_AUTOSAVE_INTERVAL = 10 * 60 * 1000; // 10 minutes
+const BACKUP_AUTOSAVE_INTERVAL = 10 * 60 * 1000;
 const DEFAULT_COVER_POSITION = { x: 50, y: 50 };
 
-
-// Helper functions
 const getActiveArticleIdKey = (uid: string) => `active-article-id:${uid}`;
 const getAutosaveKey = (uid: string, articleId: string) => `article-draft:${uid}:${articleId}`;
 
-
-export default function ArticleEditorPage({
-  articleId,
-  mode,
-}: ArticleEditorPageProps) {
-
-  const { user: currentAuthUser, authReady } = useAuth();
-
+export default function ArticleEditorPage({ articleId, mode }: ArticleEditorPageProps) {
+  const { user: currentAuthUser, authReady, role } = useAuth();
 
   // Refs
   const articleIdRef = useRef<string | null>(null);
   const hasSavedOnceRef = useRef(false);
   const hasRestoredRef = useRef(false);
   const serverSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const [nextServerSaveAt, setNextServerSaveAt] = useState<number | null>(null);
   const backupIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const [showSuccessPanel, setShowSuccessPanel] = useState(false);
-
-
+  
   // State
-const [articleData, setArticleData] = useState({
-  title: "",
-  slug: "",
-  metaDescription: "",
-  coverImage: null as string | null,
-  coverImageAlt: "",
-  coverImagePosition: { x: 50, y: 50 }, // 👈 NEW (percentages)
-  body: null as any,
-  tags: [] as string[],
-  status: "draft" as "draft" | "published",
-});
-
-
-  const articleDataRef = useRef(articleData);
-
+  const [articleData, setArticleData] = useState({
+    title: "",
+    slug: "",
+    metaDescription: "",
+    coverImage: null as string | null,
+    coverImageAlt: "",
+    coverImagePosition: DEFAULT_COVER_POSITION,
+    body: null as any,
+    tags: [] as string[],
+    status: "draft" as "draft" | "published",
+  });
+  
   const [uploadedAssets, setUploadedAssets] = useState<string[]>([]);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
+  const [showSuccessPanel, setShowSuccessPanel] = useState(false);
   const [resetEditorToken, setResetEditorToken] = useState(0);
   const [pageReady, setPageReady] = useState(false);
   const [articleReady, setArticleReady] = useState(false);
@@ -78,75 +62,68 @@ const [articleData, setArticleData] = useState({
   const [autosaving, setAutosaving] = useState(false);
   const [lastLocalSave, setLastLocalSave] = useState<number | null>(null);
   const [lastServerSave, setLastServerSave] = useState<number | null>(null);
+  const [nextServerSaveAt, setNextServerSaveAt] = useState<number | null>(null);
   const [isDocked, setIsDocked] = useState(false);
   const [now, setNow] = useState(Date.now());
 
-  // Destructure for easier access - do this BEFORE using the variables
+  const articleDataRef = useRef(articleData);
+  
+  // Destructure for easier access
   const { title, slug, metaDescription, coverImage, coverImageAlt, body, tags, status } = articleData;
 
-  // Derived state updaters
   const updateArticleData = useCallback((updates: Partial<typeof articleData>) => {
     setArticleData(prev => ({ ...prev, ...updates }));
   }, []);
-  
 
+  // Update ref when articleData changes
+  useEffect(() => {
+    articleDataRef.current = articleData;
+  }, [articleData]);
 
-  // Initialization effects
+  // Page initialization
   useEffect(() => {
     const timer = setTimeout(() => setPageReady(true), 50);
     return () => clearTimeout(timer);
   }, []);
 
+  // Clear alt text when cover image is removed
   useEffect(() => {
     if (!coverImage) {
       updateArticleData({ coverImageAlt: "" });
     }
   }, [coverImage, updateArticleData]);
 
+  // Initialize article ID
   useEffect(() => {
-  articleDataRef.current = articleData;
-}, [articleData]);
+    if (!currentAuthUser) return;
 
+    const uid = currentAuthUser.uid;
 
-useEffect(() => {
-  if (!currentAuthUser) return;
+    if (mode === "edit" && articleId) {
+      articleIdRef.current = articleId;
+      setArticleReady(true);
+      return;
+    }
 
-  const uid = currentAuthUser.uid;
+    const init = async () => {
+      const localKey = getActiveArticleIdKey(uid);
+      let id = localStorage.getItem(localKey);
 
-  // EDIT MODE → ID comes from route
-  if (mode === "edit" && articleId) {
-    articleIdRef.current = articleId;
-    setArticleReady(true);
-    return;
-  }
+      try {
+        const userSnap = await getDoc(doc(db, "users", uid));
+        const remoteId = userSnap.data()?.lastActiveArticleId;
+        if (remoteId) id = remoteId;
+      } catch {}
 
-  // NEW MODE → generate / resume
-  const localKey = getActiveArticleIdKey(uid);
+      if (!id) id = crypto.randomUUID();
 
-  const init = async () => {
-    let id = localStorage.getItem(localKey);
+      localStorage.setItem(localKey, id);
+      articleIdRef.current = id;
+      setArticleReady(true);
+    };
 
-    try {
-      const userSnap = await getDoc(doc(db, "users", uid));
-      const remoteId = userSnap.data()?.lastActiveArticleId;
-      if (remoteId) id = remoteId;
-    } catch {}
-
-    if (!id) id = crypto.randomUUID();
-
-    localStorage.setItem(localKey, id);
-    articleIdRef.current = id;
-    setArticleReady(true);
-  };
-
-  init();
-}, [currentAuthUser, mode, articleId]);
-
-
-
-
-
-
+    init();
+  }, [currentAuthUser, mode, articleId]);
 
   // Auto-generate slug
   useEffect(() => {
@@ -162,169 +139,178 @@ useEffect(() => {
   }, [title, updateArticleData]);
 
   // Local autosave
-useEffect(() => {
-  if (
-    !hasRestoredRef.current ||
-    !articleReady ||
-    !pageReady ||
-    !currentAuthUser
-  ) return;
+  useEffect(() => {
+    if (!hasRestoredRef.current || !articleReady || !pageReady || !currentAuthUser) return;
 
+    const timeout = setTimeout(() => {
+      const key = getAutosaveKey(currentAuthUser.uid, articleIdRef.current!);
+      localStorage.setItem(
+        key,
+        JSON.stringify({ ...articleData, uploadedAssets })
+      );
+      setLastLocalSave(Date.now());
+    }, 800);
 
-
-  const timeout = setTimeout(() => {
-    const key = getAutosaveKey(currentAuthUser.uid, articleIdRef.current!);
-    localStorage.setItem(
-      key,
-      JSON.stringify({ ...articleData, uploadedAssets })
-    );
-    setLastLocalSave(Date.now());
-  }, 800);
-
-  return () => clearTimeout(timeout);
-}, [articleData, uploadedAssets]);
-
+    return () => clearTimeout(timeout);
+  }, [articleData, uploadedAssets, articleReady, pageReady, currentAuthUser]);
 
   // Local restore
-useEffect(() => {
-    
-  if (!currentAuthUser || !articleReady || !articleIdRef.current) return;
+  useEffect(() => {
+    if (!currentAuthUser || !articleReady || !articleIdRef.current) return;
 
-  if (mode === "edit") {
-  localStorage.removeItem(
-    getAutosaveKey(currentAuthUser.uid, articleIdRef.current!)
-  );
-}
+    const articleId = articleIdRef.current;
+    const localKey = getAutosaveKey(currentAuthUser.uid, articleId);
 
-  const articleId = articleIdRef.current;
-  const localKey = getAutosaveKey(currentAuthUser.uid, articleId);
-
-  const restore = async () => {
-    console.log("🔄 Starting restore flow", articleId);
-
-    // 1️⃣ LOCAL (highest priority)
-    const raw = localStorage.getItem(localKey);
-    if (raw) {
-      try {
-        const draft = JSON.parse(raw);
-        console.log("💾 Restored from LOCAL");
-
-       setArticleData({
-        title: draft.title ?? "",
-        slug: draft.slug ?? "",
-        metaDescription: draft.metaDescription ?? "",
-        coverImage: draft.coverImage ?? null,
-        coverImageAlt: draft.coverImageAlt ?? "",
-        coverImagePosition: draft.coverImagePosition ?? DEFAULT_COVER_POSITION,
-        body: draft.body ?? null,
-        tags: draft.tags ?? [],
-        status: "draft",
-      });
-
-
-        setUploadedAssets(draft.uploadedAssets ?? []);
+    const restore = async () => {
+      // NEW mode - only check localStorage
+      if (mode === "new") {
+        const raw = localStorage.getItem(localKey);
+        if (raw) {
+          try {
+            const draft = JSON.parse(raw);
+            setArticleData({
+              title: draft.title ?? "",
+              slug: draft.slug ?? "",
+              metaDescription: draft.metaDescription ?? "",
+              coverImage: draft.coverImage ?? null,
+              coverImageAlt: draft.coverImageAlt ?? "",
+              coverImagePosition: draft.coverImagePosition ?? DEFAULT_COVER_POSITION,
+              body: draft.body ?? null,
+              tags: draft.tags ?? [],
+              status: "draft",
+            });
+            setUploadedAssets(draft.uploadedAssets ?? []);
+          } catch {
+            console.warn("Local draft for NEW article corrupted, ignoring");
+          }
+        }
         hasRestoredRef.current = true;
         return;
-      } catch {
-        console.warn("⚠️ Local draft corrupted, ignoring");
       }
+
+      // EDIT mode - check localStorage first, then Firebase
+      if (mode === "edit") {
+        localStorage.removeItem(getAutosaveKey(currentAuthUser.uid, articleId));
+      }
+
+      const raw = localStorage.getItem(localKey);
+      if (raw) {
+        try {
+          const draft = JSON.parse(raw);
+          setArticleData({
+            title: draft.title ?? "",
+            slug: draft.slug ?? "",
+            metaDescription: draft.metaDescription ?? "",
+            coverImage: draft.coverImage ?? null,
+            coverImageAlt: draft.coverImageAlt ?? "",
+            coverImagePosition: draft.coverImagePosition ?? DEFAULT_COVER_POSITION,
+            body: draft.body ?? null,
+            tags: draft.tags ?? [],
+            status: "draft",
+          });
+          setUploadedAssets(draft.uploadedAssets ?? []);
+          hasRestoredRef.current = true;
+          return;
+        } catch {
+          console.warn("Local draft corrupted, ignoring");
+        }
+      }
+
+      const snap = await getDoc(doc(db, "articles", articleId));
+      if (snap.exists()) {
+        const data = snap.data();
+        setArticleData({
+          title: data.title ?? "",
+          slug: data.slug ?? "",
+          metaDescription: data.metaDescription ?? "",
+          coverImage: data.coverImage ?? null,
+          coverImageAlt: data.coverImageAlt ?? "",
+          coverImagePosition: data.coverImagePosition ?? DEFAULT_COVER_POSITION,
+          body: data.body ?? null,
+          tags: data.tags ?? [],
+          status: data.status ?? "draft",
+        });
+        setUploadedAssets(data.uploadedAssets ?? []);
+      }
+      
+      hasRestoredRef.current = true;
+    };
+
+    restore();
+  }, [currentAuthUser, articleReady, mode]);
+
+  // Server autosave function
+  const autosaveToServer = useCallback(async (force = false) => {
+    if (!hasRestoredRef.current || !currentAuthUser) return;
+
+    const articleId = articleIdRef.current;
+    if (!articleId) return;
+
+    const data = articleDataRef.current;
+
+    if (!force && !data.title && !data.body && !data.coverImage) return;
+
+    setAutosaving(true);
+
+    try {
+      const articleRef = doc(db, "articles", articleId);
+      const existingSnap = await getDoc(articleRef);
+
+      if (!existingSnap.exists()) {
+        await setDoc(articleRef, {
+          ...data,
+          authorId: currentAuthUser.uid,
+          updatedAt: serverTimestamp(),
+          autosaved: true,
+        });
+      } else {
+        const existingData = existingSnap.data();
+        const serverAuthorId = existingData?.authorId ?? null;
+
+        if (serverAuthorId && serverAuthorId !== currentAuthUser.uid) {
+          console.warn("Autosave skipped: article belongs to a different author.");
+        } else {
+          await setDoc(articleRef, {
+            ...data,
+            authorId: currentAuthUser.uid,
+            updatedAt: serverTimestamp(),
+            autosaved: true,
+          }, { merge: true });
+        }
+      }
+
+      await setDoc(
+        doc(db, "users", currentAuthUser.uid),
+        { lastActiveArticleId: articleId },
+        { merge: true }
+      );
+
+      setLastServerSave(Date.now());
+    } catch (err) {
+      console.warn("Server autosave failed", err);
+    } finally {
+      setAutosaving(false);
     }
-
-    // 2️⃣ FIREBASE (fallback)
-    console.log("📡 Checking Firebase…");
-
-    const snap = await getDoc(doc(db, "articles", articleId));
-    if (snap.exists()) {
-      const data = snap.data();
-      console.log("📡 Restored from Firebase");
-
-    setArticleData({
-    title: data.title ?? "",
-    slug: data.slug ?? "",
-    metaDescription: data.metaDescription ?? "",
-    coverImage: data.coverImage ?? null,
-    coverImageAlt: data.coverImageAlt ?? "",
-    coverImagePosition: data.coverImagePosition ?? DEFAULT_COVER_POSITION,
-    body: data.body ?? null,
-    tags: data.tags ?? [],
-    status: data.status ?? "draft",
-  });
-
-
-      setUploadedAssets(data.uploadedAssets ?? []);
-    } else {
-      console.log("🆕 No draft found — starting fresh");
-    }
-
-    hasRestoredRef.current = true;
-  };
-
-  restore();
-}, [currentAuthUser, articleReady]);
-
-
-
-
-  // Server autosave
-const autosaveToServer = useCallback(async (force = false) => {
-  if (!hasRestoredRef.current) return;
-  if (!currentAuthUser) return;
-
-  const articleId = articleIdRef.current;
-  if (!articleId) return;
-
-  const data = articleDataRef.current;
-
-  if (!force && !data.title && !data.body && !data.coverImage) return;
-
-  setAutosaving(true);
-
-  try {
-    await setDoc(
-      doc(db, "articles", articleId),
-      {
-        ...data,
-        authorId: currentAuthUser.uid,
-        updatedAt: serverTimestamp(),
-        autosaved: true,
-      },
-      { merge: true }
-    );
-
-    await setDoc(
-      doc(db, "users", currentAuthUser.uid),
-      { lastActiveArticleId: articleId },
-      { merge: true }
-    );
-
-    setLastServerSave(Date.now());
-  } catch (err) {
-    console.warn("Server autosave failed", err);
-  } finally {
-    setAutosaving(false);
-  }
-}, [currentAuthUser]);
-
-
+  }, [currentAuthUser]);
 
   // Periodic backup autosave
-useEffect(() => {
-  if (!currentAuthUser) return;
+  useEffect(() => {
+    if (!currentAuthUser) return;
 
-  setNextServerSaveAt(Date.now() + BACKUP_AUTOSAVE_INTERVAL);
-
-  backupIntervalRef.current = setInterval(() => {
-    autosaveToServer();
     setNextServerSaveAt(Date.now() + BACKUP_AUTOSAVE_INTERVAL);
-  }, BACKUP_AUTOSAVE_INTERVAL);
 
-  return () => {
-    clearInterval(backupIntervalRef.current!);
-    setNextServerSaveAt(null);
-  };
-}, [currentAuthUser, autosaveToServer]);
+    backupIntervalRef.current = setInterval(() => {
+      autosaveToServer();
+      setNextServerSaveAt(Date.now() + BACKUP_AUTOSAVE_INTERVAL);
+    }, BACKUP_AUTOSAVE_INTERVAL);
 
-
+    return () => {
+      if (backupIntervalRef.current) {
+        clearInterval(backupIntervalRef.current);
+      }
+      setNextServerSaveAt(null);
+    };
+  }, [currentAuthUser, autosaveToServer]);
 
   // Cleanup
   useEffect(() => {
@@ -361,47 +347,42 @@ useEffect(() => {
     updateArticleData({ tags: tags.filter(t => t !== tag) });
   };
 
-const handlePreview = async () => {
-  if (!articleIdRef.current) return;
+  const handlePreview = async () => {
+    if (!articleIdRef.current) return;
 
-  // Prevent preview if important fields are empty
-  const missing = [];
-  if (!title.trim()) missing.push("Title");
-  if (!slug.trim()) missing.push("Slug");
-  if (!body) missing.push("Content");
+    const missing = [];
+    if (!title.trim()) missing.push("Title");
+    if (!slug.trim()) missing.push("Slug");
+    if (!body) missing.push("Content");
 
-  if (missing.length > 0) {
-    alert(`You need to fill in:\n- ${missing.join("\n- ")}\nbefore previewing.`);
-    return;
-  }
+    if (missing.length > 0) {
+      alert(`You need to fill in:\n- ${missing.join("\n- ")}\nbefore previewing.`);
+      return;
+    }
 
-  try {
-    await autosaveToServer(true);
-    window.open(`/author/articles/preview/${articleIdRef.current}`, "_blank");
-  } catch {
-    alert("Preview failed — could not save article to server.");
-  }
-};
+    try {
+      await autosaveToServer(true);
+      window.open(`/author/articles/preview/${articleIdRef.current}`, "_blank");
+    } catch {
+      alert("Preview failed — could not save article to server.");
+    }
+  };
 
-const timeUntilNextSave =
-  nextServerSaveAt ? Math.max(0, nextServerSaveAt - now) : null;
-
-
-  // Form reset
   const resetForm = useCallback(() => {
     hasRestoredRef.current = false;
     setArticleReady(false);
+    
     setArticleData({
-    title: "",
-    slug: "",
-    metaDescription: "",
-    coverImage: null,
-    coverImageAlt: "",
-    coverImagePosition: DEFAULT_COVER_POSITION,
-    body: null,
-    tags: [],
-    status: "draft",
-  });
+      title: "",
+      slug: "",
+      metaDescription: "",
+      coverImage: null,
+      coverImageAlt: "",
+      coverImagePosition: DEFAULT_COVER_POSITION,
+      body: null,
+      tags: [],
+      status: "draft",
+    });
 
     setUploadedAssets([]);
     setResetEditorToken(v => v + 1);
@@ -416,7 +397,6 @@ const timeUntilNextSave =
     setArticleReady(true);
   }, [currentAuthUser]);
 
-  // Save handler
   const handleSave = async () => {
     if (!articleIdRef.current) {
       setErrors({ general: "Article ID not ready yet." });
@@ -444,14 +424,12 @@ const timeUntilNextSave =
       if (token.claims.role !== "admin" && token.claims.role !== "author") {
         throw new Error("Insufficient permissions. Admin or author role required.");
       }
-    
 
       let unusedAssets: string[] = [];
       if (body && typeof body === "object") {
         const usedAssets = extractArticleAssets({ coverImage, body });
         unusedAssets = findUnusedAssets(uploadedAssets, usedAssets);
       }
-
 
       await setDoc(
         doc(db, "articles", articleIdRef.current),
@@ -463,11 +441,11 @@ const timeUntilNextSave =
         { merge: true }
       );
 
-    await setDoc(
-      doc(db, "users", currentAuthUser.uid),
-      { lastActiveArticleId: null },
-      { merge: true }
-    );
+      await setDoc(
+        doc(db, "users", currentAuthUser.uid),
+        { lastActiveArticleId: null },
+        { merge: true }
+      );
 
       const shouldCleanup = hasSavedOnceRef.current;
       if (!hasSavedOnceRef.current) {
@@ -496,7 +474,7 @@ const timeUntilNextSave =
         hasSavedOnceRef.current ? "Article updated successfully!" : "Article created successfully!"
       );
       
-      setShowSuccessPanel(true);  
+      setShowSuccessPanel(true);
 
       if (currentAuthUser && articleIdRef.current) {
         localStorage.removeItem(getAutosaveKey(currentAuthUser.uid, articleIdRef.current));
@@ -522,41 +500,43 @@ const timeUntilNextSave =
     }
   };
 
+  const timeUntilNextSave = nextServerSaveAt ? Math.max(0, nextServerSaveAt - now) : null;
 
-  // 1️⃣ Auth still booting
-if (!authReady) {
-  return (
-    <div className="min-h-screen flex flex-col items-center justify-center">
-      <div className="w-48 h-2 bg-[#E0D6C7] rounded-full overflow-hidden">
-        <div className="h-full w-full animate-pulse bg-[#4A3820]" />
+  // Loading states
+  if (!authReady) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center">
+        <div className="w-48 h-2 bg-[#E0D6C7] rounded-full overflow-hidden">
+          <div className="h-full w-full animate-pulse bg-[#4A3820]" />
+        </div>
+        <p className="mt-4 text-[#4A3820] font-medium text-lg font-sans!">
+          Loading editor…
+        </p>
       </div>
-      <p className="mt-4 text-[#4A3820] font-medium text-lg font-sans!">
-        Loading editor…
-      </p>
-    </div>
-  );
-}
+    );
+  }
 
-// 2️⃣ Auth finished AND user is logged out
-if (!currentAuthUser) {
-  return (
-    <div className="min-h-screen flex items-center justify-center">
-      <p className="text-[#4A3820] text-xl font-semibold font-sans!">
-        You must be logged in to access this page.
-      </p>
-    </div>
-  );
-}
+  if (role !== "admin" && role !== "author") {
+    return (
+      <div className="min-h-screen flex items-center justify-center font-sans!">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-[#4A3820] mb-4 font-sans!">
+            Access Denied
+          </h1>
+          <p className="text-[#4A3820]/70 font-sans!">
+            Log in as author to access this page.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
-
-  // Render
   return (
     <div className="px-6 min-h-screen pb-32 font-sans">
       <div className="max-w-6xl mx-auto">
         <h1 className="text-3xl font-extrabold text-[#4A3820] mb-6 text-center font-sans!">
-        {mode === "edit" ? "Edit Article" : "Create New Article"}
+          {mode === "edit" ? "Edit Article" : "Create New Article"}
         </h1>
-
 
         {successMessage && (
           <div className="mb-6 p-4 bg-green-100 border border-green-400 text-green-700 rounded-lg">
@@ -565,37 +545,36 @@ if (!currentAuthUser) {
         )}
 
         {showSuccessPanel && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl shadow-lg p-6 w-[90%] max-w-md text-center">
-            <h2 className="text-2xl font-bold text-[#4A3820] mb-4 font-sans!">
-              Saved Successfully
-            </h2>
-            <p className="text-[#4A3820] mb-6 font-sans!">
-              Your article has been saved. What would you like to do next?
-            </p>
+          <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
+            <div className="bg-white rounded-xl shadow-lg p-6 w-[90%] max-w-md text-center">
+              <h2 className="text-2xl font-bold text-[#4A3820] mb-4 font-sans!">
+                Saved Successfully
+              </h2>
+              <p className="text-[#4A3820] mb-6 font-sans!">
+                Your article has been saved. What would you like to do next?
+              </p>
 
-            <div className="flex flex-col gap-3">
-              <button
-                onClick={() => {
-                  setShowSuccessPanel(false);
-                  window.location.href = "/author/articles";
-                }}
-                className="w-full py-3 bg-[#4A3820] text-white rounded-lg hover:bg-[#3A2D18] transition font-sans!"
-              >
-                Go to Articles Dashboard
-              </button>
+              <div className="flex flex-col gap-3">
+                <button
+                  onClick={() => {
+                    setShowSuccessPanel(false);
+                    window.location.href = "/author/articles";
+                  }}
+                  className="w-full py-3 bg-[#4A3820] text-white rounded-lg hover:bg-[#3A2D18] transition font-sans!"
+                >
+                  Go to Articles Dashboard
+                </button>
 
-              <button
-                onClick={() => setShowSuccessPanel(false)}
-                className="w-full py-3 border border-[#4A3820] text-[#4A3820] rounded-lg hover:bg-[#F0E8DB] transition font-sans!"
-              >
-                Keep Editing
-              </button>
+                <button
+                  onClick={() => setShowSuccessPanel(false)}
+                  className="w-full py-3 border border-[#4A3820] text-[#4A3820] rounded-lg hover:bg-[#F0E8DB] transition font-sans!"
+                >
+                  Keep Editing
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
-
+        )}
 
         {errors.general && (
           <div className="mb-6 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg">
@@ -603,8 +582,8 @@ if (!currentAuthUser) {
           </div>
         )}
 
-        <div className="bg-[#F0E8DB] border border-[#D8CDBE] rounded-lg shadow-md p-6 sm:p-8 mb-8">
-          <h2 className="text-2xl font-medium text-[#4A3820]  font-sans!">
+        <div className="bg-[#F0E8DB] border border-[#D8CDBE] rounded-lg shadow-md p-6 sm:p-8">
+          <h2 className="text-2xl font-medium text-[#4A3820] mb-4 font-sans!">
             Article Details
           </h2>
 
@@ -665,22 +644,20 @@ if (!currentAuthUser) {
               <label className="block text-lg font-bold text-[#4A3820] mb-3 font-sans!">
                 Cover Image
               </label>
-            <CoverUpload
-              value={coverImage}
-              articleId={articleIdRef.current!}
-              position={articleData.coverImagePosition}
-              onPositionChange={(pos) =>
-                updateArticleData({ coverImagePosition: pos })
-              }
-              onChange={(url) => {
-                updateArticleData({ coverImage: url });
-                if (url) {
-                  setUploadedAssets(prev =>
-                    prev.includes(url) ? prev : [...prev, url]
-                  );
-                }
-              }}
-            />
+              <CoverUpload
+                value={coverImage}
+                articleId={articleIdRef.current!}
+                position={articleData.coverImagePosition}
+                onPositionChange={(pos) => updateArticleData({ coverImagePosition: pos })}
+                onChange={(url) => {
+                  updateArticleData({ coverImage: url });
+                  if (url) {
+                    setUploadedAssets(prev =>
+                      prev.includes(url) ? prev : [...prev, url]
+                    );
+                  }
+                }}
+              />
 
               <div className="mt-4">
                 <label className="block text-sm font-semibold text-[#4A3820] mb-1">
@@ -719,23 +696,22 @@ if (!currentAuthUser) {
                   Preview
                 </button>
               </div>
-               {articleReady && articleIdRef.current && (
-                  <ArticleEditor
-                    key={`${currentAuthUser?.uid}:${articleIdRef.current}`}
-                    articleId={articleIdRef.current}
-                    value={body}
-                    onChange={(newBody) => updateArticleData({ body: newBody })}
-                    resetToken={resetEditorToken}
-                    onImageUploaded={(url) =>
-                      setUploadedAssets(prev => prev.includes(url) ? prev : [...prev, url])
-                    }
-                    title={title}
-                    metaDescription={metaDescription}
-                    coverImage={coverImage}
-                    coverImageAlt={coverImageAlt}
-                  />
-                )}
-
+              {articleReady && articleIdRef.current && (
+                <ArticleEditor
+                  key={`${currentAuthUser?.uid}:${articleIdRef.current}`}
+                  articleId={articleIdRef.current}
+                  value={body}
+                  onChange={(newBody) => updateArticleData({ body: newBody })}
+                  resetToken={resetEditorToken}
+                  onImageUploaded={(url) =>
+                    setUploadedAssets(prev => prev.includes(url) ? prev : [...prev, url])
+                  }
+                  title={title}
+                  metaDescription={metaDescription}
+                  coverImage={coverImage}
+                  coverImageAlt={coverImageAlt}
+                />
+              )}
               {errors.body && <p className="mt-2 text-red-600 font-medium">{errors.body}</p>}
             </div>
 
@@ -792,14 +768,13 @@ if (!currentAuthUser) {
           label="Save Article"
           onDockChange={setIsDocked}
         >
-         <FloatingAutosaveIndicator
+          <FloatingAutosaveIndicator
             autosaving={autosaving}
             lastLocalSave={lastLocalSave}
             lastServerSave={lastServerSave}
             timeUntilNextSave={timeUntilNextSave}
             docked={isDocked}
           />
-
         </FloatingSaveBar>
       </div>
     </div>

@@ -80,11 +80,12 @@ export async function POST(req: Request) {
     }
 
     body = await transformer
-      .avif({
-        quality: tooLarge ? 45 : 55,
-        effort: 4, // balanced CPU vs compression
-      })
-      .toBuffer();
+  .avif({
+    quality: tooLarge ? 75 : 80, // higher = less aggressive compression
+    effort: 4, // keep it balanced
+  })
+  .toBuffer();
+
 
     contentType = "image/avif";
     extension = "avif";

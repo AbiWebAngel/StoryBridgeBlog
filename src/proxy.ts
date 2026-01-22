@@ -11,26 +11,11 @@ const roleHierarchy = {
 
 // Protected routes for each role
 const roleProtectedRoutes: Record<string, string[]> = {
-  reader: [
-    "/dashboard",
-    "/dashboard/favourites",
-    "/dashboard/profile",
-    "/dashboard/email",
-  ],
-  author: [
-    "/author",
-    "/author/articles",
-    "/author/articles/new",
-    "/author/articles/preview",
-    "/author/analytics",
-  ],
-  admin: [
-    "/admin/articles",
-    "/admin/users",
-    "/admin/site-content",
-    "/admin/analytics",
-  ],
+  reader: ["/dashboard"],
+  author: ["/author"],
+  admin: ["/admin"],
 };
+
 
 // Public paths (no auth required)
 const publicPaths = [
@@ -97,5 +82,5 @@ export default function proxy(request: NextRequest) {
 
 // Only run proxy on protected routes
 export const config = {
-  matcher: ["/dashboard/:path*", "/admin/:path*"],
+  matcher: ["/dashboard/:path*", "/author/:path*", "/admin/:path*"],
 };
