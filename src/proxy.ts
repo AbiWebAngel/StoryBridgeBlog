@@ -18,10 +18,11 @@ const roleProtectedRoutes: Record<string, string[]> = {
     "/dashboard/email",
   ],
   author: [
-    "/dashboard/articles",
-    "/dashboard/articles/new",
-    "/dashboard/articles/preview",
-    "/dashboard/analytics",
+    "/author",
+    "/author/articles",
+    "/author/articles/new",
+    "/author/articles/preview",
+    "/author/analytics",
   ],
   admin: [
     "/admin/articles",

@@ -230,7 +230,7 @@ export default function AdminArticlesPage() {
             </h2>
 
             <a
-              href="/dashboard/articles/new"
+              href="/author/articles/new"
               className="px-4 py-2 rounded-lg bg-[#4A3820] text-white font-semibold text-base! hover:bg-black transition font-sans!"
             >
               + New Article
@@ -406,7 +406,7 @@ export default function AdminArticlesPage() {
           <td className="px-4 py-4">
             <div className="flex items-center gap-2 whitespace-nowrap">
               <a
-                href={`/dashboard/articles/preview/${article.id}`}
+                href={`/author/articles/preview/${article.id}`}
                 className="inline-flex items-center gap-1 px-2 py-1 rounded-md border border-[#D8CDBE] text-[#4A3820] hover:bg-[#EFE6D8] text-sm font-medium transition font-sans!"
                 title="View article"
               >
@@ -415,7 +415,7 @@ export default function AdminArticlesPage() {
               </a>
 
               <a
-                href={`/dashboard/articles/edit/${article.id}`}
+                href={`/author/articles/edit/${article.id}`}
                 className="inline-flex items-center gap-1 px-2 py-1 rounded-md border border-[#D8CDBE] text-[#4A3820] hover:bg-[#EFE6D8] text-sm font-medium transition font-sans!"
                 title="Edit article"
               >

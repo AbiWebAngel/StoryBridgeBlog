@@ -377,7 +377,7 @@ const handlePreview = async () => {
 
   try {
     await autosaveToServer(true);
-    window.open(`/dashboard/articles/preview/${articleIdRef.current}`, "_blank");
+    window.open(`/author/articles/preview/${articleIdRef.current}`, "_blank");
   } catch {
     alert("Preview failed — could not save article to server.");
   }
@@ -578,7 +578,7 @@ if (!currentAuthUser) {
               <button
                 onClick={() => {
                   setShowSuccessPanel(false);
-                  window.location.href = "/dashboard/articles";
+                  window.location.href = "/author/articles";
                 }}
                 className="w-full py-3 bg-[#4A3820] text-white rounded-lg hover:bg-[#3A2D18] transition font-sans!"
               >

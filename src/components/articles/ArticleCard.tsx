@@ -72,14 +72,14 @@ export default function ArticleCard({ article, onDelete }: ArticleCardProps) {
         <div className="flex items-center justify-between mt-auto pt-4 border-t border-[#D8CDBE] gap-3 font-sans!">
         <div className="flex gap-2">
             <a
-            href={`/dashboard/articles/edit/${article.id}`}
+            href={`/author/articles/edit/${article.id}`}
             className="px-4 py-2.5 bg-[#4A3820] text-white font-semibold rounded-lg hover:bg-[#6B4B2B] text-base transition-colors font-sans!"
             >
             Edit
             </a>
 
             <a
-            href={`/dashboard/articles/preview/${article.id}`}
+            href={`/author/articles/preview/${article.id}`}
             target="_blank"
             rel="noopener noreferrer"
             className="px-4 py-2.5 bg-[#F0E8DB] border border-[#D8CDBE] text-[#4A3820] font-semibold rounded-lg hover:bg-[#E6DDCF] transition-colors font-sans!"

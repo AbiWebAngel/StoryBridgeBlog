@@ -14,9 +14,11 @@ import ArticleCard from "@/components/articles/ArticleCard";
 import DeleteArticleModal from "@/components/articles/DeleteArticleModal";
 import { Article } from "@/types/Article";
 import { getAuth } from "firebase/auth";
+import { useAuth } from "@/context/AuthContext";
 
 
 export default function DashboardArticlesPage() {
+  const { user: currentAuthUser, role } = useAuth();
   const [articles, setArticles] = useState<Article[]>([]);
   const [filtered, setFiltered] = useState<Article[]>([]);
   const [search, setSearch] = useState("");
@@ -123,6 +125,20 @@ useEffect(() => {
   setFiltered(result);
 }, [articles, search, statusFilter, dateSort]);
 
+ if (role !== "admin" && role !== "author") {
+    return (
+      <div className="min-h-screen flex items-center justify-center font-sans!">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-[#4A3820] mb-4 font-sans!">
+            Access Denied
+          </h1>
+          <p className="text-[#4A3820]/70 font-sans!">
+            Log in as author to access this page.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   // Updated loading state UI
   if (loading) {
@@ -155,7 +171,7 @@ useEffect(() => {
             </h2>
 
             <a
-              href="/dashboard/articles/new"
+              href="/author/articles/new"
               className="px-4 py-2 rounded-lg bg-[#4A3820] text-white font-semibold text-base! hover:bg-[#6B4B2B] transition font-sans!"
             >
               + New Article
