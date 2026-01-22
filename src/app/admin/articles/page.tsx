@@ -406,13 +406,16 @@ export default function AdminArticlesPage() {
           <td className="px-4 py-4">
             <div className="flex items-center gap-2 whitespace-nowrap">
               <a
-                href={`/author/articles/preview/${article.id}`}
-                className="inline-flex items-center gap-1 px-2 py-1 rounded-md border border-[#D8CDBE] text-[#4A3820] hover:bg-[#EFE6D8] text-sm font-medium transition font-sans!"
-                title="View article"
-              >
-                <Eye size={18} />
-                <span className="hidden lg:inline">View</span>
-              </a>
+              href={`/author/articles/preview/${article.id}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 px-2 py-1 rounded-md border border-[#D8CDBE] text-[#4A3820] hover:bg-[#EFE6D8] text-sm font-medium transition font-sans!"
+              title="Preview article (opens in new tab)"
+            >
+              <Eye size={18} />
+              <span className="hidden lg:inline">Preview</span>
+            </a>
+
 
               <a
                 href={`/author/articles/edit/${article.id}`}
