@@ -16,10 +16,13 @@ const r2 = new S3Client({
 //-------------------------------------
 export async function POST(req: Request) {
   const formData = await req.formData();
-  const file = formData.get("file") as File;
+
+  const file = formData.get("file") as File | null;
   const articleId = formData.get("articleId") as string | null;
   const assetType = (formData.get("assetType") as string) || "content";
   const folder = formData.get("folder") as string | null;
+  const sessionId = formData.get("sessionId") as string | null;
+  const draft = formData.get("draft") === "true";
 
   if (!file) {
     return NextResponse.json({ error: "No file provided" }, { status: 400 });
@@ -27,26 +30,43 @@ export async function POST(req: Request) {
 
   const originalBuffer = Buffer.from(await file.arrayBuffer());
   const isSvg = file.type === "image/svg+xml";
-  const sessionId = formData.get("sessionId") as string | null;
-  const draft = formData.get("draft") === "true";
 
-
-
+  //-------------------------------------
+  // Metadata + size checks
+  //-------------------------------------
   const metadata = await sharp(originalBuffer).metadata();
+  const format = metadata.format; // jpeg | png | webp | avif | svg
+
   const tooLarge =
-    (metadata.width ?? 0) > 1600 || (metadata.height ?? 0) > 1600;
+    (metadata.width ?? 0) > 1600 ||
+    (metadata.height ?? 0) > 1600;
+
+  const alreadyOptimized =
+    (format === "avif" || format === "webp") && !tooLarge;
 
   let body: Buffer;
   let contentType: string;
   let extension: string;
 
   //-------------------------------------
-  // Handle SVG files (no compression)
+  // SVG: passthrough
   //-------------------------------------
   if (isSvg) {
     body = originalBuffer;
     contentType = "image/svg+xml";
     extension = "svg";
+
+  //-------------------------------------
+  // Already optimized & within bounds
+  //-------------------------------------
+  } else if (alreadyOptimized) {
+    body = originalBuffer;
+    contentType = file.type;
+    extension = format!;
+
+  //-------------------------------------
+  // Resize / recompress → AVIF
+  //-------------------------------------
   } else {
     let transformer = sharp(originalBuffer, { animated: true }).rotate();
 
@@ -60,29 +80,31 @@ export async function POST(req: Request) {
     }
 
     body = await transformer
-      .webp({ quality: tooLarge ? 75 : 85 })
+      .avif({
+        quality: tooLarge ? 45 : 55,
+        effort: 4, // balanced CPU vs compression
+      })
       .toBuffer();
 
-    contentType = "image/webp";
-    extension = "webp";
+    contentType = "image/avif";
+    extension = "avif";
   }
 
   //-------------------------------------
-  // Generate R2 key (AFTER extension exists)
+  // Generate R2 key
   //-------------------------------------
   let key: string;
 
   if (articleId) {
     key = `articles/${articleId}/${assetType}/${crypto.randomUUID()}.${extension}`;
   } else if (folder) {
-  const baseFolder =
-    draft && sessionId
-      ? `tmp/${sessionId}/${folder}`
-      : folder;
+    const baseFolder =
+      draft && sessionId
+        ? `tmp/${sessionId}/${folder}`
+        : folder;
 
-  key = `${baseFolder}/${crypto.randomUUID()}.${extension}`;
-}
- else {
+    key = `${baseFolder}/${crypto.randomUUID()}.${extension}`;
+  } else {
     return NextResponse.json(
       { error: "Missing articleId or folder" },
       { status: 400 }
@@ -105,4 +127,3 @@ export async function POST(req: Request) {
     url: `${process.env.CLOUDFLARE_R2_PUBLIC_URL}/${key}`,
   });
 }
-

@@ -13,6 +13,8 @@ import {
 import ArticleCard from "@/components/articles/ArticleCard";
 import DeleteArticleModal from "@/components/articles/DeleteArticleModal";
 import { Article } from "@/types/Article";
+import { getAuth } from "firebase/auth";
+
 
 export default function DashboardArticlesPage() {
   const [articles, setArticles] = useState<Article[]>([]);
@@ -23,35 +25,46 @@ export default function DashboardArticlesPage() {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [statusFilter, setStatusFilter] = useState<"all" | "published" | "draft">("all");
   const [dateSort, setDateSort] = useState<"newest" | "oldest">("newest");
+  
+
+useEffect(() => {
+  const auth = getAuth();
+
+  const unsub = auth.onAuthStateChanged(async (user) => {
+    if (!user) {
+      setLoading(false); // user is logged out → stop loader
+      return;
+    }
+
+    try {
+      const qArticles = query(
+        collection(db, "articles"),
+        where("authorId", "==", user.uid),
+        where("status", "!=", "draft-hidden"),
+        orderBy("status"),
+        orderBy("updatedAt", "desc")
+      );
+
+      const snap = await getDocs(qArticles);
+
+      const list = snap.docs.map((d) => ({
+        id: d.id,
+        ...d.data(),
+      })) as Article[];
+
+      setArticles(list);
+      setFiltered(list);
+    } catch (err) {
+      console.error("Failed loading articles:", err);
+    } finally {
+      setLoading(false);
+    }
+  });
+
+  return () => unsub();
+}, []);
 
 
-  useEffect(() => {
-    const load = async () => {
-      try {
-        const qArticles = query(
-          collection(db, "articles"),
-          where("status", "!=", "draft-hidden"),
-          orderBy("updatedAt", "desc")
-        );
-
-        const snap = await getDocs(qArticles);
-
-        const list = snap.docs.map((d) => ({
-          id: d.id,
-          ...d.data(),
-        })) as Article[];
-
-        setArticles(list);
-        setFiltered(list);
-      } catch (err) {
-        console.error("Failed loading articles:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    load();
-  }, []);
 
   // Refresh articles after successful deletion
   const handleDeleteSuccess = () => {

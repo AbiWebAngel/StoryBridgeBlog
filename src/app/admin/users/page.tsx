@@ -15,7 +15,7 @@ type UserRecord = {
 
 export default function AdminUsersPage() {
   
-const { user: currentAuthUser, authReady } = useAuth();
+const { user: currentAuthUser, role,authReady } = useAuth();
 // Get auth functions from context
   
   const [users, setUsers] = useState<UserRecord[]>([]);
@@ -289,6 +289,21 @@ useEffect(() => {
     );
   }
 
+   // Not admin state
+  if (role !== "admin") {
+    return (
+      <div className="min-h-screen flex items-center justify-center font-sans!">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-[#4A3820] mb-4 font-sans!">
+            Access Denied
+          </h1>
+          <p className="text-[#4A3820]/70 font-sans!">
+            You need administrator privileges to access this page.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
   <>
