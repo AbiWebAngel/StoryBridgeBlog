@@ -3,7 +3,7 @@
 import { deleteDoc, doc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { Article } from "@/types/Article";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 interface DeleteArticleModalProps {
   open: boolean;
@@ -21,39 +21,44 @@ export default function DeleteArticleModal({
   const [isDeleting, setIsDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+useEffect(() => {
+  if (!open) {
+    setIsDeleting(false);
+    setError(null);
+  }
+}, [open]);
+
   if (!open || !article) return null;
 
-  const handleDelete = async () => {
-    if (!article || isDeleting) return;
+const handleDelete = async () => {
+  if (!article || isDeleting) return;
 
-    setIsDeleting(true);
-    setError(null);
+  setIsDeleting(true);
+  setError(null);
 
-    try {
-      const res = await fetch("/api/articles/delete", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ articleId: article.id }),
-      });
+  try {
+    const res = await fetch("/api/articles/delete", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ articleId: article.id }),
+    });
 
-      if (!res.ok) {
-        const errorBody = await res.json().catch(() => null);
-        console.error("Delete API error:", res.status, errorBody);
-        throw new Error(errorBody?.error || "Delete failed");
-      }
-
-      // Call success callback if provided
-      if (onSuccess) {
-        onSuccess(`Article "${article.title}" deleted successfully.`);
-      }
-
-      onClose();
-    } catch (err) {
-      console.error("Delete failed:", err);
-      setError(err instanceof Error ? err.message : "Failed to delete article");
-      setIsDeleting(false); // unlock on failure
+    if (!res.ok) {
+      const errorBody = await res.json().catch(() => null);
+      throw new Error(errorBody?.error || "Delete failed");
     }
-  };
+
+    onSuccess?.(`Article "${article.title}" deleted successfully.`);
+    onClose();
+  } catch (err) {
+    console.error("Delete failed:", err);
+    setError(err instanceof Error ? err.message : "Failed to delete article");
+  } finally {
+    setIsDeleting(false); // 👈 insurance policy
+  }
+};
+
+
 
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">

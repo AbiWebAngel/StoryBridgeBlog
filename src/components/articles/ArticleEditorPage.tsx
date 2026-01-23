@@ -29,9 +29,12 @@ const getAutosaveKey = (uid: string, articleId: string) => `article-draft:${uid}
 
 export default function ArticleEditorPage({ articleId, mode }: ArticleEditorPageProps) {
   const { user: currentAuthUser, authReady, role } = useAuth();
+  const isAdmin = role === "admin";
 
   // Refs
   const articleIdRef = useRef<string | null>(null);
+  const articleAuthorIdRef = useRef<string | null>(null);
+
   const hasSavedOnceRef = useRef(false);
   const hasRestoredRef = useRef(false);
   const serverSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -86,6 +89,16 @@ const prevArticleIdRef = useRef<string | null>(null);
   const updateArticleData = useCallback((updates: Partial<typeof articleData>) => {
     setArticleData(prev => ({ ...prev, ...updates }));
   }, []);
+
+const resolveAuthorId = () => {
+  // Admin editing someone else’s article → preserve original author
+  if (isAdmin && articleAuthorIdRef.current) {
+    return articleAuthorIdRef.current;
+  }
+
+  // Otherwise → current user
+  return currentAuthUser!.uid;
+};
 
 
   const clearEditorState = useCallback(() => {
@@ -142,19 +155,60 @@ const prevArticleIdRef = useRef<string | null>(null);
 
     const uid = currentAuthUser.uid;
 
-    if (mode === "edit" && articleId) {
-    console.log("[INIT] Edit mode with articleId:", articleId);
-    articleIdRef.current = articleId;
-    setArticleIdState(articleId);
+   if (mode === "edit" && articleId) {
+  console.log("[INIT] Edit mode with articleId:", articleId);
 
-    // Prevents early RESTORE execution
-    setTimeout(() => {
-      setArticleReady(true);
-    }, 0);
+  articleIdRef.current = articleId;
+  setArticleIdState(articleId);
 
-    return;
-  }
+  (async () => {
+    try {
+      const snap = await getDoc(doc(db, "articles", articleId));
 
+      if (!snap.exists()) {
+        console.warn("[INIT] Article does not exist:", articleId);
+        return;
+      }
+
+      const data = snap.data();
+      
+
+      // 🔐 HARD GUARD — ownership check
+      const isForeignArticle = data.authorId !== uid;
+
+if (isForeignArticle && !isAdmin) {
+  console.warn(
+    "[INIT] Refusing to set activeArticleId — wrong author",
+    { articleId, authorId: data.authorId, uid }
+  );
+  return;
+}
+
+// Admins editing foreign articles should NOT update lastActiveArticleId
+if (!isForeignArticle) {
+  await setDoc(
+    doc(db, "users", uid),
+    { lastActiveArticleId: articleId },
+    { merge: true }
+  );
+  console.log("[INIT] lastActiveArticleId safely set:", articleId);
+} else {
+  console.log("[INIT] Admin editing foreign article — skipping lastActiveArticleId");
+}
+
+
+      console.log("[INIT] lastActiveArticleId safely set:", articleId);
+    } catch (err) {
+      console.error("[INIT] Failed to validate article ownership:", err);
+    }
+  })();
+
+  setTimeout(() => {
+    setArticleReady(true);
+  }, 0);
+
+  return;
+}
 
     const init = async () => {
       const localKey = getActiveArticleIdKey(uid);
@@ -286,19 +340,30 @@ const prevArticleIdRef = useRef<string | null>(null);
           }
         } else {
           // inside the NEW branch, after local check and if no local found:
-console.log("[RESTORE] No local draft found for NEW article, attempting firestore (NEW)");
-try {
-  const snap = await getDoc(doc(db, "articles", articleId));
-  if (snap.exists()) {
-    const data = snap.data();
+        console.log("[RESTORE] No local draft found for NEW article, attempting firestore (NEW)");
+        try {
+          const snap = await getDoc(doc(db, "articles", articleId));
+          if (snap.exists()) {
+            const data = snap.data();
+            articleAuthorIdRef.current = data.authorId ?? null;
 
-     if (data.authorId && data.authorId !== currentAuthUser.uid) {
-    console.warn(
-      "[RESTORE] NEW mode: article belongs to another user, skipping restore",
-      { articleId, authorId: data.authorId }
-    );
-    return;
-  }
+            const isForeignArticle = data.authorId !== currentAuthUser.uid;
+
+if (isForeignArticle && !isAdmin) {
+  console.warn(
+    "[RESTORE] EDIT mode: article belongs to another user, skipping restore",
+    { articleId, authorId: data.authorId }
+  );
+  return;
+}
+
+if (isForeignArticle && isAdmin) {
+  console.log(
+    "[RESTORE] Admin editing foreign article — hydrating canonical firestore data",
+    { articleId, authorId: data.authorId }
+  );
+}
+
 
 
     const remoteHasContent =
@@ -371,7 +436,8 @@ try {
         } catch (err) {
           console.warn("[RESTORE] Local draft corrupted, ignoring", err);
         }
-      } else {
+      } 
+      else {
         console.log("[RESTORE] No local draft found in localStorage");
       }
 
@@ -383,15 +449,26 @@ try {
         
         if (snap.exists()) {
           const data = snap.data();
+          articleAuthorIdRef.current = data.authorId ?? null;
 
            // 🔐 EDGE CASE 1 — ownership validation
-          if (data.authorId && data.authorId !== currentAuthUser.uid) {
-            console.warn(
-              "[RESTORE] EDIT mode: article belongs to another user, skipping restore",
-              { articleId, authorId: data.authorId }
-            );
-            return;
-          }
+        const isForeignArticle = data.authorId !== currentAuthUser.uid;
+
+if (isForeignArticle && !isAdmin) {
+  console.warn(
+    "[RESTORE] EDIT mode: article belongs to another user, skipping restore",
+    { articleId, authorId: data.authorId }
+  );
+  return;
+}
+
+if (isForeignArticle && isAdmin) {
+  console.log(
+    "[RESTORE] Admin editing foreign article — hydrating canonical firestore data",
+    { articleId, authorId: data.authorId }
+  );
+}
+
 
           console.log("[RESTORE] Firebase data received:", {
             title: data.title,
@@ -449,6 +526,14 @@ try {
     }
   }, [currentAuthUser, articleReady, mode, articleIdState]);
 
+const getAuthorPayload = () => {
+  if (!authorSnapshotRef.current) return {};
+  return {
+    authorName: authorSnapshotRef.current.authorName,
+    authorInitials: authorSnapshotRef.current.authorInitials,
+  };
+};
+
   // Server autosave function
   const autosaveToServer = useCallback(
     async (force = false, awaitConfirm = false) => {
@@ -489,17 +574,17 @@ try {
 
       try {
         await setDoc(
-          articleRef,
-          {
-            ...data,
-            authorId: currentAuthUser.uid,
-            authorName: authorSnapshotRef.current?.authorName ?? "",
-            authorInitials: authorSnapshotRef.current?.authorInitials ?? "",
-            updatedAt: new Date(), // ✅ deterministic for preview
-            autosaved: true,
-          },
-          { merge: true }
-        );
+  articleRef,
+  {
+    ...data,
+    authorId: resolveAuthorId(),
+    ...getAuthorPayload(),
+    updatedAt: new Date(),
+    autosaved: true,
+  },
+  { merge: true }
+);
+
 
         console.log("[SERVER AUTOSAVE] Document saved successfully");
 
@@ -566,19 +651,14 @@ useEffect(() => {
   if (!currentAuthUser) return;
 
   const currentUid = currentAuthUser.uid;
-  const currentArticleId = articleIdRef.current;
 
-  const userChanged =
+  if (
     prevUserIdRef.current &&
-    prevUserIdRef.current !== currentUid;
+    prevUserIdRef.current !== currentUid
+  ) {
+    console.log("[CONTEXT CHANGE] Different user → hard reset");
 
-  const articleChanged =
-    prevArticleIdRef.current &&
-    prevArticleIdRef.current !== currentArticleId;
-
-  if (userChanged) {
-    console.log("[CONTEXT CHANGE] User changed → hard reset");
-
+    authorSnapshotRef.current = null; // 🔒 only now
     clearEditorState();
 
     articleIdRef.current = null;
@@ -586,9 +666,7 @@ useEffect(() => {
     setArticleReady(false);
   }
 
-  // update refs AFTER comparison
   prevUserIdRef.current = currentUid;
-  prevArticleIdRef.current = currentArticleId;
 }, [currentAuthUser?.uid, clearEditorState]);
 
 
@@ -712,19 +790,17 @@ useEffect(() => {
       }
 
       console.log("[SAVE] Saving to Firebase...");
-      await setDoc(
-        doc(db, "articles", articleIdRef.current),
-        {
-          ...articleData,
-          // 🔒 ownership
-          authorId: currentAuthUser.uid,
-          // 👤 author snapshot (OPTION 2)
-          authorName: authorSnapshotRef.current?.authorName ?? "",
-          authorInitials: authorSnapshotRef.current?.authorInitials ?? "",
-          updatedAt: serverTimestamp(),
-        },
-        { merge: true }
-      );
+   await setDoc(
+  doc(db, "articles", articleIdRef.current),
+  {
+    ...articleData,
+    authorId: resolveAuthorId(),
+    ...getAuthorPayload(),
+    updatedAt: serverTimestamp(),
+  },
+  { merge: true }
+);
+
 
       console.log("[SAVE] Clearing lastActiveArticleId");
       await setDoc(

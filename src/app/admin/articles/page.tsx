@@ -317,7 +317,7 @@ export default function AdminArticlesPage() {
               )}
             </div>
           ) : (
-    <div className="overflow-x-auto">
+    <div className="overflow-x-auto scrollable-description">
   <table className="min-w-full divide-y divide-[#D8CDBE]">
     <thead>
       <tr>

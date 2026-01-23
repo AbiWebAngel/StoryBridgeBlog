@@ -66,6 +66,7 @@ export default function ArticleEditor({
   const isDraggingRef = useRef(false);
 
   const hasHydratedRef = useRef(false);
+  const lastArticleIdRef = useRef<string | null>(null);
   const TOOLBAR_BTN_BASE =
   "px-2 py-1 rounded bg-white font-sans! transition-colors duration-150";
   const TOOLBAR_BTN_HOVER =
@@ -96,6 +97,7 @@ export default function ArticleEditor({
 
   const pendingSaveRef = useRef<JSONContent | null>(null);
 const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
 
 // how often we force a server commit
 const COMMIT_INTERVAL_MS = 3 * 60 * 1000; // 3 minutes (use 5 * 60 * 1000 if you prefer)

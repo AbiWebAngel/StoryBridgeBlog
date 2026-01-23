@@ -17,7 +17,7 @@ import { getAuth } from "firebase/auth";
 import { useAuth } from "@/context/AuthContext";
 
 
-export default function DashboardArticlesPage() {
+export default function AuthorArticlesPage() {
   const { role, authReady  } = useAuth();
   const [articles, setArticles] = useState<Article[]>([]);
   const [filtered, setFiltered] = useState<Article[]>([]);
@@ -65,36 +65,35 @@ useEffect(() => {
 }, []);
 
   // Refresh articles after successful deletion
-  const handleDeleteSuccess = () => {
-    // Re-fetch articles
-    const refreshArticles = async () => {
-      try {
-       const user = getAuth().currentUser;
-        if (!user) return;
+const handleDeleteSuccess = async () => {
+  // 1️⃣ Close modal immediately
+  setDeleteModalOpen(false);
+  setSelectedArticle(null);
 
-        const qArticles = query(
-          collection(db, "articles"),
-          where("authorId", "==", user.uid),
-          orderBy("updatedAt", "desc")
-        );
+  try {
+    const user = getAuth().currentUser;
+    if (!user) return;
 
+    const qArticles = query(
+      collection(db, "articles"),
+      where("authorId", "==", user.uid),
+      orderBy("updatedAt", "desc")
+    );
 
-        const snap = await getDocs(qArticles);
+    const snap = await getDocs(qArticles);
 
-        const list = snap.docs.map((d) => ({
-          id: d.id,
-          ...d.data(),
-        })) as Article[];
+    const list = snap.docs.map((d) => ({
+      id: d.id,
+      ...d.data(),
+    })) as Article[];
 
-        setArticles(list);
-        setFiltered(list);
-      } catch (err) {
-        console.error("Failed refreshing articles:", err);
-      }
-    };
+    setArticles(list);
+    setFiltered(list);
+  } catch (err) {
+    console.error("Failed refreshing articles:", err);
+  }
+};
 
-    refreshArticles();
-  };
 
   // Basic search (title + tags)
 useEffect(() => {
