@@ -120,11 +120,11 @@ export default function PreviewArticlePage() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#ECE1CF]">
         <div className="text-center">
-          <h1 className="text-2xl font-bold">Preview not found</h1>
-          <p className="mt-2 text-gray-600">{errorMsg || "No article data could be loaded."}</p>
+          <h1 className="text-2xl font-bold font-sans!">Preview not found</h1>
+          <p className="mt-2 text-gray-600 font-sans!">{errorMsg || "No article data could be loaded."}</p>
           <button
             onClick={() => router.back()}
-            className="mt-4 px-6 py-2 bg-[#CF822A] text-white rounded-lg hover:bg-[#B36F24] transition"
+            className="mt-4 px-6 py-2 bg-[#CF822A] text-white rounded-lg hover:bg-[#B36F24] transition font-sans!"
           >
             Go back
           </button>

@@ -11,9 +11,9 @@ const roleHierarchy = {
 
 // Protected routes for each role
 const roleProtectedRoutes: Record<string, string[]> = {
-  reader: ["/dashboard"],
-  author: ["/author"],
   admin: ["/admin"],
+  author: ["/author"],
+  reader: ["/dashboard"],
 };
 
 

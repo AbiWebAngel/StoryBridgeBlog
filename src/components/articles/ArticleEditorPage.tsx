@@ -37,9 +37,9 @@ export default function ArticleEditorPage({ articleId, mode }: ArticleEditorPage
   const serverSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const backupIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const authorSnapshotRef = useRef<{
-  authorName: string;
-  authorInitials: string;
-} | null>(null);
+    authorName: string;
+    authorInitials: string;
+  } | null>(null);
 
   // State
   const [articleData, setArticleData] = useState({
@@ -62,7 +62,9 @@ export default function ArticleEditorPage({ articleId, mode }: ArticleEditorPage
   const [resetEditorToken, setResetEditorToken] = useState(0);
   const [pageReady, setPageReady] = useState(false);
   const [articleReady, setArticleReady] = useState(false);
-  
+  // after const [articleReady, setArticleReady] = useState(false);
+  const [articleIdState, setArticleIdState] = useState<string | null>(null);
+
   // Autosave UI State
   const [autosaving, setAutosaving] = useState(false);
   const [lastLocalSave, setLastLocalSave] = useState<number | null>(null);
@@ -80,6 +82,37 @@ export default function ArticleEditorPage({ articleId, mode }: ArticleEditorPage
   const updateArticleData = useCallback((updates: Partial<typeof articleData>) => {
     setArticleData(prev => ({ ...prev, ...updates }));
   }, []);
+
+
+  const clearEditorState = useCallback(() => {
+  console.log("[CLEAR] Clearing editor state");
+
+  hasRestoredRef.current = false;
+  hasSavedOnceRef.current = false;
+
+  setArticleData({
+    title: "",
+    slug: "",
+    metaDescription: "",
+    coverImage: null,
+    coverImageAlt: "",
+    coverImagePosition: DEFAULT_COVER_POSITION,
+    body: null,
+    tags: [],
+    status: "draft",
+  });
+
+  setUploadedAssets([]);
+  setErrors({});
+  setAutosaving(false);
+  setLastLocalSave(null);
+  setLastServerSave(null);
+
+  // 🔥 forces ArticleEditor remount
+  setResetEditorToken(v => v + 1);
+}, []);
+
+
 
   // Update ref when articleData changes
   useEffect(() => {
@@ -106,61 +139,64 @@ export default function ArticleEditorPage({ articleId, mode }: ArticleEditorPage
     const uid = currentAuthUser.uid;
 
     if (mode === "edit" && articleId) {
-      articleIdRef.current = articleId;
+    console.log("[INIT] Edit mode with articleId:", articleId);
+    articleIdRef.current = articleId;
+    setArticleIdState(articleId);
+
+    // Prevents early RESTORE execution
+    setTimeout(() => {
       setArticleReady(true);
-      return;
-    }
+    }, 0);
+
+    return;
+  }
+
 
     const init = async () => {
       const localKey = getActiveArticleIdKey(uid);
       let id = localStorage.getItem(localKey);
+      console.log("[INIT] Local stored article ID:", id);
 
+      try {
+        const userSnap = await getDoc(doc(db, "users", uid));
+        const userData = userSnap.data();
 
+        // existing behavior
+        const remoteId = userData?.lastActiveArticleId;
+        console.log("[INIT] Remote lastActiveArticleId:", remoteId);
+        if (remoteId) id = remoteId;
 
-    try {
-  const userSnap = await getDoc(doc(db, "users", uid));
-  const userData = userSnap.data();
+        // 🔥 STORE AUTHOR SNAPSHOT LOCALLY
+        if (userData) {
+          authorSnapshotRef.current = {
+            authorName: [userData.firstName, userData.lastName].filter(Boolean).join(" "),
+            authorInitials: userData.initials ?? "",
+          };
+        }
+      } catch (err) {
+        console.error("[INIT] Error fetching user data:", err);
+      }
 
-  // existing behavior
-  const remoteId = userData?.lastActiveArticleId;
-  if (remoteId) id = remoteId;
-
-  // 🔥 STORE AUTHOR SNAPSHOT LOCALLY
-  if (userData) {
-    authorSnapshotRef.current = {
-      authorName: [userData.firstName, userData.lastName].filter(Boolean).join(" "),
-      authorInitials: userData.initials ?? "",
-    };
-  }
-} catch {}
-
-
-      if (!id) id = crypto.randomUUID();
+      if (!id) {
+        id = crypto.randomUUID();
+        console.log("[INIT] Generated new article ID:", id);
+      }
 
       localStorage.setItem(localKey, id);
       articleIdRef.current = id;
+      setArticleIdState(id);
 
-    // 🧭 Track active article for recovery
-    await setDoc(
-      doc(db, "users", uid),
-      { lastActiveArticleId: id },
-      { merge: true }
-    );
+      // 🧭 Track active article for recovery
+      await setDoc(
+        doc(db, "users", uid),
+        { lastActiveArticleId: id },
+        { merge: true }
+      );
 
-      // 🔐 BOOTSTRAP ARTICLE DOC (establish ownership before autosave)
-await setDoc(
-  doc(db, "articles", id),
-  {
-    authorId: uid,
-    authorName: authorSnapshotRef.current?.authorName ?? "",
-    authorInitials: authorSnapshotRef.current?.authorInitials ?? "",
-    status: "draft",
-    createdAt: serverTimestamp(),
-  },
-  { merge: true }
-);
-
-      setArticleReady(true);
+      console.log("[INIT] Article ID initialized:", id);
+          setTimeout(() => {
+          setArticleReady(true);
+        }, 0);
     };
 
     init();
@@ -190,25 +226,45 @@ await setDoc(
         JSON.stringify({ ...articleData, uploadedAssets })
       );
       setLastLocalSave(Date.now());
+      console.log("[AUTOSAVE] Local autosave completed");
     }, 800);
 
     return () => clearTimeout(timeout);
   }, [articleData, uploadedAssets, articleReady, pageReady, currentAuthUser]);
 
-  // Local restore
+  // Local restore - FIXED VERSION WITH DEBUG LOGS
   useEffect(() => {
-    if (!currentAuthUser || !articleReady || !articleIdRef.current) return;
+    if (!currentAuthUser || !articleReady || !articleIdRef.current) {
+      console.log("[RESTORE] Missing requirements:", {
+        currentAuthUser: !!currentAuthUser,
+        articleReady,
+        articleId: articleIdRef.current
+      });
+      return;
+    }
+    
 
     const articleId = articleIdRef.current;
-    const localKey = getAutosaveKey(currentAuthUser.uid, articleId);
+    const uid = currentAuthUser.uid;
+    const localKey = getAutosaveKey(uid, articleId);
+
+    console.log("[RESTORE] Starting restore process", {
+      mode,
+      articleId,
+      hasRestored: hasRestoredRef.current
+    });
 
     const restore = async () => {
+      console.log("[RESTORE] Executing restore function");
+      
       // NEW mode - only check localStorage
       if (mode === "new") {
+        console.log("[RESTORE] Mode: NEW");
         const raw = localStorage.getItem(localKey);
         if (raw) {
           try {
             const draft = JSON.parse(raw);
+            console.log("[RESTORE] Found local draft for NEW article");
             setArticleData({
               title: draft.title ?? "",
               slug: draft.slug ?? "",
@@ -221,23 +277,78 @@ await setDoc(
               status: "draft",
             });
             setUploadedAssets(draft.uploadedAssets ?? []);
-          } catch {
-            console.warn("Local draft for NEW article corrupted, ignoring");
+          } catch (err) {
+            console.warn("[RESTORE] Local draft for NEW article corrupted, ignoring", err);
           }
+        } else {
+          // inside the NEW branch, after local check and if no local found:
+console.log("[RESTORE] No local draft found for NEW article, attempting firestore (NEW)");
+try {
+  const snap = await getDoc(doc(db, "articles", articleId));
+  if (snap.exists()) {
+    const data = snap.data();
+
+     if (data.authorId && data.authorId !== currentAuthUser.uid) {
+    console.warn(
+      "[RESTORE] NEW mode: article belongs to another user, skipping restore",
+      { articleId, authorId: data.authorId }
+    );
+    return;
+  }
+
+
+    const remoteHasContent =
+      Boolean(data?.title) ||
+      Boolean(data?.body) ||
+      Boolean(data?.slug) ||
+      Boolean(data?.metaDescription) ||
+      (Array.isArray(data?.tags) && data.tags.length > 0) ||
+      (Array.isArray(data?.uploadedAssets) && data.uploadedAssets.length > 0) ||
+      Boolean(data?.coverImage);
+
+    if (remoteHasContent) {
+      setArticleData({
+        title: data.title ?? "",
+        slug: data.slug ?? "",
+        metaDescription: data.metaDescription ?? "",
+        coverImage: data.coverImage ?? null,
+        coverImageAlt: data.coverImageAlt ?? "",
+        coverImagePosition: data.coverImagePosition ?? DEFAULT_COVER_POSITION,
+        body: data.body ?? null,
+        tags: data.tags ?? [],
+        status: data.status ?? "draft",
+      });
+      setUploadedAssets(data.uploadedAssets ?? []);
+      console.log("[RESTORE] Restored NEW article from firestore:", articleId);
+    } else {
+      console.log("[RESTORE] Firestore doc exists but empty — skipping");
+    }
+  } else {
+    console.log("[RESTORE] No firestore doc for NEW articleId:", articleId);
+  }
+} catch (err) {
+  console.error("[RESTORE] Error fetching firestore for NEW mode:", err);
+}
+
         }
         hasRestoredRef.current = true;
+        console.log("[RESTORE] NEW mode restore completed");
         return;
       }
 
       // EDIT mode - check localStorage first, then Firebase
-      if (mode === "edit") {
-        localStorage.removeItem(getAutosaveKey(currentAuthUser.uid, articleId));
-      }
+      console.log("[RESTORE] Mode: EDIT");
 
+      // Check localStorage first
       const raw = localStorage.getItem(localKey);
       if (raw) {
         try {
           const draft = JSON.parse(raw);
+          console.log("[RESTORE] Found local draft for EDIT article", {
+            hasTitle: !!draft.title,
+            hasBody: !!draft.body,
+            hasCoverImage: !!draft.coverImage
+          });
           setArticleData({
             title: draft.title ?? "",
             slug: draft.slug ?? "",
@@ -251,85 +362,177 @@ await setDoc(
           });
           setUploadedAssets(draft.uploadedAssets ?? []);
           hasRestoredRef.current = true;
+          console.log("[RESTORE] Restored from localStorage");
           return;
-        } catch {
-          console.warn("Local draft corrupted, ignoring");
+        } catch (err) {
+          console.warn("[RESTORE] Local draft corrupted, ignoring", err);
         }
+      } else {
+        console.log("[RESTORE] No local draft found in localStorage");
       }
 
-      const snap = await getDoc(doc(db, "articles", articleId));
-      if (snap.exists()) {
-        const data = snap.data();
-        setArticleData({
-          title: data.title ?? "",
-          slug: data.slug ?? "",
-          metaDescription: data.metaDescription ?? "",
-          coverImage: data.coverImage ?? null,
-          coverImageAlt: data.coverImageAlt ?? "",
-          coverImagePosition: data.coverImagePosition ?? DEFAULT_COVER_POSITION,
-          body: data.body ?? null,
-          tags: data.tags ?? [],
-          status: data.status ?? "draft",
-        });
-        setUploadedAssets(data.uploadedAssets ?? []);
+      // If no local draft, try Firebase
+      console.log("[RESTORE] Attempting to fetch from Firebase");
+      try {
+        const snap = await getDoc(doc(db, "articles", articleId));
+        console.log("[RESTORE] Firebase snapshot exists:", snap.exists());
+        
+        if (snap.exists()) {
+          const data = snap.data();
+
+           // 🔐 EDGE CASE 1 — ownership validation
+          if (data.authorId && data.authorId !== currentAuthUser.uid) {
+            console.warn(
+              "[RESTORE] EDIT mode: article belongs to another user, skipping restore",
+              { articleId, authorId: data.authorId }
+            );
+            return;
+          }
+
+          console.log("[RESTORE] Firebase data received:", {
+            title: data.title,
+            hasBody: !!data.body,
+            slug: data.slug,
+            metaDescription: data.metaDescription,
+            tags: data.tags,
+            coverImage: data.coverImage
+          });
+
+          // Decide whether remote doc actually contains real content
+          const remoteHasContent =
+            Boolean(data.title) ||
+            Boolean(data.body) ||
+            Boolean(data.slug) ||
+            Boolean(data.metaDescription) ||
+            (Array.isArray(data.tags) && data.tags.length > 0) ||
+            (Array.isArray(data.uploadedAssets) && data.uploadedAssets.length > 0) ||
+            (data.coverImage && data.coverImage !== null);
+
+          console.log("[RESTORE] remoteHasContent evaluation:", remoteHasContent);
+
+          if (remoteHasContent) {
+            setArticleData({
+              title: data.title ?? "",
+              slug: data.slug ?? "",
+              metaDescription: data.metaDescription ?? "",
+              coverImage: data.coverImage ?? null,
+              coverImageAlt: data.coverImageAlt ?? "",
+              coverImagePosition: data.coverImagePosition ?? DEFAULT_COVER_POSITION,
+              body: data.body ?? null,
+              tags: data.tags ?? [],
+              status: data.status ?? "draft",
+            });
+            setUploadedAssets(data.uploadedAssets ?? []);
+            console.log("[RESTORE] Successfully restored from firestore:", articleId);
+          } else {
+            console.log("[RESTORE] firestore doc exists but is empty — skipping restore");
+          }
+        } else {
+          console.log("[RESTORE] No document found in Firebase for articleId:", articleId);
+        }
+      } catch (err) {
+        console.error("[RESTORE] Error fetching from Firebase:", err);
       }
       
       hasRestoredRef.current = true;
+      console.log("[RESTORE] EDIT mode restore completed");
     };
 
-    restore();
-  }, [currentAuthUser, articleReady, mode]);
+    if (!hasRestoredRef.current) {
+      restore();
+    } else {
+      console.log("[RESTORE] Already restored, skipping");
+    }
+  }, [currentAuthUser, articleReady, mode, articleIdState]);
 
   // Server autosave function
-const autosaveToServer = useCallback(async (force = false) => {
-  if (!hasRestoredRef.current || !currentAuthUser || !articleReady) return;
+  const autosaveToServer = useCallback(
+    async (force = false, awaitConfirm = false) => {
+      console.log("[SERVER AUTOSAVE] Triggered", {
+        hasRestored: hasRestoredRef.current,
+        currentAuthUser: !!currentAuthUser,
+        articleReady,
+        force
+      });
 
-  const articleId = articleIdRef.current;
-  if (!articleId) return;
+      if (!hasRestoredRef.current || !currentAuthUser || !articleReady) {
+        console.log("[SERVER AUTOSAVE] Cannot autosave - missing requirements");
+        return;
+      }
 
-  const data = articleDataRef.current;
-  if (!force && !data.title && !data.body && !data.coverImage) return;
+      const articleId = articleIdRef.current;
+      if (!articleId) {
+        console.log("[SERVER AUTOSAVE] No articleId");
+        return;
+      }
 
-  setAutosaving(true);
+      const data = articleDataRef.current;
+      console.log("[SERVER AUTOSAVE] Data check:", {
+        hasTitle: !!data.title,
+        hasBody: !!data.body,
+        hasCoverImage: !!data.coverImage
+      });
 
-  try {
-    const articleRef = doc(db, "articles", articleId);
+      if (!force && !data.title && !data.body && !data.coverImage) {
+        console.log("[SERVER AUTOSAVE] Skipping - no content and not forced");
+        return;
+      }
 
-    const payload = {
-      ...data,
-      authorId: currentAuthUser.uid,
-      authorName: authorSnapshotRef.current?.authorName ?? "",
-      authorInitials: authorSnapshotRef.current?.authorInitials ?? "",
-      updatedAt: serverTimestamp(),
-      autosaved: true,
-    };
+      setAutosaving(true);
+      console.log("[SERVER AUTOSAVE] Starting save to server");
 
-    await setDoc(articleRef, payload, {
-      merge: true,
-    });
+      const articleRef = doc(db, "articles", articleId);
 
+      try {
+        await setDoc(
+          articleRef,
+          {
+            ...data,
+            authorId: currentAuthUser.uid,
+            authorName: authorSnapshotRef.current?.authorName ?? "",
+            authorInitials: authorSnapshotRef.current?.authorInitials ?? "",
+            updatedAt: new Date(), // ✅ deterministic for preview
+            autosaved: true,
+          },
+          { merge: true }
+        );
 
-    setLastServerSave(Date.now());
-  } catch (err) {
-    console.warn("Server autosave failed", err);
-  } finally {
-    setAutosaving(false);
-  }
-}, [currentAuthUser]);
+        console.log("[SERVER AUTOSAVE] Document saved successfully");
 
+        // 🔐 Optional confirmation read (used by preview)
+        if (awaitConfirm) {
+          await getDoc(articleRef);
+          console.log("[SERVER AUTOSAVE] Confirmation read completed");
+        }
+
+        setLastServerSave(Date.now());
+        console.log("[SERVER AUTOSAVE] lastServerSave updated");
+      } catch (err) {
+        console.error("[SERVER AUTOSAVE] Failed:", err);
+        throw err;
+      } finally {
+        setAutosaving(false);
+        console.log("[SERVER AUTOSAVE] autosaving state reset");
+      }
+    },
+    [currentAuthUser, articleReady]
+  );
 
   // Periodic backup autosave
   useEffect(() => {
     if (!currentAuthUser) return;
 
+    console.log("[BACKUP AUTOSAVE] Setting up interval");
     setNextServerSaveAt(Date.now() + BACKUP_AUTOSAVE_INTERVAL);
 
     backupIntervalRef.current = setInterval(() => {
+      console.log("[BACKUP AUTOSAVE] Interval triggered");
       autosaveToServer();
       setNextServerSaveAt(Date.now() + BACKUP_AUTOSAVE_INTERVAL);
     }, BACKUP_AUTOSAVE_INTERVAL);
 
     return () => {
+      console.log("[BACKUP AUTOSAVE] Cleaning up interval");
       if (backupIntervalRef.current) {
         clearInterval(backupIntervalRef.current);
       }
@@ -355,6 +558,20 @@ const autosaveToServer = useCallback(async (force = false) => {
     return () => clearInterval(interval);
   }, []);
 
+useEffect(() => {
+  if (!currentAuthUser) return;
+
+  console.log("[USER SWITCH] Resetting editor");
+
+  // clear local editor state
+  clearEditorState();
+
+  // reset article identity
+  articleIdRef.current = null;
+  setArticleIdState(null);
+  setArticleReady(false);
+}, [currentAuthUser?.uid, clearEditorState]);
+
   // Tag handlers
   const handleAddTag = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key !== "Enter") return;
@@ -372,39 +589,35 @@ const autosaveToServer = useCallback(async (force = false) => {
     updateArticleData({ tags: tags.filter(t => t !== tag) });
   };
 
-const handlePreview = async () => {
-  if (!articleIdRef.current) return;
+  const handlePreview = async () => {
+    if (!articleIdRef.current) return;
 
-  const missing = [];
-  if (!title.trim()) missing.push("Title");
-  if (!slug.trim()) missing.push("Slug");
-  if (!body) missing.push("Content");
+    const missing = [];
+    if (!title.trim()) missing.push("Title");
+    if (!slug.trim()) missing.push("Slug");
+    if (!body) missing.push("Content");
 
-  if (missing.length > 0) {
-    alert(`You need to fill in:\n- ${missing.join("\n- ")}`);
-    return;
-  }
+    if (missing.length > 0) {
+      alert(`You need to fill in:\n- ${missing.join("\n- ")}`);
+      return;
+    }
 
-  try {
-    // 🔒 FORCE server save and WAIT for it
-    await autosaveToServer(true);
+    try {
+      // 🔒 FORCE save + CONFIRM
+      await autosaveToServer(true, true);
 
-    // ⏳ tiny delay to let Firestore index the doc
-    await new Promise(res => setTimeout(res, 150));
-
-    window.open(
-    `/author/articles/preview/${articleIdRef.current}`,
-    "_blank",
-    "noopener,noreferrer"
-  );
-
-  } catch {
-    alert("Preview failed — could not save article to server.");
-  }
-};
-
+      window.open(
+        `/author/articles/preview/${articleIdRef.current}`,
+        "_blank",
+        "noopener,noreferrer"
+      );
+    } catch {
+      alert("Preview failed — could not save article.");
+    }
+  };
 
   const resetForm = useCallback(() => {
+    console.log("[RESET] Resetting form");
     hasRestoredRef.current = false;
     setArticleReady(false);
     
@@ -426,20 +639,30 @@ const handlePreview = async () => {
 
     if (currentAuthUser) {
       const newId = crypto.randomUUID();
-      articleIdRef.current = newId;
+     articleIdRef.current = newId;
+      setArticleIdState(newId);
       localStorage.setItem(getActiveArticleIdKey(currentAuthUser.uid), newId);
+
+      console.log("[RESET] Generated new article ID:", newId);
     }
 
     setArticleReady(true);
+    console.log("[RESET] Form reset completed");
   }, [currentAuthUser]);
 
+  
+
   const handleSave = async () => {
+    console.log("[SAVE] Manual save triggered");
+    
     if (!articleIdRef.current) {
+      console.error("[SAVE] No article ID");
       setErrors({ general: "Article ID not ready yet." });
       return;
     }
 
     if (!currentAuthUser) {
+      console.error("[SAVE] No current user");
       setErrors({ general: "Please log in to save changes." });
       return;
     }
@@ -450,6 +673,7 @@ const handlePreview = async () => {
 
     const validation = validateArticle(articleData);
     if (validation) {
+      console.error("[SAVE] Validation failed:", validation);
       setErrors(validation);
       setSaving(false);
       return;
@@ -467,24 +691,22 @@ const handlePreview = async () => {
         unusedAssets = findUnusedAssets(uploadedAssets, usedAssets);
       }
 
+      console.log("[SAVE] Saving to Firebase...");
       await setDoc(
-      doc(db, "articles", articleIdRef.current),
-      {
-        ...articleData,
+        doc(db, "articles", articleIdRef.current),
+        {
+          ...articleData,
+          // 🔒 ownership
+          authorId: currentAuthUser.uid,
+          // 👤 author snapshot (OPTION 2)
+          authorName: authorSnapshotRef.current?.authorName ?? "",
+          authorInitials: authorSnapshotRef.current?.authorInitials ?? "",
+          updatedAt: serverTimestamp(),
+        },
+        { merge: true }
+      );
 
-        // 🔒 ownership
-        authorId: currentAuthUser.uid,
-
-        // 👤 author snapshot (OPTION 2)
-        authorName: authorSnapshotRef.current?.authorName ?? "",
-        authorInitials: authorSnapshotRef.current?.authorInitials ?? "",
-
-        updatedAt: serverTimestamp(),
-      },
-      { merge: true }
-    );
-
-
+      console.log("[SAVE] Clearing lastActiveArticleId");
       await setDoc(
         doc(db, "users", currentAuthUser.uid),
         { lastActiveArticleId: null },
@@ -498,6 +720,7 @@ const handlePreview = async () => {
 
       if (shouldCleanup && uploadedAssets.length > 0 && unusedAssets.length > 0) {
         if (unusedAssets.length !== uploadedAssets.length) {
+          console.log("[SAVE] Cleaning up unused assets:", unusedAssets.length);
           await Promise.all(
             unusedAssets.map(async (url) => {
               try {
@@ -523,6 +746,7 @@ const handlePreview = async () => {
       if (currentAuthUser && articleIdRef.current) {
         localStorage.removeItem(getAutosaveKey(currentAuthUser.uid, articleIdRef.current));
         localStorage.removeItem(getActiveArticleIdKey(currentAuthUser.uid));
+        console.log("[SAVE] Local storage cleared");
       }
 
       if (serverSaveTimeoutRef.current) {
@@ -536,8 +760,9 @@ const handlePreview = async () => {
       setLastServerSave(null);
 
       setTimeout(() => setSuccessMessage(""), 2500);
+      console.log("[SAVE] Manual save completed successfully");
     } catch (err: any) {
-      console.error("Error saving article:", err);
+      console.error("[SAVE] Error saving article:", err);
       setErrors({ general: err.message || "Failed to save article." });
     } finally {
       setSaving(false);
@@ -688,20 +913,23 @@ const handlePreview = async () => {
               <label className="block text-lg font-bold text-[#4A3820] mb-3 font-sans!">
                 Cover Image
               </label>
-              <CoverUpload
-                value={coverImage}
-                articleId={articleIdRef.current!}
-                position={articleData.coverImagePosition}
-                onPositionChange={(pos) => updateArticleData({ coverImagePosition: pos })}
-                onChange={(url) => {
-                  updateArticleData({ coverImage: url });
-                  if (url) {
-                    setUploadedAssets(prev =>
-                      prev.includes(url) ? prev : [...prev, url]
-                    );
-                  }
-                }}
-              />
+          {articleReady && articleIdRef.current && (
+          <CoverUpload
+            value={coverImage}
+            articleId={articleIdRef.current}
+            position={articleData.coverImagePosition}
+            onPositionChange={(pos) => updateArticleData({ coverImagePosition: pos })}
+            onChange={(url) => {
+              updateArticleData({ coverImage: url });
+              if (url) {
+                setUploadedAssets(prev =>
+                  prev.includes(url) ? prev : [...prev, url]
+                );
+              }
+            }}
+          />
+        )}
+
 
               <div className="mt-4">
                 <label className="block text-sm font-semibold text-[#4A3820] mb-1">
@@ -733,11 +961,12 @@ const handlePreview = async () => {
                 </label>
                 <button
                   type="button"
+                  disabled={autosaving}
                   onClick={handlePreview}
                   className="flex items-center gap-2 px-3 py-1.5 text-sm bg-[#4A3820] text-white rounded-md hover:bg-[#3A2D18] transition font-sans!"
                   title="Preview article"
                 >
-                  Preview
+                  {autosaving ? "Saving…" : "Preview"}
                 </button>
               </div>
               {articleReady && articleIdRef.current && (
