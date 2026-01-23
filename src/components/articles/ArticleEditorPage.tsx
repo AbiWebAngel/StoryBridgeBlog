@@ -72,6 +72,10 @@ export default function ArticleEditorPage({ articleId, mode }: ArticleEditorPage
   const [nextServerSaveAt, setNextServerSaveAt] = useState<number | null>(null);
   const [isDocked, setIsDocked] = useState(false);
   const [now, setNow] = useState(Date.now());
+  
+
+const prevUserIdRef = useRef<string | null>(null);
+const prevArticleIdRef = useRef<string | null>(null);
 
   const articleDataRef = useRef(articleData);
   const router = useRouter();
@@ -561,16 +565,32 @@ try {
 useEffect(() => {
   if (!currentAuthUser) return;
 
-  console.log("[USER SWITCH] Resetting editor");
+  const currentUid = currentAuthUser.uid;
+  const currentArticleId = articleIdRef.current;
 
-  // clear local editor state
-  clearEditorState();
+  const userChanged =
+    prevUserIdRef.current &&
+    prevUserIdRef.current !== currentUid;
 
-  // reset article identity
-  articleIdRef.current = null;
-  setArticleIdState(null);
-  setArticleReady(false);
+  const articleChanged =
+    prevArticleIdRef.current &&
+    prevArticleIdRef.current !== currentArticleId;
+
+  if (userChanged) {
+    console.log("[CONTEXT CHANGE] User changed → hard reset");
+
+    clearEditorState();
+
+    articleIdRef.current = null;
+    setArticleIdState(null);
+    setArticleReady(false);
+  }
+
+  // update refs AFTER comparison
+  prevUserIdRef.current = currentUid;
+  prevArticleIdRef.current = currentArticleId;
 }, [currentAuthUser?.uid, clearEditorState]);
+
 
   // Tag handlers
   const handleAddTag = (e: React.KeyboardEvent<HTMLInputElement>) => {
