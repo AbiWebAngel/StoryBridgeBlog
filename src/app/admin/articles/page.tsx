@@ -80,6 +80,9 @@ export default function AdminArticlesPage() {
   const [sortBy, setSortBy] = useState<SortOption>("newest");
   const [selectedArticle, setSelectedArticle] = useState<AdminArticle | null>(null);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [draftConflictUsers, setDraftConflictUsers] = useState<any[]>([]);
+  const [pendingEditArticleId, setPendingEditArticleId] = useState<string | null>(null);
+  const [showDraftWarning, setShowDraftWarning] = useState(false);
 
 
   // Fetch all articles
@@ -179,12 +182,28 @@ export default function AdminArticlesPage() {
   };
 
   const formatDate = (timestamp: Timestamp) => {
-    return new Date(timestamp.toMillis()).toLocaleDateString("en-US", {
+    return new Date(timestamp.toMillis()).toLocaleDateString("en-GB", {
       year: "numeric",
       month: "short",
       day: "numeric",
     });
   };
+
+const checkPendingDraftConflict = async (articleId: string) => {
+  const usersRef = collection(db, "users");
+
+  const q = query(
+    usersRef,
+    where("lastActiveArticleId", "==", articleId)
+  );
+
+  const snapshot = await getDocs(q);
+
+  return snapshot.docs.map(doc => ({
+    id: doc.id,
+    ...doc.data(),
+  }));
+};
 
   // Updated loading state UI
   if (loading || !authReady) {
@@ -346,8 +365,16 @@ export default function AdminArticlesPage() {
       {filteredArticles.map((article) => (
      <tr
       key={article.id}
+      onClick={() => {
+        window.open(
+          `/author/articles/preview/${article.id}`,
+          "_blank",
+          "noopener,noreferrer"
+        );
+      }}
       className="cursor-pointer transition-all hover:shadow-lg hover:-translate-y-px"
     >
+
 
 
           <td className="px-4 py-4">
@@ -406,6 +433,7 @@ export default function AdminArticlesPage() {
           <td className="px-4 py-4">
             <div className="flex items-center gap-2 whitespace-nowrap">
               <a
+              onClick={(e) => e.stopPropagation()}
               href={`/author/articles/preview/${article.id}`}
               target="_blank"
               rel="noopener noreferrer"
@@ -417,17 +445,31 @@ export default function AdminArticlesPage() {
             </a>
 
 
-              <a
-                href={`/author/articles/edit/${article.id}`}
-                className="inline-flex items-center gap-1 px-2 py-1 rounded-md border border-[#D8CDBE] text-[#4A3820] hover:bg-[#EFE6D8] text-sm font-medium transition font-sans!"
-                title="Edit article"
-              >
-                <Pencil size={18} />
-                <span className="hidden lg:inline">Edit</span>
-              </a>
+           <button
+            onClick={async (e) => {
+              e.stopPropagation();
+
+              const conflicts = await checkPendingDraftConflict(article.id);
+
+              if (conflicts.length > 0) {
+                setDraftConflictUsers(conflicts);
+                setPendingEditArticleId(article.id);
+                setShowDraftWarning(true);
+                return;
+              }
+
+              router.push(`/author/articles/edit/${article.id}`);
+            }}
+            className="inline-flex items-center gap-1 px-2 py-1 rounded-md border border-[#D8CDBE] text-[#4A3820] hover:bg-[#EFE6D8] text-sm font-medium transition font-sans!"
+          >
+            <Pencil size={18} />
+            <span className="hidden lg:inline">Edit</span>
+          </button>
+
 
               <button
-                onClick={() => {
+                onClick={(e) => {
+                e.stopPropagation();
                   setSelectedArticle(article);
                   setDeleteModalOpen(true);
                 }}
@@ -443,6 +485,8 @@ export default function AdminArticlesPage() {
       ))}
     </tbody>
   </table>
+ 
+
 </div>
 
           )}
@@ -465,6 +509,63 @@ export default function AdminArticlesPage() {
         article={selectedArticle}
         onSuccess={handleDeleteSuccess}
       />
+
+       {showDraftWarning && (
+  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+    <div className="bg-[#F0E8DB] max-w-md w-full rounded-lg border border-[#D8CDBE] p-6 shadow-xl">
+      <h2 className="text-2xl font-bold text-[#4A3820] mb-3 font-sans!">
+        Draft Conflict Detected
+      </h2>
+
+      <p className="text-[#4A3820] mb-4 text-base ">
+        The article update you are trying to write will be <strong>overwritten</strong> by
+        a pending draft currently open on the author’s machine.
+      </p>
+
+      <p className="text-[#4A3820] mb-4 text-base">
+        Please ask the author to go to <strong>Dashboard → Write New Article</strong> and
+        save their draft before continuing.
+      </p>
+
+      <div className="mb-4 text-xl text-[#4A3820]">
+        Active draft detected for:
+        <ul className="list-disc ml-6 mt-2">
+          {draftConflictUsers.map(u => (
+            <li key={u.id}>
+              {u.firstName && u.lastName
+                ? `${u.firstName} ${u.lastName}`
+                : u.firstName
+                ? u.firstName
+                : u.email || u.id}
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      <div className="flex justify-end gap-3 mt-6">
+        <button
+          onClick={() => {
+            setShowDraftWarning(false);
+            setPendingEditArticleId(null);
+          }}
+          className="px-4 py-2 rounded-md border border-[#D8CDBE] text-[#4A3820] font-sans!"
+        >
+          Cancel
+        </button>
+
+        <button
+          onClick={() => {
+            setShowDraftWarning(false);
+            router.push(`/author/articles/edit/${pendingEditArticleId}`);
+          }}
+          className="px-4 py-2 rounded-md bg-red-600 text-white font-semibold font-sans!"
+        >
+          Edit Anyway
+        </button>
+      </div>
+    </div>
+  </div>
+)}
     </div>
   );
 }

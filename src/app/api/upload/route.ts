@@ -32,17 +32,20 @@ export async function POST(req: Request) {
   const isSvg = file.type === "image/svg+xml";
 
   //-------------------------------------
-  // Metadata + size checks
+  // Metadata + checks
   //-------------------------------------
-  const metadata = await sharp(originalBuffer).metadata();
-  const format = metadata.format; // jpeg | png | webp | avif | svg
+  const metadata = await sharp(originalBuffer, { animated: true }).metadata();
+  const format = metadata.format; // jpeg | png | gif | webp | avif | svg
+  const isGif = format === "gif";
+  const isAnimated = !!metadata.pages && metadata.pages > 1;
 
   const tooLarge =
     (metadata.width ?? 0) > 1600 ||
     (metadata.height ?? 0) > 1600;
 
   const alreadyOptimized =
-    (format === "avif" || format === "webp") && !tooLarge;
+    (format === "webp" && !tooLarge) ||
+    (format === "avif" && !tooLarge && !isAnimated);
 
   let body: Buffer;
   let contentType: string;
@@ -57,17 +60,9 @@ export async function POST(req: Request) {
     extension = "svg";
 
   //-------------------------------------
-  // Already optimized & within bounds
+  // GIF → animated WebP
   //-------------------------------------
-  } else if (alreadyOptimized) {
-    body = originalBuffer;
-    contentType = file.type;
-    extension = format!;
-
-  //-------------------------------------
-  // Resize / recompress → AVIF
-  //-------------------------------------
-  } else {
+  } else if (isGif) {
     let transformer = sharp(originalBuffer, { animated: true }).rotate();
 
     if (tooLarge) {
@@ -80,12 +75,45 @@ export async function POST(req: Request) {
     }
 
     body = await transformer
-  .avif({
-    quality: tooLarge ? 75 : 80, // higher = less aggressive compression
-    effort: 4, // keep it balanced
-  })
-  .toBuffer();
+      .webp({
+        quality: 80,
+        effort: 4,
+        loop: 0, // preserve infinite loop
+      })
+      .toBuffer();
 
+    contentType = "image/webp";
+    extension = "webp";
+
+  //-------------------------------------
+  // Already optimized (safe passthrough)
+  //-------------------------------------
+  } else if (alreadyOptimized) {
+    body = originalBuffer;
+    contentType = file.type;
+    extension = format!;
+
+  //-------------------------------------
+  // Static images → AVIF
+  //-------------------------------------
+  } else {
+    let transformer = sharp(originalBuffer).rotate();
+
+    if (tooLarge) {
+      transformer = transformer.resize({
+        width: 1600,
+        height: 1600,
+        fit: "inside",
+        withoutEnlargement: true,
+      });
+    }
+
+    body = await transformer
+      .avif({
+        quality: tooLarge ? 75 : 80,
+        effort: 4,
+      })
+      .toBuffer();
 
     contentType = "image/avif";
     extension = "avif";

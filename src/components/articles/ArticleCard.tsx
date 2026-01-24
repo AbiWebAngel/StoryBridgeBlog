@@ -11,23 +11,30 @@ export default function ArticleCard({ article, onDelete }: ArticleCardProps) {
     <div className="bg-white border border-[#D8CDBE] rounded-lg shadow-md p-5 flex flex-col hover:shadow-lg transition font-sans">
       
       {/* COVER IMAGE */}
-      {article.coverImage && (
-        <div className="relative w-full h-48 mb-5 rounded-lg overflow-hidden border border-[#D8CDBE]">
-         <Image
-          src={article.coverImage}
-          alt={article.coverImageAlt || article.title || "Article cover"}
-          fill
-          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-          className="rounded-lg"
-          style={{
-            objectFit: "cover",
-            objectPosition: article.coverImagePosition
-              ? `${article.coverImagePosition.x}% ${article.coverImagePosition.y}%`
-              : "50% 50%",
-          }}
-        />
-        </div>
+     {article.coverImage && (
+        <a
+          href={`/author/articles/preview/${article.id}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="relative w-full h-48 mb-5 rounded-lg overflow-hidden border border-[#D8CDBE] block cursor-pointer"
+          title="Open preview in new tab"
+        >
+          <Image
+            src={article.coverImage}
+            alt={article.coverImageAlt || article.title || "Article cover"}
+            fill
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            className="rounded-lg transition-transform duration-300 hover:scale-[1.03]"
+            style={{
+              objectFit: "cover",
+              objectPosition: article.coverImagePosition
+                ? `${article.coverImagePosition.x}% ${article.coverImagePosition.y}%`
+                : "50% 50%",
+            }}
+          />
+        </a>
       )}
+
 
       {/* TITLE */}
       <h3 className="text-xl font-bold text-[#4A3820] line-clamp-2 mb-3 font-sans">

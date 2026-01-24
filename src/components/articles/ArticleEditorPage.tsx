@@ -28,15 +28,22 @@ const getActiveArticleIdKey = (uid: string) => `active-article-id:${uid}`;
 const getAutosaveKey = (uid: string, articleId: string) => `article-draft:${uid}:${articleId}`;
 
 export default function ArticleEditorPage({ articleId, mode }: ArticleEditorPageProps) {
+  
   const { user: currentAuthUser, authReady, role } = useAuth();
   const isAdmin = role === "admin";
-
+  
   // Refs
   const articleIdRef = useRef<string | null>(null);
   const articleAuthorIdRef = useRef<string | null>(null);
+  
+  const isAdminOversight =
+  isAdmin &&
+  articleAuthorIdRef.current &&
+  articleAuthorIdRef.current !== currentAuthUser?.uid;
 
   const hasSavedOnceRef = useRef(false);
   const hasRestoredRef = useRef(false);
+  const shouldSkipLocalDrafts = useRef(false);
   const serverSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const backupIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const authorSnapshotRef = useRef<{
@@ -106,6 +113,7 @@ const resolveAuthorId = () => {
 
   hasRestoredRef.current = false;
   hasSavedOnceRef.current = false;
+  shouldSkipLocalDrafts.current = false;
 
   setArticleData({
     title: "",
@@ -163,6 +171,7 @@ const resolveAuthorId = () => {
 
   (async () => {
     try {
+      const uid = currentAuthUser!.uid;
       const snap = await getDoc(doc(db, "articles", articleId));
 
       if (!snap.exists()) {
@@ -171,38 +180,46 @@ const resolveAuthorId = () => {
       }
 
       const data = snap.data();
-      
 
-      // 🔐 HARD GUARD — ownership check
+      // 🔐 Cache author for later (restore + oversight logic)
+      articleAuthorIdRef.current = data.authorId ?? null;
+      // 🚫 If admin editing foreign article → never load local drafts
+      shouldSkipLocalDrafts.current =
+        isAdmin && data.authorId !== currentAuthUser!.uid;
+
+
       const isForeignArticle = data.authorId !== uid;
 
-if (isForeignArticle && !isAdmin) {
-  console.warn(
-    "[INIT] Refusing to set activeArticleId — wrong author",
-    { articleId, authorId: data.authorId, uid }
-  );
-  return;
-}
+      // 🚫 Non-admins cannot edit foreign articles
+      if (isForeignArticle && !isAdmin) {
+        console.warn(
+          "[INIT] Refusing to initialize editor — wrong author",
+          { articleId, authorId: data.authorId, uid }
+        );
+        return;
+      }
 
-// Admins editing foreign articles should NOT update lastActiveArticleId
-if (!isForeignArticle) {
-  await setDoc(
-    doc(db, "users", uid),
-    { lastActiveArticleId: articleId },
-    { merge: true }
-  );
-  console.log("[INIT] lastActiveArticleId safely set:", articleId);
-} else {
-  console.log("[INIT] Admin editing foreign article — skipping lastActiveArticleId");
-}
+      // 🧠 Only authors update lastActiveArticleId
+      if (!isForeignArticle) {
+        await setDoc(
+          doc(db, "users", uid),
+          { lastActiveArticleId: articleId },
+          { merge: true }
+        );
 
-
-      console.log("[INIT] lastActiveArticleId safely set:", articleId);
+        console.log("[INIT] lastActiveArticleId set:", articleId);
+      } else {
+        console.log(
+          "[INIT] Admin editing foreign article — skipping lastActiveArticleId",
+          { articleId, authorId: data.authorId }
+        );
+      }
     } catch (err) {
-      console.error("[INIT] Failed to validate article ownership:", err);
+      console.error("[INIT] Failed during edit initialization:", err);
     }
   })();
 
+  // Allow editor + restore logic to proceed
   setTimeout(() => {
     setArticleReady(true);
   }, 0);
@@ -274,21 +291,35 @@ if (!isForeignArticle) {
   }, [title, updateArticleData]);
 
   // Local autosave
-  useEffect(() => {
-    if (!hasRestoredRef.current || !articleReady || !pageReady || !currentAuthUser) return;
+useEffect(() => {
+  if (!hasRestoredRef.current || !articleReady || !pageReady || !currentAuthUser) return;
 
-    const timeout = setTimeout(() => {
-      const key = getAutosaveKey(currentAuthUser.uid, articleIdRef.current!);
-      localStorage.setItem(
-        key,
-        JSON.stringify({ ...articleData, uploadedAssets })
-      );
-      setLastLocalSave(Date.now());
-      console.log("[AUTOSAVE] Local autosave completed");
-    }, 800);
+  const articleId = articleIdRef.current;
+  if (!articleId) return;
 
-    return () => clearTimeout(timeout);
-  }, [articleData, uploadedAssets, articleReady, pageReady, currentAuthUser]);
+  const timeout = setTimeout(() => {
+    if (shouldSkipLocalDrafts.current) {
+      console.log("[AUTOSAVE] Skipped local autosave due to admin oversight");
+      return;
+    }
+
+    const key = getAutosaveKey(currentAuthUser.uid, articleId);
+
+    const payload = {
+      ...articleDataRef.current,
+      uploadedAssets,
+      savedAt: Date.now(),
+    };
+
+    localStorage.setItem(key, JSON.stringify(payload));
+    setLastLocalSave(Date.now());
+
+    console.log("[AUTOSAVE] Local autosave written:", key);
+  }, 800);
+
+  return () => clearTimeout(timeout);
+}, [articleData, uploadedAssets, articleReady, pageReady, currentAuthUser]);
+
 
   // Local restore - FIXED VERSION WITH DEBUG LOGS
   useEffect(() => {
@@ -314,11 +345,19 @@ if (!isForeignArticle) {
 
     const restore = async () => {
       console.log("[RESTORE] Executing restore function");
-      
+      const skipLocal = shouldSkipLocalDrafts.current;
+
+
       // NEW mode - only check localStorage
       if (mode === "new") {
         console.log("[RESTORE] Mode: NEW");
         const raw = localStorage.getItem(localKey);
+        if (skipLocal) {
+          console.log("[RESTORE] NEW mode but admin editing foreign article → skipping local restore");
+        } else {
+          // allow existing NEW logic to check local
+        
+
         if (raw) {
           try {
             const draft = JSON.parse(raw);
@@ -404,12 +443,26 @@ if (isForeignArticle && isAdmin) {
         console.log("[RESTORE] NEW mode restore completed");
         return;
       }
-
+    }
       // EDIT mode - check localStorage first, then Firebase
-      console.log("[RESTORE] Mode: EDIT");
+     console.log("[RESTORE] Mode: EDIT");
 
-      // Check localStorage first
-      const raw = localStorage.getItem(localKey);
+    // 🚫 ADMIN OVERSIGHT → Skip ALL local restore
+    if (
+      isAdmin &&
+      articleAuthorIdRef.current &&
+      articleAuthorIdRef.current !== currentAuthUser.uid
+    ) {
+      console.log(
+        "[RESTORE] Admin editing foreign article — skipping all local drafts"
+      );
+      hasRestoredRef.current = true;
+      return;
+    }
+  
+    // Check localStorage first
+    const raw = localStorage.getItem(localKey);
+
       if (raw) {
         try {
           const draft = JSON.parse(raw);
@@ -436,6 +489,7 @@ if (isForeignArticle && isAdmin) {
         } catch (err) {
           console.warn("[RESTORE] Local draft corrupted, ignoring", err);
         }
+        
       } 
       else {
         console.log("[RESTORE] No local draft found in localStorage");
@@ -921,14 +975,17 @@ useEffect(() => {
 
               <div className="flex flex-col gap-3">
                 <button
-                  onClick={() => {
-                    setShowSuccessPanel(false);
-                    window.location.href = "/author/articles";
-                  }}
-                  className="w-full py-3 bg-[#4A3820] text-white rounded-lg hover:bg-[#3A2D18] transition font-sans!"
-                >
-                  Go to Articles Dashboard
-                </button>
+                onClick={() => {
+                  setShowSuccessPanel(false);
+                  window.location.href = isAdminOversight
+                    ? "/admin/articles"
+                    : "/author/articles";
+                }}
+                className="w-full py-3 bg-[#4A3820] text-white rounded-lg hover:bg-[#3A2D18] transition font-sans!"
+              >
+                {isAdminOversight ? "Go to All Articles" : "Go to My Articles"}
+              </button>
+
 
                 <button
                   onClick={() => setShowSuccessPanel(false)}

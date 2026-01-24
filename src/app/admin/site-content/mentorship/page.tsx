@@ -545,7 +545,7 @@ if (loading) {
       </label>
       <input
         type="file"
-        accept=".png, .jpg, .jpeg, .webp"
+        accept=".png, .jpg, .jpeg, .webp, .gif, .avif"
         className="hidden"
         id={`upload-${label.replace(/\s+/g, "-")}`}
         onChange={async (e) => {
@@ -1102,7 +1102,7 @@ if (loading) {
                           </label>
                           <input
                             type="file"
-                            accept=".png, .jpg, .jpeg, .webp"
+                            accept=".png, .jpg, .jpeg, .webp, .gif, .avif"
                             className="hidden"
                             id={`testimonial-upload-${index}`}
                             onChange={async (e) => {

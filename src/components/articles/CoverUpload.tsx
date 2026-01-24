@@ -253,7 +253,7 @@ const stopClick = (e: React.MouseEvent | React.PointerEvent) => {
     <input
       type="file"
       ref={fileInputRef}
-      accept=".png, .jpg, .jpeg, .webp, .gif"
+      accept=".png, .jpg, .jpeg, .webp, .gif, .avif"
       className="hidden"
       onChange={handleFileSelect}
     />

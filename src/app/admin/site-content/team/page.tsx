@@ -548,7 +548,7 @@ if (loading) {
                             <input
                               id={`team-image-upload-${index}`}
                               type="file"
-                              accept=".png, .jpg, .jpeg, .webp"
+                              accept=".png, .jpg, .jpeg, .webp, .gif, .avif"
                               className="hidden"
                               onChange={async (e) => {
                                 if (!e.target.files?.[0]) return;
