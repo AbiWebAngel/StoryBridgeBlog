@@ -1,100 +1,92 @@
-"use client";
-
-import { useParams } from "next/navigation";
-import { useRouter } from "next/navigation";
+import { getArticleBySlug } from "@/lib/articles/getArticleBySlug";
 import Image from "next/image";
-// import { getBlogPostBySlug } from "@/data/blogData";
+import ArticleRenderer from "@/components/articles/ArticleRenderer";
+import Link from "next/link";
 
-export default function BlogPostPage() {
-//   const params = useParams();
-  const router = useRouter();
+export default async function BlogArticlePage({ params }: { params: Promise<{ slug: string }> }) {
+  // Await the params if Next.js gives a promise
+  const resolvedParams = await params;
 
-//   const slug = Array.isArray(params.slug) ? params.slug[0] : params.slug;
-// // 
-//   if (!slug) {
-//     return (
-//       <div className="min-h-screen flex items-center justify-center">
-//         <div className="text-center">
-//           <h1 className="text-2xl font-bold text-[#413320]">Post not found</h1>
-//           <button 
-//             onClick={() => router.push('/')}
-//             className="mt-4 px-6 py-2 bg-[#CF822A] text-white rounded-lg hover:bg-[#B36F24] transition"
-//           >
-//             Go Home
-//           </button>
-//         </div>
-//       </div>
-//     );
-//   }
+  console.log("[BLOG PAGE] params:", resolvedParams);
+  console.log("[BLOG PAGE] slug:", resolvedParams?.slug);
 
-//   const post = getBlogPostBySlug(slug);
+  if (!resolvedParams?.slug) {
+    console.error("[BLOG PAGE] Missing slug param!");
+    throw new Error("Slug param missing");
+  }
 
-//   if (!post) {
-//     return (
-//       <div className="min-h-screen flex items-center justify-center">
-//         <div className="text-center">
-//           <h1 className="text-2xl font-bold text-[#413320]">Post not found</h1>
-//           <p className="text-[#413320] mt-2">The blog post &quot;{slug}&quot; does not exist.</p>
-//           <button 
-//             onClick={() => router.push('/')}
-//             className="mt-4 px-6 py-2 bg-[#CF822A] text-white rounded-lg hover:bg-[#B36F24] transition"
-//           >
-//             Go Home
-//           </button>
-//         </div>
-//       </div>
-//     );
-//   }
+  const slug = resolvedParams.slug;
+
+  console.log("[BLOG PAGE] Fetching article for slug:", slug);
+  const post = await getArticleBySlug(slug);
+  console.log("[BLOG PAGE] Fetched post:", post);
+
+  if (!post) {
+    return <div className="p-10 text-center">Article not found</div>;
+  }
 
   return (
     <div className="min-h-screen bg-[#ECE1CF] py-4">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Back button */}
-        <button 
-            onClick={() => router.back()}
-            className="mb-6 flex items-center text-[#CF822A] hover:text-[#B36F24] transition font-inter font-bold group relative pb-1"
-          >
-            <span className="relative after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-[#B36F24] after:transition-all after:duration-300 group-hover:after:w-full">
-              ← Back to articles
-            </span>
-        </button>
+        
+        {/* Back button - matching preview page */}
+        <Link 
+          href="/blog"
+          className="mb-6 flex items-center text-[#CF822A] hover:text-[#B36F24] transition font-inter font-bold group relative pb-1"
+        >
+          <span className="relative after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-[#B36F24] after:transition-all after:duration-300 group-hover:after:w-full">
+            ← Back to Blog
+          </span>
+        </Link>
 
-          Article Card
-          <div className="bg-[#F2ECE3] rounded-[30px] text-[#413320] shadow-xl p-6 sm:p-8">
-       
-          Article Header
-          {/* <h1 className="font-cinzel text-[22px] sm:text-[26px] lg:text-[30px] font-bold min-w-0 wrap-break-word text-[#413320] text-center mb-4">
+        {/* Article Card - matching preview page design */}
+        <div className="bg-[#F2ECE3] rounded-[30px] shadow-xl p-6 sm:p-8">
+          {/* Article Header */}
+          <h1 className="font-cinzel text-[22px] sm:text-[26px] lg:text-[30px] font-bold min-w-0 wrap-break-word text-center mb-4">
             {post.title}
-          </h1> */}
+          </h1>
           
           {/* Article Meta */}
-          <div className="flex items-center gap-4 text-[#413320] font-inter mb-6 justify-center">
-            {/* <span className="font-semibold">{post.author}</span>
-            <span>•</span> */}
-            {/* <span>{new Date(post.date).toLocaleDateString('en-US', {
-              year: 'numeric',
-              month: 'long',
-              day: 'numeric'
-            })}</span> */}
+          <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4 font-inter mb-6 justify-center text-center">
+            <span className="font-semibold">{post.author || "Author"}</span>
+            <span className="hidden sm:inline">•</span>
+            <span>
+              {post.date ? new Date(post.date).toLocaleDateString('en-GB', {
+                day: '2-digit',
+                month: 'long',
+                year: 'numeric'
+              }) : new Date().toLocaleDateString('en-GB', {
+                day: '2-digit',
+                month: 'long',
+                year: 'numeric'
+              })}
+            </span>
+            {post.readTime && (
+              <>
+                <span className="hidden sm:inline">•</span>
+                <span>{post.readTime} min read</span>
+              </>
+            )}
           </div>
 
           {/* Featured Image */}
-         <div className="mb-8 flex justify-center">
-         {/* <Image
-          src={post.coverImage}
-          alt={post.title}
-          width={1200}
-          height={600}
-          className="w-full h-62.5 sm:h-87.5 lg:h-112.5 object-cover rounded-[20px]"
-          priority
-        /> */}
-          </div>
+          {post.coverImage && (
+            <div className="mb-8 flex justify-center">
+              <Image
+                src={post.coverImage}
+                alt={post.coverImageAlt || post.title}
+                width={1200}
+                height={600}
+                priority
+                className="w-full h-62.5 sm:h-87.5 lg:h-112.5 rounded-[20px] object-cover"
+              />
+            </div>
+          )}
 
-          
           {/* Article Content */}
-          {/* <article className="max-w-none font-inter text-[#413320]">
-            {post.fullContent}
-          </article> */}
+          <article className="article-content">
+            <ArticleRenderer content={post.body} />
+          </article>
         </div>
       </div>
     </div>
