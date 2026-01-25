@@ -6,7 +6,7 @@ type TipTapNode = {
 
 export function extractExcerptFromBody(
   body: any,
-  wordLimit = 100
+  wordLimit = 90
 ): string {
   if (!body?.content || !Array.isArray(body.content)) return "";
 

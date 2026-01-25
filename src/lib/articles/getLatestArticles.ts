@@ -34,7 +34,7 @@ export async function getLatestArticles(limitCount = 6): Promise<Article[]> {
       id: doc.id,
       title: data.title,
       excerpt:
-        extractExcerptFromBody(data.body, 100) ||
+        extractExcerptFromBody(data.body, 90) ||
         data.metaDescription || // nice fallback
         "",
       coverImage: data.coverImage,
