@@ -2,17 +2,17 @@ import React from "react";
 import SearchComponent from "../components/home/SearchComponent";
 import NewsletterForm from "../components/NewsletterForm";
 import SectionHeading from "../components/SectionHeading";
-import LatestBlogs from "../components/home/LatestBlogs";
+import LatestBlogs from "./blog/LatestBlogs";
 import JoinOurPrograms from "../components/home/JoinOurPrograms";
 import MessageFromDirector from "../components/home/MessageFromDirector";
 import { getHomeContent } from "@/lib/getHomeContent";
-
+import { getLatestArticles } from "@/lib/articles/getLatestArticles";
 
 
 export default async function HomePage() {
   // Fetch home content from Firestore
   const homeContent = await getHomeContent();
-
+  const latestArticles = await getLatestArticles(6);
   return (
     <main>
       {/* Search Section */}
@@ -30,7 +30,7 @@ export default async function HomePage() {
           centerAll={true}
         />
       </div>
-      <LatestBlogs />
+      <LatestBlogs initialArticles={latestArticles} />
         
       {/* Only show Join Our Programs section if there are program links */}
       {homeContent?.programLinks && homeContent.programLinks.length > 0 && (

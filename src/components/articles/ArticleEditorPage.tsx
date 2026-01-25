@@ -109,8 +109,6 @@ const resolveAuthorId = () => {
 
 
   const clearEditorState = useCallback(() => {
-  console.log("[CLEAR] Clearing editor state");
-
   hasRestoredRef.current = false;
   hasSavedOnceRef.current = false;
   shouldSkipLocalDrafts.current = false;
@@ -133,7 +131,7 @@ const resolveAuthorId = () => {
   setLastLocalSave(null);
   setLastServerSave(null);
 
-  // 🔥 forces ArticleEditor remount
+  // forces ArticleEditor remount
   setResetEditorToken(v => v + 1);
 }, []);
 
@@ -164,8 +162,6 @@ const resolveAuthorId = () => {
     const uid = currentAuthUser.uid;
 
    if (mode === "edit" && articleId) {
-  console.log("[INIT] Edit mode with articleId:", articleId);
-
   articleIdRef.current = articleId;
   setArticleIdState(articleId);
 
@@ -175,47 +171,34 @@ const resolveAuthorId = () => {
       const snap = await getDoc(doc(db, "articles", articleId));
 
       if (!snap.exists()) {
-        console.warn("[INIT] Article does not exist:", articleId);
         return;
       }
 
       const data = snap.data();
 
-      // 🔐 Cache author for later (restore + oversight logic)
+      // Cache author for later (restore + oversight logic)
       articleAuthorIdRef.current = data.authorId ?? null;
-      // 🚫 If admin editing foreign article → never load local drafts
+      // If admin editing foreign article → never load local drafts
       shouldSkipLocalDrafts.current =
         isAdmin && data.authorId !== currentAuthUser!.uid;
 
 
       const isForeignArticle = data.authorId !== uid;
 
-      // 🚫 Non-admins cannot edit foreign articles
+      // Non-admins cannot edit foreign articles
       if (isForeignArticle && !isAdmin) {
-        console.warn(
-          "[INIT] Refusing to initialize editor — wrong author",
-          { articleId, authorId: data.authorId, uid }
-        );
         return;
       }
 
-      // 🧠 Only authors update lastActiveArticleId
+      // Only authors update lastActiveArticleId
       if (!isForeignArticle) {
         await setDoc(
           doc(db, "users", uid),
           { lastActiveArticleId: articleId },
           { merge: true }
         );
-
-        console.log("[INIT] lastActiveArticleId set:", articleId);
-      } else {
-        console.log(
-          "[INIT] Admin editing foreign article — skipping lastActiveArticleId",
-          { articleId, authorId: data.authorId }
-        );
       }
     } catch (err) {
-      console.error("[INIT] Failed during edit initialization:", err);
     }
   })();
 
@@ -230,7 +213,6 @@ const resolveAuthorId = () => {
     const init = async () => {
       const localKey = getActiveArticleIdKey(uid);
       let id = localStorage.getItem(localKey);
-      console.log("[INIT] Local stored article ID:", id);
 
       try {
         const userSnap = await getDoc(doc(db, "users", uid));
@@ -238,10 +220,9 @@ const resolveAuthorId = () => {
 
         // existing behavior
         const remoteId = userData?.lastActiveArticleId;
-        console.log("[INIT] Remote lastActiveArticleId:", remoteId);
         if (remoteId) id = remoteId;
 
-        // 🔥 STORE AUTHOR SNAPSHOT LOCALLY
+        // STORE AUTHOR SNAPSHOT LOCALLY
         if (userData) {
           authorSnapshotRef.current = {
             authorName: [userData.firstName, userData.lastName].filter(Boolean).join(" "),
@@ -249,26 +230,23 @@ const resolveAuthorId = () => {
           };
         }
       } catch (err) {
-        console.error("[INIT] Error fetching user data:", err);
       }
 
       if (!id) {
         id = crypto.randomUUID();
-        console.log("[INIT] Generated new article ID:", id);
       }
 
       localStorage.setItem(localKey, id);
       articleIdRef.current = id;
       setArticleIdState(id);
 
-      // 🧭 Track active article for recovery
+      // Track active article for recovery
       await setDoc(
         doc(db, "users", uid),
         { lastActiveArticleId: id },
         { merge: true }
       );
 
-      console.log("[INIT] Article ID initialized:", id);
           setTimeout(() => {
           setArticleReady(true);
         }, 0);
@@ -299,7 +277,6 @@ useEffect(() => {
 
   const timeout = setTimeout(() => {
     if (shouldSkipLocalDrafts.current) {
-      console.log("[AUTOSAVE] Skipped local autosave due to admin oversight");
       return;
     }
 
@@ -313,8 +290,6 @@ useEffect(() => {
 
     localStorage.setItem(key, JSON.stringify(payload));
     setLastLocalSave(Date.now());
-
-    console.log("[AUTOSAVE] Local autosave written:", key);
   }, 800);
 
   return () => clearTimeout(timeout);
@@ -324,11 +299,6 @@ useEffect(() => {
   // Local restore - FIXED VERSION WITH DEBUG LOGS
   useEffect(() => {
     if (!currentAuthUser || !articleReady || !articleIdRef.current) {
-      console.log("[RESTORE] Missing requirements:", {
-        currentAuthUser: !!currentAuthUser,
-        articleReady,
-        articleId: articleIdRef.current
-      });
       return;
     }
     
@@ -337,23 +307,14 @@ useEffect(() => {
     const uid = currentAuthUser.uid;
     const localKey = getAutosaveKey(uid, articleId);
 
-    console.log("[RESTORE] Starting restore process", {
-      mode,
-      articleId,
-      hasRestored: hasRestoredRef.current
-    });
-
     const restore = async () => {
-      console.log("[RESTORE] Executing restore function");
       const skipLocal = shouldSkipLocalDrafts.current;
 
 
       // NEW mode - only check localStorage
       if (mode === "new") {
-        console.log("[RESTORE] Mode: NEW");
         const raw = localStorage.getItem(localKey);
         if (skipLocal) {
-          console.log("[RESTORE] NEW mode but admin editing foreign article → skipping local restore");
         } else {
           // allow existing NEW logic to check local
         
@@ -361,7 +322,6 @@ useEffect(() => {
         if (raw) {
           try {
             const draft = JSON.parse(raw);
-            console.log("[RESTORE] Found local draft for NEW article");
             setArticleData({
               title: draft.title ?? "",
               slug: draft.slug ?? "",
@@ -375,11 +335,9 @@ useEffect(() => {
             });
             setUploadedAssets(draft.uploadedAssets ?? []);
           } catch (err) {
-            console.warn("[RESTORE] Local draft for NEW article corrupted, ignoring", err);
           }
         } else {
           // inside the NEW branch, after local check and if no local found:
-        console.log("[RESTORE] No local draft found for NEW article, attempting firestore (NEW)");
         try {
           const snap = await getDoc(doc(db, "articles", articleId));
           if (snap.exists()) {
@@ -389,18 +347,10 @@ useEffect(() => {
             const isForeignArticle = data.authorId !== currentAuthUser.uid;
 
 if (isForeignArticle && !isAdmin) {
-  console.warn(
-    "[RESTORE] EDIT mode: article belongs to another user, skipping restore",
-    { articleId, authorId: data.authorId }
-  );
   return;
 }
 
 if (isForeignArticle && isAdmin) {
-  console.log(
-    "[RESTORE] Admin editing foreign article — hydrating canonical firestore data",
-    { articleId, authorId: data.authorId }
-  );
 }
 
 
@@ -427,35 +377,24 @@ if (isForeignArticle && isAdmin) {
         status: data.status ?? "draft",
       });
       setUploadedAssets(data.uploadedAssets ?? []);
-      console.log("[RESTORE] Restored NEW article from firestore:", articleId);
-    } else {
-      console.log("[RESTORE] Firestore doc exists but empty — skipping");
     }
-  } else {
-    console.log("[RESTORE] No firestore doc for NEW articleId:", articleId);
   }
 } catch (err) {
-  console.error("[RESTORE] Error fetching firestore for NEW mode:", err);
 }
 
         }
         hasRestoredRef.current = true;
-        console.log("[RESTORE] NEW mode restore completed");
         return;
       }
     }
       // EDIT mode - check localStorage first, then Firebase
-     console.log("[RESTORE] Mode: EDIT");
 
-    // 🚫 ADMIN OVERSIGHT → Skip ALL local restore
+    // ADMIN OVERSIGHT → Skip ALL local restore
     if (
       isAdmin &&
       articleAuthorIdRef.current &&
       articleAuthorIdRef.current !== currentAuthUser.uid
     ) {
-      console.log(
-        "[RESTORE] Admin editing foreign article — skipping all local drafts"
-      );
       hasRestoredRef.current = true;
       return;
     }
@@ -466,11 +405,6 @@ if (isForeignArticle && isAdmin) {
       if (raw) {
         try {
           const draft = JSON.parse(raw);
-          console.log("[RESTORE] Found local draft for EDIT article", {
-            hasTitle: !!draft.title,
-            hasBody: !!draft.body,
-            hasCoverImage: !!draft.coverImage
-          });
           setArticleData({
             title: draft.title ?? "",
             slug: draft.slug ?? "",
@@ -484,54 +418,30 @@ if (isForeignArticle && isAdmin) {
           });
           setUploadedAssets(draft.uploadedAssets ?? []);
           hasRestoredRef.current = true;
-          console.log("[RESTORE] Restored from localStorage");
           return;
         } catch (err) {
-          console.warn("[RESTORE] Local draft corrupted, ignoring", err);
         }
         
       } 
-      else {
-        console.log("[RESTORE] No local draft found in localStorage");
-      }
 
       // If no local draft, try Firebase
-      console.log("[RESTORE] Attempting to fetch from Firebase");
       try {
         const snap = await getDoc(doc(db, "articles", articleId));
-        console.log("[RESTORE] Firebase snapshot exists:", snap.exists());
         
         if (snap.exists()) {
           const data = snap.data();
           articleAuthorIdRef.current = data.authorId ?? null;
 
-           // 🔐 EDGE CASE 1 — ownership validation
+           // EDGE CASE 1 — ownership validation
         const isForeignArticle = data.authorId !== currentAuthUser.uid;
 
 if (isForeignArticle && !isAdmin) {
-  console.warn(
-    "[RESTORE] EDIT mode: article belongs to another user, skipping restore",
-    { articleId, authorId: data.authorId }
-  );
   return;
 }
 
 if (isForeignArticle && isAdmin) {
-  console.log(
-    "[RESTORE] Admin editing foreign article — hydrating canonical firestore data",
-    { articleId, authorId: data.authorId }
-  );
 }
 
-
-          console.log("[RESTORE] Firebase data received:", {
-            title: data.title,
-            hasBody: !!data.body,
-            slug: data.slug,
-            metaDescription: data.metaDescription,
-            tags: data.tags,
-            coverImage: data.coverImage
-          });
 
           // Decide whether remote doc actually contains real content
           const remoteHasContent =
@@ -542,8 +452,6 @@ if (isForeignArticle && isAdmin) {
             (Array.isArray(data.tags) && data.tags.length > 0) ||
             (Array.isArray(data.uploadedAssets) && data.uploadedAssets.length > 0) ||
             (data.coverImage && data.coverImage !== null);
-
-          console.log("[RESTORE] remoteHasContent evaluation:", remoteHasContent);
 
           if (remoteHasContent) {
             setArticleData({
@@ -558,25 +466,16 @@ if (isForeignArticle && isAdmin) {
               status: data.status ?? "draft",
             });
             setUploadedAssets(data.uploadedAssets ?? []);
-            console.log("[RESTORE] Successfully restored from firestore:", articleId);
-          } else {
-            console.log("[RESTORE] firestore doc exists but is empty — skipping restore");
           }
-        } else {
-          console.log("[RESTORE] No document found in Firebase for articleId:", articleId);
         }
       } catch (err) {
-        console.error("[RESTORE] Error fetching from Firebase:", err);
       }
       
       hasRestoredRef.current = true;
-      console.log("[RESTORE] EDIT mode restore completed");
     };
 
     if (!hasRestoredRef.current) {
       restore();
-    } else {
-      console.log("[RESTORE] Already restored, skipping");
     }
   }, [currentAuthUser, articleReady, mode, articleIdState]);
 
@@ -591,38 +490,22 @@ const getAuthorPayload = () => {
   // Server autosave function
   const autosaveToServer = useCallback(
     async (force = false, awaitConfirm = false) => {
-      console.log("[SERVER AUTOSAVE] Triggered", {
-        hasRestored: hasRestoredRef.current,
-        currentAuthUser: !!currentAuthUser,
-        articleReady,
-        force
-      });
-
       if (!hasRestoredRef.current || !currentAuthUser || !articleReady) {
-        console.log("[SERVER AUTOSAVE] Cannot autosave - missing requirements");
         return;
       }
 
       const articleId = articleIdRef.current;
       if (!articleId) {
-        console.log("[SERVER AUTOSAVE] No articleId");
         return;
       }
 
       const data = articleDataRef.current;
-      console.log("[SERVER AUTOSAVE] Data check:", {
-        hasTitle: !!data.title,
-        hasBody: !!data.body,
-        hasCoverImage: !!data.coverImage
-      });
 
       if (!force && !data.title && !data.body && !data.coverImage) {
-        console.log("[SERVER AUTOSAVE] Skipping - no content and not forced");
         return;
       }
 
       setAutosaving(true);
-      console.log("[SERVER AUTOSAVE] Starting save to server");
 
       const articleRef = doc(db, "articles", articleId);
 
@@ -639,23 +522,16 @@ const getAuthorPayload = () => {
   { merge: true }
 );
 
-
-        console.log("[SERVER AUTOSAVE] Document saved successfully");
-
-        // 🔐 Optional confirmation read (used by preview)
+        // Optional confirmation read (used by preview)
         if (awaitConfirm) {
           await getDoc(articleRef);
-          console.log("[SERVER AUTOSAVE] Confirmation read completed");
         }
 
         setLastServerSave(Date.now());
-        console.log("[SERVER AUTOSAVE] lastServerSave updated");
       } catch (err) {
-        console.error("[SERVER AUTOSAVE] Failed:", err);
         throw err;
       } finally {
         setAutosaving(false);
-        console.log("[SERVER AUTOSAVE] autosaving state reset");
       }
     },
     [currentAuthUser, articleReady]
@@ -665,17 +541,14 @@ const getAuthorPayload = () => {
   useEffect(() => {
     if (!currentAuthUser) return;
 
-    console.log("[BACKUP AUTOSAVE] Setting up interval");
     setNextServerSaveAt(Date.now() + BACKUP_AUTOSAVE_INTERVAL);
 
     backupIntervalRef.current = setInterval(() => {
-      console.log("[BACKUP AUTOSAVE] Interval triggered");
       autosaveToServer();
       setNextServerSaveAt(Date.now() + BACKUP_AUTOSAVE_INTERVAL);
     }, BACKUP_AUTOSAVE_INTERVAL);
 
     return () => {
-      console.log("[BACKUP AUTOSAVE] Cleaning up interval");
       if (backupIntervalRef.current) {
         clearInterval(backupIntervalRef.current);
       }
@@ -710,9 +583,7 @@ useEffect(() => {
     prevUserIdRef.current &&
     prevUserIdRef.current !== currentUid
   ) {
-    console.log("[CONTEXT CHANGE] Different user → hard reset");
-
-    authorSnapshotRef.current = null; // 🔒 only now
+    authorSnapshotRef.current = null;
     clearEditorState();
 
     articleIdRef.current = null;
@@ -755,7 +626,7 @@ useEffect(() => {
     }
 
     try {
-      // 🔒 FORCE save + CONFIRM
+      // FORCE save + CONFIRM
       await autosaveToServer(true, true);
 
       window.open(
@@ -769,7 +640,6 @@ useEffect(() => {
   };
 
   const resetForm = useCallback(() => {
-    console.log("[RESET] Resetting form");
     hasRestoredRef.current = false;
     setArticleReady(false);
     
@@ -794,27 +664,20 @@ useEffect(() => {
      articleIdRef.current = newId;
       setArticleIdState(newId);
       localStorage.setItem(getActiveArticleIdKey(currentAuthUser.uid), newId);
-
-      console.log("[RESET] Generated new article ID:", newId);
     }
 
     setArticleReady(true);
-    console.log("[RESET] Form reset completed");
   }, [currentAuthUser]);
 
   
 
   const handleSave = async () => {
-    console.log("[SAVE] Manual save triggered");
-    
     if (!articleIdRef.current) {
-      console.error("[SAVE] No article ID");
       setErrors({ general: "Article ID not ready yet." });
       return;
     }
 
     if (!currentAuthUser) {
-      console.error("[SAVE] No current user");
       setErrors({ general: "Please log in to save changes." });
       return;
     }
@@ -825,7 +688,6 @@ useEffect(() => {
 
     const validation = validateArticle(articleData);
     if (validation) {
-      console.error("[SAVE] Validation failed:", validation);
       setErrors(validation);
       setSaving(false);
       return;
@@ -843,20 +705,23 @@ useEffect(() => {
         unusedAssets = findUnusedAssets(uploadedAssets, usedAssets);
       }
 
-      console.log("[SAVE] Saving to Firebase...");
-   await setDoc(
-  doc(db, "articles", articleIdRef.current),
-  {
-    ...articleData,
-    authorId: resolveAuthorId(),
-    ...getAuthorPayload(),
-    updatedAt: serverTimestamp(),
-  },
-  { merge: true }
-);
+      await setDoc(
+        doc(db, "articles", articleIdRef.current),
+        {
+          ...articleData,
+          authorId: resolveAuthorId(),
+          ...getAuthorPayload(),
+          updatedAt: serverTimestamp(),
+
+          // 👇 ADD THIS LOGIC
+          ...(articleData.status === "published" && {
+            publishedAt: serverTimestamp(),
+          }),
+        },
+        { merge: true }
+      );
 
 
-      console.log("[SAVE] Clearing lastActiveArticleId");
       await setDoc(
         doc(db, "users", currentAuthUser.uid),
         { lastActiveArticleId: null },
@@ -870,7 +735,6 @@ useEffect(() => {
 
       if (shouldCleanup && uploadedAssets.length > 0 && unusedAssets.length > 0) {
         if (unusedAssets.length !== uploadedAssets.length) {
-          console.log("[SAVE] Cleaning up unused assets:", unusedAssets.length);
           await Promise.all(
             unusedAssets.map(async (url) => {
               try {
@@ -880,7 +744,6 @@ useEffect(() => {
                   body: JSON.stringify({ url }),
                 });
               } catch (err) {
-                console.warn("Failed to delete unused asset", url, err);
               }
             })
           );
@@ -896,7 +759,6 @@ useEffect(() => {
       if (currentAuthUser && articleIdRef.current) {
         localStorage.removeItem(getAutosaveKey(currentAuthUser.uid, articleIdRef.current));
         localStorage.removeItem(getActiveArticleIdKey(currentAuthUser.uid));
-        console.log("[SAVE] Local storage cleared");
       }
 
       if (serverSaveTimeoutRef.current) {
@@ -910,9 +772,7 @@ useEffect(() => {
       setLastServerSave(null);
 
       setTimeout(() => setSuccessMessage(""), 2500);
-      console.log("[SAVE] Manual save completed successfully");
     } catch (err: any) {
-      console.error("[SAVE] Error saving article:", err);
       setErrors({ general: err.message || "Failed to save article." });
     } finally {
       setSaving(false);

@@ -1,19 +1,40 @@
-import Link from "next/link";
+import { collection, getDocs, orderBy, query, where, limit } from "firebase/firestore";
+import { db } from "@/lib/firebase";
+import { extractExcerptFromBody } from "@/lib/articles/extractExcerpt";
+import LatestBlogs from "./LatestBlogs";
 
-export default function BlogPage() {
-  // example posts
-  const posts = ["first-post", "nextjs-tutorial", "hello-world"];
 
-  return (
-    <div>
-      <h1>Blog</h1>
-      <ul>
-        {posts.map((slug) => (
-          <li key={slug}>
-            <Link href={`/blog/${slug}`}>{slug.replace("-", " ")}</Link>
-          </li>
-        ))}
-      </ul>
-    </div>
+export const revalidate = 300; // ISR: refresh every 5 minutes
+
+export const metadata = {
+  title: "Latest Blog Posts | StoryBridge",
+  description: "Read the latest stories, ideas, and insights from StoryBridge.",
+};
+
+const ITEMS_PER_PAGE = 6;
+const PREFETCH_PAGES = 3;
+
+export default async function BlogPage() {
+  const q = query(
+    collection(db, "articles"),
+    where("status", "==", "published"),
+    orderBy("updatedAt", "desc"),
+    limit(ITEMS_PER_PAGE * PREFETCH_PAGES)
   );
+
+  const snapshot = await getDocs(q);
+
+  const articles = snapshot.docs.map((doc) => {
+    const d = doc.data();
+
+    return {
+      id: doc.id,
+      title: d.title,
+      slug: d.slug,
+      coverImage: d.coverImage,
+      excerpt: extractExcerptFromBody(d.body, 100),
+    };
+  });
+
+  return <LatestBlogs initialArticles={articles} />;
 }

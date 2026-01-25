@@ -128,13 +128,13 @@ export default function AdminArticlesPage() {
     if (search.trim()) {
       const lower = search.toLowerCase();
       result = result.filter((art) => {
-        return (
-          art.title?.toLowerCase().includes(lower) ||
-          art.slug?.toLowerCase().includes(lower) ||
-          art.tags?.some((t) => t.toLowerCase().includes(lower)) ||
-          art.authorName?.toLowerCase().includes(lower)
-        );
-      });
+      return (
+        art.title?.toLowerCase().includes(lower) ||
+        art.metaDescription?.toLowerCase().includes(lower) ||
+        art.tags?.some((t) => t.toLowerCase().includes(lower)) ||
+        art.authorName?.toLowerCase().includes(lower)
+      );
+    });
     }
 
     // Apply sorting
@@ -284,7 +284,7 @@ const checkPendingDraftConflict = async (articleId: string) => {
             {/* Search */}
             <input
               type="text"
-              placeholder="Search articles by title, slug, tags, or author..."
+              placeholder="Search articles by title, tags, or author..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="flex-1 p-3 rounded-lg border border-[#D8CDBE] bg-white focus:outline-none focus:ring-2 focus:ring-[#CABAA2] text-base font-sans!"
@@ -384,7 +384,7 @@ const checkPendingDraftConflict = async (articleId: string) => {
               </div>
 
               <div className="text-base text-[#4A3820]/70 font-sans!">
-                {article.slug}
+                {article.metaDescription || "No meta description"}
               </div>
 
               {article.tags && article.tags.length > 0 && (

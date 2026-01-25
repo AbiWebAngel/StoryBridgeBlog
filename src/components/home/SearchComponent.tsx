@@ -69,7 +69,7 @@ export default function SearchComponent() {
             key={index}
             className="cursor-pointer px-5 py-2 rounded-full border-2 border-[#805C2C] bg-[#F2ECE3]
                        text-[#805C2C] font-medium transition-transform duration-300
-                       hover:scale-110 select-none"
+                       hover:scale-110 select-none text-base!"
           >
             {label}
           </span>

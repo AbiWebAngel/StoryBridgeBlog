@@ -36,7 +36,7 @@ export default function JoinOurPrograms({ programLinks }: JoinOurProgramsProps) 
                 className="object-contain"
               />
             </div>
-            <h3 className="mt-2 font-cinzel font-bold text-[#413320] text-[28px] text-center break-words">
+            <h3 className="mt-2 font-cinzel font-bold text-[#413320] text-[20px] text-center break-words">
               {program.programName}
             </h3>
           </Link>

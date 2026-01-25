@@ -64,7 +64,7 @@ export default function MessageFromDirector({
         aria-label={buttonText}
         className="
           absolute top-full right-2 transform -translate-y-2
-          w-[550px] max-w-[90%] h-[80px] bg-[#F2ECE3] 
+           max-w-[90%] h-[80px] bg-[#F2ECE3] 
           flex items-center justify-center cursor-pointer overflow-hidden
           shadow-[0_8px_12px_rgba(0,0,0,0.25)] z-10
           transition-all duration-500
@@ -78,7 +78,7 @@ export default function MessageFromDirector({
           borderBottomRightRadius: 30,
         }}
       >
-        <h3 className="font-bold text-[#403727] text-[25px] text-center pt-6 pb-2 px-4 md:px-4 sm:px-6">
+        <h3 className="font-bold text-[#403727] text-[20px] text-center pt-6 pb-2 px-4 md:px-4 sm:px-6">
           {buttonText}
         </h3>
       </button>

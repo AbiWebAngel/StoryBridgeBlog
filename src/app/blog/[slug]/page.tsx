@@ -3,48 +3,48 @@
 import { useParams } from "next/navigation";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { getBlogPostBySlug } from "@/data/blogData";
+// import { getBlogPostBySlug } from "@/data/blogData";
 
 export default function BlogPostPage() {
-  const params = useParams();
+//   const params = useParams();
   const router = useRouter();
 
-  const slug = Array.isArray(params.slug) ? params.slug[0] : params.slug;
+//   const slug = Array.isArray(params.slug) ? params.slug[0] : params.slug;
+// // 
+//   if (!slug) {
+//     return (
+//       <div className="min-h-screen flex items-center justify-center">
+//         <div className="text-center">
+//           <h1 className="text-2xl font-bold text-[#413320]">Post not found</h1>
+//           <button 
+//             onClick={() => router.push('/')}
+//             className="mt-4 px-6 py-2 bg-[#CF822A] text-white rounded-lg hover:bg-[#B36F24] transition"
+//           >
+//             Go Home
+//           </button>
+//         </div>
+//       </div>
+//     );
+//   }
 
-  if (!slug) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-[#413320]">Post not found</h1>
-          <button 
-            onClick={() => router.push('/')}
-            className="mt-4 px-6 py-2 bg-[#CF822A] text-white rounded-lg hover:bg-[#B36F24] transition"
-          >
-            Go Home
-          </button>
-        </div>
-      </div>
-    );
-  }
+//   const post = getBlogPostBySlug(slug);
 
-  const post = getBlogPostBySlug(slug);
-
-  if (!post) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-[#413320]">Post not found</h1>
-          <p className="text-[#413320] mt-2">The blog post &quot;{slug}&quot; does not exist.</p>
-          <button 
-            onClick={() => router.push('/')}
-            className="mt-4 px-6 py-2 bg-[#CF822A] text-white rounded-lg hover:bg-[#B36F24] transition"
-          >
-            Go Home
-          </button>
-        </div>
-      </div>
-    );
-  }
+//   if (!post) {
+//     return (
+//       <div className="min-h-screen flex items-center justify-center">
+//         <div className="text-center">
+//           <h1 className="text-2xl font-bold text-[#413320]">Post not found</h1>
+//           <p className="text-[#413320] mt-2">The blog post &quot;{slug}&quot; does not exist.</p>
+//           <button 
+//             onClick={() => router.push('/')}
+//             className="mt-4 px-6 py-2 bg-[#CF822A] text-white rounded-lg hover:bg-[#B36F24] transition"
+//           >
+//             Go Home
+//           </button>
+//         </div>
+//       </div>
+//     );
+//   }
 
   return (
     <div className="min-h-screen bg-[#ECE1CF] py-4">
@@ -59,42 +59,42 @@ export default function BlogPostPage() {
             </span>
         </button>
 
-          {/* Article Card */}
+          Article Card
           <div className="bg-[#F2ECE3] rounded-[30px] text-[#413320] shadow-xl p-6 sm:p-8">
        
-          {/* Article Header */}
-          <h1 className="font-cinzel text-[22px] sm:text-[26px] lg:text-[30px] font-bold min-w-0 wrap-break-word text-[#413320] text-center mb-4">
+          Article Header
+          {/* <h1 className="font-cinzel text-[22px] sm:text-[26px] lg:text-[30px] font-bold min-w-0 wrap-break-word text-[#413320] text-center mb-4">
             {post.title}
-          </h1>
+          </h1> */}
           
           {/* Article Meta */}
           <div className="flex items-center gap-4 text-[#413320] font-inter mb-6 justify-center">
-            <span className="font-semibold">{post.author}</span>
-            <span>•</span>
-            <span>{new Date(post.date).toLocaleDateString('en-US', {
+            {/* <span className="font-semibold">{post.author}</span>
+            <span>•</span> */}
+            {/* <span>{new Date(post.date).toLocaleDateString('en-US', {
               year: 'numeric',
               month: 'long',
               day: 'numeric'
-            })}</span>
+            })}</span> */}
           </div>
 
           {/* Featured Image */}
          <div className="mb-8 flex justify-center">
-         <Image
+         {/* <Image
           src={post.coverImage}
           alt={post.title}
           width={1200}
           height={600}
           className="w-full h-62.5 sm:h-87.5 lg:h-112.5 object-cover rounded-[20px]"
           priority
-        />
+        /> */}
           </div>
 
           
           {/* Article Content */}
-          <article className="max-w-none font-inter text-[#413320]">
+          {/* <article className="max-w-none font-inter text-[#413320]">
             {post.fullContent}
-          </article>
+          </article> */}
         </div>
       </div>
     </div>
