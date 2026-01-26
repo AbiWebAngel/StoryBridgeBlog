@@ -15,6 +15,7 @@ import ArticleEditor from "@/components/articles/ArticleEditor";
 import FloatingAutosaveIndicator from "@/components/admin/FloatingAutosaveIndicator";
 import FloatingSaveBar from "@/components/admin/FloatingSaveBar";
 import { useRouter } from "next/navigation";
+import { sanitizeSlug } from "@/lib/articles/sanitizeSlug";
 
 type ArticleEditorPageProps = {
   articleId?: string;
@@ -86,6 +87,7 @@ export default function ArticleEditorPage({ articleId, mode }: ArticleEditorPage
 
 const prevUserIdRef = useRef<string | null>(null);
 const prevArticleIdRef = useRef<string | null>(null);
+const slugManuallyEditedRef = useRef(false);
 
   const articleDataRef = useRef(articleData);
   const router = useRouter();
@@ -256,17 +258,21 @@ const resolveAuthorId = () => {
   }, [currentAuthUser, mode, articleId]);
 
   // Auto-generate slug
-  useEffect(() => {
-    if (!title) return;
-    
-    const newSlug = title
-      .toLowerCase()
-      .trim()
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/^-+|-+$/g, "");
-    
-    updateArticleData({ slug: newSlug });
-  }, [title, updateArticleData]);
+useEffect(() => {
+  if (!title) return;
+  if (slugManuallyEditedRef.current) return;
+  if (mode === "edit") return; // 👈 extra protection
+
+  const newSlug = title
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+
+  updateArticleData({ slug: newSlug });
+}, [title, updateArticleData, mode]);
+
+
 
   // Local autosave
 useEffect(() => {
@@ -333,6 +339,7 @@ useEffect(() => {
               tags: draft.tags ?? [],
               status: "draft",
             });
+            slugManuallyEditedRef.current = true;
             setUploadedAssets(draft.uploadedAssets ?? []);
           } catch (err) {
           }
@@ -346,12 +353,12 @@ useEffect(() => {
 
             const isForeignArticle = data.authorId !== currentAuthUser.uid;
 
-if (isForeignArticle && !isAdmin) {
-  return;
-}
+          if (isForeignArticle && !isAdmin) {
+            return;
+          }
 
-if (isForeignArticle && isAdmin) {
-}
+          if (isForeignArticle && isAdmin) {
+          }
 
 
 
@@ -377,6 +384,7 @@ if (isForeignArticle && isAdmin) {
         status: data.status ?? "draft",
       });
       setUploadedAssets(data.uploadedAssets ?? []);
+      slugManuallyEditedRef.current = true;
     }
   }
 } catch (err) {
@@ -509,18 +517,33 @@ const getAuthorPayload = () => {
 
       const articleRef = doc(db, "articles", articleId);
 
+      const cleanSlug = sanitizeSlug(articleData.slug);
+
+      await setDoc(
+        doc(db, "articles", articleId),
+        {
+          ...articleData,
+          slug: cleanSlug,
+        },
+        { merge: true }
+      );
+
+
       try {
         await setDoc(
-  articleRef,
-  {
-    ...data,
-    authorId: resolveAuthorId(),
-    ...getAuthorPayload(),
-    updatedAt: new Date(),
-    autosaved: true,
-  },
-  { merge: true }
-);
+        articleRef,
+        {
+          ...data,
+          authorId: resolveAuthorId(),
+          ...getAuthorPayload(),
+          updatedAt: new Date(),
+          autosaved: true,
+        },
+        { merge: true }
+      );
+
+      const key = getAutosaveKey(currentAuthUser.uid, articleId);
+      localStorage.removeItem(key);
 
         // Optional confirmation read (used by preview)
         if (awaitConfirm) {
@@ -894,7 +917,13 @@ useEffect(() => {
                 type="text"
                 className="w-full px-4 py-3 rounded-lg border-2 border-[#805C2C]"
                 value={slug}
-                onChange={(e) => updateArticleData({ slug: e.target.value })}
+                onChange={(e) => {
+                    slugManuallyEditedRef.current = true;
+                    updateArticleData({ slug: e.target.value });
+                  }}
+                  onBlur={() => {
+                updateArticleData({ slug: sanitizeSlug(slug) });
+              }}
                 placeholder="Article URL slug"
               />
               {errors.slug && <p className="mt-2 text-red-600 font-medium">{errors.slug}</p>}

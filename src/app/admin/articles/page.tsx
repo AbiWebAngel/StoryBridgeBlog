@@ -15,7 +15,8 @@ import { useAuth } from "@/context/AuthContext";
 import ArticleCard from "@/components/articles/ArticleCard";
 import DeleteArticleModal from "@/components/articles/DeleteArticleModal";
 import { Article } from "@/types/Article";
-import { Eye, Pencil, Trash2 } from "lucide-react";
+import { Eye, Pencil, Trash2, Loader2 } from "lucide-react";
+
 
 
 // Define article status types
@@ -445,25 +446,48 @@ const checkPendingDraftConflict = async (articleId: string) => {
             </a>
 
 
-           <button
-            onClick={async (e) => {
-              e.stopPropagation();
+       <button
+          disabled={pendingEditArticleId === article.id}
+          onClick={async (e) => {
+            e.stopPropagation();
+            setPendingEditArticleId(article.id);
 
+            try {
               const conflicts = await checkPendingDraftConflict(article.id);
 
               if (conflicts.length > 0) {
                 setDraftConflictUsers(conflicts);
-                setPendingEditArticleId(article.id);
                 setShowDraftWarning(true);
                 return;
               }
 
               router.push(`/author/articles/edit/${article.id}`);
-            }}
-            className="inline-flex items-center gap-1 px-2 py-1 rounded-md border border-[#D8CDBE] text-[#4A3820] hover:bg-[#EFE6D8] text-sm font-medium transition font-sans!"
-          >
-            <Pencil size={18} />
-            <span className="hidden lg:inline">Edit</span>
+            } finally {
+              // Only reset if we didn't navigate
+              setPendingEditArticleId(null);
+            }
+          }}
+          className={`inline-flex items-center gap-1 px-2 py-1 rounded-md border text-sm font-medium transition font-sans!
+            ${
+              pendingEditArticleId === article.id
+                ? "border-[#D8CDBE] text-[#4A3820]/50 cursor-not-allowed"
+                : "border-[#D8CDBE] text-[#4A3820] hover:bg-[#EFE6D8]"
+            }
+          `}
+        >
+
+           {pendingEditArticleId === article.id ? (
+            <>
+              <Loader2 size={18} className="animate-spin" />
+              <span className="hidden lg:inline">Checking…</span>
+            </>
+          ) : (
+            <>
+              <Pencil size={18} />
+              <span className="hidden lg:inline">Edit</span>
+            </>
+          )}
+
           </button>
 
 

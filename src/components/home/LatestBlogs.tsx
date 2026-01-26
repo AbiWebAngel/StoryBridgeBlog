@@ -79,13 +79,13 @@ export default function LatestBlogs({
 
               {/* Text content */}
               <div className="flex flex-col justify-between lg:flex-[1_1_70%] space-y-3 h-full px-2 sm:px-4 md:px-6 font-inter">
-                <div className="overflow-hidden max-h-[230px] sm:max-h-[260px] lg:max-h-[300px] relative flex-1">
+                <div className="overflow-hidden max-h-[230px] sm:max-h-[260px] lg:max-h-[300px] relative flex-1 ">
                   <div className="line-clamp-none">{item.excerpt}</div>
                   <div className="absolute bottom-0 left-0 w-full h-12 bg-gradient-to-t from-[#F2ECE3] to-transparent pointer-events-none"></div>
                 </div>
                 <div className="text-right mt-4">
                   <span className="font-inter text-[#CF822A] font-bold relative group inline-block pb-1 cursor-pointer">
-                    <span className="relative after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-[#CF822A] after:transition-all after:duration-300 group-hover:after:w-full">
+                    <span className="relative after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-[#CF822A] after:transition-all after:duration-300 group-hover:after:w-full ">
                       Click here to read more
                     </span>
                   </span>

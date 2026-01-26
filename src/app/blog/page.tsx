@@ -1,7 +1,7 @@
 import { collection, getDocs, orderBy, query, where, limit } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { extractExcerptFromBody } from "@/lib/articles/extractExcerpt";
-import LatestBlogs from "./LatestBlogs";
+import AllArticles from "@/components/blog/AllArticles";
 
 
 export const revalidate = 300; // ISR: refresh every 5 minutes
@@ -36,5 +36,9 @@ export default async function BlogPage() {
     };
   });
 
-  return <LatestBlogs initialArticles={articles} />;
+    return (
+    <main className="min-h-screen flex flex-col">
+      <AllArticles articles={articles} />
+    </main>
+  );
 }

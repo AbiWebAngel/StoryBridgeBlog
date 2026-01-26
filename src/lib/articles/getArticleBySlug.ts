@@ -1,4 +1,5 @@
 import { adminDb } from "@/lib/firebaseAdmin";
+import type { Article } from "./types";
 
 export async function getArticleBySlug(slug: string) {
     console.log("[getArticleBySlug] slug received:", slug);
@@ -21,8 +22,24 @@ export async function getArticleBySlug(slug: string) {
 
     console.log("[getArticleBySlug] Query results:", snap.docs.length);
     if (snap.empty) return null;
+    const doc = snap.docs[0];
+    const data = doc.data();
 
-    return snap.docs[0].data();
+
+     return {
+    id: doc.id,
+    title: data.title,
+    slug: data.slug,
+    body: data.body,
+    authorName: data.authorName,
+    coverImage: data.coverImage,
+    coverImageAlt: data.coverImageAlt,
+    readTime: data.readTime,
+
+    publishedAt: data.publishedAt?.toDate?.().toISOString() ?? null,
+    createdAt: data.createdAt?.toDate?.().toISOString() ?? null,
+    updatedAt: data.updatedAt?.toDate?.().toISOString() ?? null,
+  };
   } catch (err) {
     console.error("Firestore error:", err);
     return null;

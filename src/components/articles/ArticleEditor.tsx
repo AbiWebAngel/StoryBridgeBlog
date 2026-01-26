@@ -128,27 +128,37 @@ const flushSave = useCallback(() => {
 }, [onChange]);
 
 
-  const DisableImagePaste = Extension.create({
-    addProseMirrorPlugins() {
-      return [
-        new Plugin({
-          props: {
-            handlePaste(view, event) {
-              const items = event.clipboardData?.items;
-              if (!items) return false;
+const DisableImagePaste = Extension.create({
+  addProseMirrorPlugins() {
+    return [
+      new Plugin({
+        props: {
+          handlePaste(view, event) {
+            const items = event.clipboardData?.items;
+            if (!items) return false;
 
-              for (const item of items) {
-                if (item.type.startsWith('image/')) {
-                  return true;
-                }
-              }
-              return false;
-            },
+            const hasImage = Array.from(items).some(item =>
+              item.type.startsWith("image/")
+            );
+
+            const hasText = Array.from(items).some(item =>
+              item.type.startsWith("text/")
+            );
+
+            // 🚫 block ONLY image-only pastes
+            if (hasImage && !hasText) {
+              return true;
+            }
+
+            // ✅ allow links & text
+            return false;
           },
-        }),
-      ];
-    },
-  });
+        },
+      }),
+    ];
+  },
+});
+
 
   const editor = useEditor({
     immediatelyRender: false,

@@ -2,6 +2,8 @@ import { getArticleBySlug } from "@/lib/articles/getArticleBySlug";
 import Image from "next/image";
 import ArticleRenderer from "@/components/articles/ArticleRenderer";
 import Link from "next/link";
+import { notFound } from "next/navigation";
+
 
 export default async function BlogArticlePage({ params }: { params: Promise<{ slug: string }> }) {
   // Await the params if Next.js gives a promise
@@ -21,9 +23,11 @@ export default async function BlogArticlePage({ params }: { params: Promise<{ sl
   const post = await getArticleBySlug(slug);
   console.log("[BLOG PAGE] Fetched post:", post);
 
-  if (!post) {
-    return <div className="p-10 text-center">Article not found</div>;
-  }
+if (!post) {
+  notFound();
+}
+
+
 
   return (
     <div className="min-h-screen bg-[#ECE1CF] py-4">
@@ -48,18 +52,19 @@ export default async function BlogArticlePage({ params }: { params: Promise<{ sl
           
           {/* Article Meta */}
           <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4 font-inter mb-6 justify-center text-center">
-            <span className="font-semibold">{post.author || "Author"}</span>
+            <span className="font-semibold">{post.authorName || "Author"}</span>
             <span className="hidden sm:inline">•</span>
             <span>
-              {post.date ? new Date(post.date).toLocaleDateString('en-GB', {
-                day: '2-digit',
-                month: 'long',
-                year: 'numeric'
-              }) : new Date().toLocaleDateString('en-GB', {
-                day: '2-digit',
-                month: 'long',
-                year: 'numeric'
-              })}
+              <span>
+             {post.publishedAt
+              ? new Date(post.publishedAt).toLocaleDateString("en-GB", {
+                  day: "2-digit",
+                  month: "long",
+                  year: "numeric",
+                })
+              : null}
+              </span>
+
             </span>
             {post.readTime && (
               <>
