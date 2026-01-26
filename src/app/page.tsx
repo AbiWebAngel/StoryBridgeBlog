@@ -13,6 +13,7 @@ export default async function HomePage() {
   // Fetch home content from Firestore
   const homeContent = await getHomeContent();
   const latestArticles = await getLatestArticles(6);
+
   return (
     <main>
       {/* Search Section */}
@@ -30,7 +31,7 @@ export default async function HomePage() {
           centerAll={true}
         />
       </div>
-      <LatestBlogs initialArticles={latestArticles} />
+      <LatestBlogs articles={latestArticles} />
         
       {/* Only show Join Our Programs section if there are program links */}
       {homeContent?.programLinks && homeContent.programLinks.length > 0 && (

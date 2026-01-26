@@ -133,26 +133,26 @@ const DisableImagePaste = Extension.create({
     return [
       new Plugin({
         props: {
-          handlePaste(view, event) {
-            const items = event.clipboardData?.items;
-            if (!items) return false;
+       handlePaste(view, event) {
+      const items = event.clipboardData?.items;
+      if (!items) return false;
 
-            const hasImage = Array.from(items).some(item =>
-              item.type.startsWith("image/")
-            );
+      const hasImage = Array.from(items).some(item =>
+        item.type.startsWith("image/")
+      );
 
-            const hasText = Array.from(items).some(item =>
-              item.type.startsWith("text/")
-            );
+      const hasText = Array.from(items).some(item =>
+        item.type.startsWith("text/")
+      );
 
-            // 🚫 block ONLY image-only pastes
-            if (hasImage && !hasText) {
-              return true;
-            }
+      // 🚫 Image-only paste → stop EVERYTHING except FileHandler
+      if (hasImage && !hasText) {
+        event.preventDefault(); // 👈 THIS is the missing piece
+        return true;
+      }
 
-            // ✅ allow links & text
-            return false;
-          },
+      return false;
+    },
         },
       }),
     ];

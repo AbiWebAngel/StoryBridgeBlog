@@ -519,16 +519,7 @@ const getAuthorPayload = () => {
 
       const cleanSlug = sanitizeSlug(articleData.slug);
 
-      await setDoc(
-        doc(db, "articles", articleId),
-        {
-          ...articleData,
-          slug: cleanSlug,
-        },
-        { merge: true }
-      );
-
-
+  
       try {
         await setDoc(
         articleRef,

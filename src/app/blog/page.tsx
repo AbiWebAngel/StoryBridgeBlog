@@ -11,8 +11,8 @@ export const metadata = {
   description: "Read the latest stories, ideas, and insights from StoryBridge.",
 };
 
-const ITEMS_PER_PAGE = 6;
-const PREFETCH_PAGES = 3;
+const ITEMS_PER_PAGE = 9;
+const PREFETCH_PAGES = 2;
 
 export default async function BlogPage() {
   const q = query(

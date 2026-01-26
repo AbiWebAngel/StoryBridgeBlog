@@ -1,10 +1,7 @@
-"use client";
+// components/home/LatestBlogs.tsx
 
-import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-
-const ITEMS_PER_PAGE = 6;
 
 interface Article {
   id: string;
@@ -14,23 +11,12 @@ interface Article {
   slug: string;
 }
 
-export default function LatestBlogs({
-  initialArticles,
-}: {
-  initialArticles: Article[];
-}) {
-  const [currentPage, setCurrentPage] = useState(1);
-  
-  const totalPages = Math.ceil(
-    (initialArticles?.length ?? 0) / ITEMS_PER_PAGE
-  );
+interface LatestBlogsProps {
+  articles: Article[];
+}
 
-  const currentItems = initialArticles.slice(
-    (currentPage - 1) * ITEMS_PER_PAGE,
-    currentPage * ITEMS_PER_PAGE
-  );
-  
-  if (!initialArticles || initialArticles.length === 0) {
+export default function LatestBlogs({ articles }: LatestBlogsProps) {
+  if (!articles || articles.length === 0) {
     return (
       <p className="text-center text-gray-600">
         No blog posts yet. Stay tuned 👀
@@ -40,7 +26,7 @@ export default function LatestBlogs({
 
   return (
     <div className="w-full px-4 sm:px-6 md:px-8 flex flex-col items-center space-y-12">
-      {currentItems.map((item) => (
+      {articles.map((item) => (
         <Link 
           key={item.id} 
           href={`/blog/${item.slug}`} 
@@ -95,26 +81,6 @@ export default function LatestBlogs({
           </article>
         </Link>
       ))}
-
-      {/* Pagination */}
-      {totalPages > 1 && (
-        <div className="flex flex-wrap justify-center space-x-2 sm:space-x-3 text-[#413320] font-inter font-bold">
-          <span className="mr-2">Page:</span>
-          {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-            <button
-              key={page}
-              onClick={() => setCurrentPage(page)}
-              className={`px-3 py-1 rounded ${
-                currentPage === page
-                  ? "bg-[#805C2C] text-white"
-                  : "bg-white hover:bg-[#D8CBBF]"
-              } transition`}
-            >
-              {page}
-            </button>
-          ))}
-        </div>
-      )}
     </div>
   );
 }
