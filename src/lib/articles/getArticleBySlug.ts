@@ -33,6 +33,7 @@ export async function getArticleBySlug(slug: string) {
     body: data.body,
     authorName: data.authorName,
     coverImage: data.coverImage,
+    coverImagePosition: data.coverImagePosition,
     coverImageAlt: data.coverImageAlt,
     readTime: data.readTime,
 
