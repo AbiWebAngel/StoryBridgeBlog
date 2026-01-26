@@ -3,31 +3,58 @@ import Image from "next/image";
 import ArticleRenderer from "@/components/articles/ArticleRenderer";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import type { Metadata } from "next";
+
+
+export async function generateMetadata(
+  { params }: { params: Promise<{ slug: string }> }
+): Promise<Metadata> {
+  const { slug } = await params;
+
+  const post = await getArticleBySlug(slug);
+
+  if (!post) {
+    return {
+      title: "Article not found",
+      description: "This article could not be found.",
+    };
+  }
+
+  return {
+    title: post.title,
+    description: post.metaDescription || post.title,
+    openGraph: {
+      title: post.title,
+      description: post.metaDescription || post.title,
+      images: post.coverImage
+        ? [
+            {
+              url: post.coverImage,
+              alt: post.coverImageAlt || post.title,
+            },
+          ]
+        : [],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: post.title,
+      description: post.metaDescription || post.title,
+      images: post.coverImage ? [post.coverImage] : [],
+    },
+  };
+}
 
 
 export default async function BlogArticlePage({ params }: { params: Promise<{ slug: string }> }) {
   // Await the params if Next.js gives a promise
-  const resolvedParams = await params;
+    const { slug } = await params;
 
-  console.log("[BLOG PAGE] params:", resolvedParams);
-  console.log("[BLOG PAGE] slug:", resolvedParams?.slug);
-
-  if (!resolvedParams?.slug) {
-    console.error("[BLOG PAGE] Missing slug param!");
-    throw new Error("Slug param missing");
-  }
-
-  const slug = resolvedParams.slug;
-
-  console.log("[BLOG PAGE] Fetching article for slug:", slug);
   const post = await getArticleBySlug(slug);
-  console.log("[BLOG PAGE] Fetched post:", post);
+
 
 if (!post) {
   notFound();
 }
-
-
 
   return (
     <div className="min-h-screen bg-[#ECE1CF] py-4">

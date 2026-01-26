@@ -129,35 +129,26 @@ const flushSave = useCallback(() => {
 
 
 const DisableImagePaste = Extension.create({
-  addProseMirrorPlugins() {
-    return [
-      new Plugin({
-        props: {
-       handlePaste(view, event) {
-      const items = event.clipboardData?.items;
-      if (!items) return false;
+    addProseMirrorPlugins() {
+      return [
+        new Plugin({
+          props: {
+            handlePaste(view, event) {
+              const items = event.clipboardData?.items;
+              if (!items) return false;
 
-      const hasImage = Array.from(items).some(item =>
-        item.type.startsWith("image/")
-      );
-
-      const hasText = Array.from(items).some(item =>
-        item.type.startsWith("text/")
-      );
-
-      // 🚫 Image-only paste → stop EVERYTHING except FileHandler
-      if (hasImage && !hasText) {
-        event.preventDefault(); // 👈 THIS is the missing piece
-        return true;
-      }
-
-      return false;
+              for (const item of items) {
+                if (item.type.startsWith('image/')) {
+                  return true;
+                }
+              }
+              return false;
+            },
+          },
+        }),
+      ];
     },
-        },
-      }),
-    ];
-  },
-});
+  });
 
 
   const editor = useEditor({

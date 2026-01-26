@@ -1,10 +1,9 @@
 import { collection, getDocs, orderBy, query, where, limit } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { extractExcerptFromBody } from "@/lib/articles/extractExcerpt";
-import AllArticles from "@/components/blog/AllArticles";
+import ArticleFilters from "@/components/blog/ArticleFilters";
 
-
-export const revalidate = 300; // ISR: refresh every 5 minutes
+export const revalidate = 300;
 
 export const metadata = {
   title: "Latest Blog Posts | StoryBridge",
@@ -32,13 +31,15 @@ export default async function BlogPage() {
       title: d.title,
       slug: d.slug,
       coverImage: d.coverImage,
+      category: d.category ?? "general",
       excerpt: extractExcerptFromBody(d.body, 100),
+      updatedAt: d.updatedAt?.toDate?.() ?? d.updatedAt,
     };
   });
 
-    return (
-    <main className="min-h-screen flex flex-col">
-      <AllArticles articles={articles} />
+  return (
+    <main className="min-h-screen">
+      <ArticleFilters articles={articles} />
     </main>
   );
 }

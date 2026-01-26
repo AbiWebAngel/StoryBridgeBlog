@@ -1,5 +1,4 @@
 import { adminDb } from "@/lib/firebaseAdmin";
-import type { Article } from "./types";
 
 export async function getArticleBySlug(slug: string) {
     console.log("[getArticleBySlug] slug received:", slug);
@@ -36,7 +35,7 @@ export async function getArticleBySlug(slug: string) {
     coverImagePosition: data.coverImagePosition,
     coverImageAlt: data.coverImageAlt,
     readTime: data.readTime,
-
+    metaDescription: data.metaDescription,
     publishedAt: data.publishedAt?.toDate?.().toISOString() ?? null,
     createdAt: data.createdAt?.toDate?.().toISOString() ?? null,
     updatedAt: data.updatedAt?.toDate?.().toISOString() ?? null,
