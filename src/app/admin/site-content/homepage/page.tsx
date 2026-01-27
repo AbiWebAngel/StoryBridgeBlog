@@ -13,9 +13,17 @@ import { extractAssetUrlsFromHome } from "@/lib/extractAssetUrls";
 import FloatingSaveBar from "@/components/admin/FloatingSaveBar";
 
 
+function normalizeTag(input: string): string {
+  return input
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, "-")       // spaces → hyphens
+    .replace(/[^a-z0-9-]/g, "") // remove weird characters
+    .replace(/-+/g, "-");       // collapse multiple hyphens
+}
 
 export default function AdminHomePage() {
-  const { user } = useAuth();
+  const { user,role,authReady } = useAuth();
   
   
   const [loading, setLoading] = useState(true);
@@ -35,6 +43,7 @@ const [svgUploadProgress, setSvgUploadProgress] =
 
 
   const [content, setContent] = useState<HomeContent>({
+    searchTags: [],
     director: {
       imageSrc: "",
       imageAlt: "",
@@ -66,6 +75,7 @@ const [svgUploadProgress, setSvgUploadProgress] =
         if (snap.exists()) {
           const data = snap.data();
           const loaded: HomeContent = {
+          searchTags: data.searchTags || [], 
           director: data.director || {
             imageSrc: "",
             imageAlt: "",
@@ -173,6 +183,15 @@ function validateHomeContent(content: HomeContent): string | null {
     }
   }
 
+    // Validate search tags if they exist
+    if (content.searchTags) {
+      for (let i = 0; i < content.searchTags.length; i++) {
+        if (!isNonEmptyString(content.searchTags[i])) {
+          return `Search tag #${i + 1} is empty.`;
+        }
+      }
+    }
+
   return null; // ✅ valid
 }
 
@@ -208,9 +227,9 @@ async function handleSave() {
   // Replace temp URLs with permanent ones
  let finalContent = content;
 
-if (pendingAssets.length) {
-  // ✅ 1. Figure out what assets are actually used
-  const usedAssets = extractAssetUrlsFromHome(content);
+  if (pendingAssets.length) {
+    // ✅ 1. Figure out what assets are actually used
+    const usedAssets = extractAssetUrlsFromHome(content);
 
   // ✅ 2. Only promote assets that are still referenced
   const assetsToPromote = pendingAssets.filter(url =>
@@ -250,6 +269,10 @@ if (pendingAssets.length) {
 
 
    await setDoc(ref, {
+    searchTags:
+  finalContent.searchTags
+    ?.map(tag => normalizeTag(tag))
+    .filter(Boolean) || [],
   director: {
     imageSrc: finalContent.director.imageSrc.trim(),
     imageAlt: finalContent.director.imageAlt.trim(),
@@ -338,26 +361,62 @@ if (pendingAssets.length) {
     }));
   };
 
+ // Add handler for search tags
+  const handleSearchTagChange = (index: number, value: string) => {
+  const normalized = normalizeTag(value);
+
+  setContent(prev => {
+    const updatedTags = [...(prev.searchTags || [])];
+    updatedTags[index] = normalized;
+    return { ...prev, searchTags: updatedTags };
+  });
+};
+
+
+  // Add new search tag
+  const addSearchTag = () => {
+    setContent(prev => ({
+      ...prev,
+      searchTags: [...(prev.searchTags || []), ""]
+    }));
+  };
+
+  // Remove search tag
+  const removeSearchTag = (index: number) => {
+    setContent(prev => ({
+      ...prev,
+      searchTags: (prev.searchTags || []).filter((_, i) => i !== index)
+    }));
+  };
 
 // Full-page loading screen while fetching content
-if (loading) {
-  return (
-    <div className="min-h-screen flex flex-col items-center justify-center">
-      <div className="w-48 h-2 bg-[#E0D6C7] rounded-full overflow-hidden">
-        <div className="h-full w-full animate-pulse bg-[#4A3820]"></div>
-      </div>
-      <p className="mt-4 text-[#4A3820] font-medium text-lg font-sans!">
-        Loading home content...
-      </p>
-    </div>
-  );
-}
-  if (!user) {
+
+  // Updated loading state UI
+  if (loading || !authReady) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="text-[#4A3820] text-xl font-semibold font-sans!">
-          You must be logged in to access this page.
+      <div className="min-h-screen flex flex-col items-center justify-center">
+        <div className="w-48 h-2 bg-[#E0D6C7] rounded-full overflow-hidden">
+          <div className="h-full w-full animate-pulse bg-[#4A3820]"></div>
+        </div>
+        <p className="mt-4 text-[#4A3820] font-medium text-lg font-sans!">
+          Loading site content home...
         </p>
+      </div>
+    );
+  }
+
+  // Not admin state
+  if (role !== "admin") {
+    return (
+      <div className="min-h-screen flex items-center justify-center font-sans!">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-[#4A3820] mb-4 font-sans!">
+            Access Denied
+          </h1>
+          <p className="text-[#4A3820]/70 font-sans!">
+            You need administrator privileges to access this page.
+          </p>
+        </div>
       </div>
     );
   }
@@ -392,6 +451,58 @@ if (loading) {
             <p className="text-center text-[#4A3820] py-8">Loading content...</p>
           ) : (
             <div className="space-y-6">
+              
+                {/* Search Tags Section - ADD THIS SECTION */}
+              <div className="bg-white rounded-lg border border-[#D8CDBE] p-5 shadow-md">
+                <div className="flex justify-between items-center mb-6">
+                  <h3 className="text-xl font-bold text-[#4A3820] font-sans!">
+                    Search Component Tags
+                  </h3>
+                  <button
+                    onClick={addSearchTag}
+                    className="px-4 py-2 rounded-lg border-2 border-[#805C2C] text-[#805C2C] font-medium hover:bg-[#F0E8DB] transition-colors font-sans!"
+                  >
+                    + Add Tag
+                  </button>
+                </div>
+
+                <div className="space-y-4">
+                  {content.searchTags?.map((tag, index) => (
+                    <div key={index} className="flex items-center gap-3">
+                      <div className="flex-1">
+                        <label className="block text-sm font-medium text-[#4A3820] mb-1">
+                          Tag #{index + 1}
+                        </label>
+                        <input
+                          type="text"
+                          value={tag}
+                          onChange={(e) => handleSearchTagChange(index, e.target.value)}
+                          className="w-full px-4 py-2 rounded-lg border-2 border-[#805C2C] bg-white text-[#4A3820] placeholder-[#4A3820]/60 focus:outline-none focus:ring-2 focus:ring-[#805C2C]/50"
+                          placeholder="e.g., what-to-write-wednesday"
+                        />
+                      </div>
+                      <button
+                        onClick={() => removeSearchTag(index)}
+                        className="px-3 py-2 mt-6 rounded-lg border-2 border-red-500 text-red-500 text-sm hover:bg-red-50 transition-colors font-sans!"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  ))}
+
+                  {(!content.searchTags || content.searchTags.length === 0) && (
+                    <div className="text-center py-8 border-2 border-dashed border-[#D8CDBE] rounded-lg">
+                      <p className="text-[#4A3820]/70 text-lg!">No search tags yet. Add tags to display in the search component.</p>
+                    </div>
+                  )}
+                </div>
+
+                <div className="mt-4  text-[#4A3820]/70">
+                  <p className="text-base!">💡 These tags will appear as clickable filters in the search component on the home page.</p>
+                </div>
+              </div>
+              
+              
               {/* Message From Director Section */}
               <div className="bg-white rounded-lg border border-[#D8CDBE] p-5 shadow-md">
                 <h3 className="text-xl font-bold text-[#4A3820] mb-6 font-sans!">
@@ -556,8 +667,9 @@ if (loading) {
                     <textarea
                       value={content.director.message}
                       onChange={(e) => handleDirectorChange("message", e.target.value)}
-                      className="w-full px-4 py-2 rounded-lg border-2 border-[#805C2C] bg-white text-[#4A3820] placeholder-[#4A3820]/60 focus:outline-none focus:ring-2 focus:ring-[#805C2C]/50 min-h-37.5rollable-description"
+                      className="w-full px-4 py-2 rounded-lg border-2 border-[#805C2C] bg-white text-[#4A3820] placeholder-[#4A3820]/60 focus:outline-none focus:ring-2 focus:ring-[#805C2C]/50 min-h-37.5 rollable-description"
                       placeholder="Enter the director's message..."
+                      
                     />
                   </div>
 
@@ -792,8 +904,6 @@ if (loading) {
         saving={saving || uploading}
         label="Save All Changes"
       />
-
-
 
       </div>
     </div>

@@ -81,6 +81,7 @@ export default async function BlogArticlePage({
     redirect(`/blog/${post.slug}`);
   }
 
+
   return (
     <div className="min-h-screen bg-[#ECE1CF] py-4">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

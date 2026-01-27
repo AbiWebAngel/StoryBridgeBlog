@@ -14,6 +14,7 @@ export type DirectorContent = {
 };
 
 export type HomeContent = {
+  searchTags?: string[];
   director: DirectorContent;
   programLinks: ProgramLink[];
 };

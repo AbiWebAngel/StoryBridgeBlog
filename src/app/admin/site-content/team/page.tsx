@@ -14,7 +14,7 @@ import type { TeamMember, TeamContent } from "@/types/team";
 import FloatingSaveBar from "@/components/admin/FloatingSaveBar";
 
 export default function AdminTeamPage() {
-  const { user } = useAuth();
+  const { user, role, authReady } = useAuth();
   
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -366,28 +366,34 @@ export default function AdminTeamPage() {
     }
   };
 
-    if (!user) {
+  if (loading || !authReady) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="text-[#4A3820] text-xl font-semibold font-sans!">
-          You must be logged in to access this page.
+      <div className="min-h-screen flex flex-col items-center justify-center">
+        <div className="w-48 h-2 bg-[#E0D6C7] rounded-full overflow-hidden">
+          <div className="h-full w-full animate-pulse bg-[#4A3820]"></div>
+        </div>
+        <p className="mt-4 text-[#4A3820] font-medium text-lg font-sans!">
+          Loading site content team...
         </p>
       </div>
     );
   }
 
-if (loading) {
-  return (
-    <div className="min-h-screen flex flex-col items-center justify-center">
-      <div className="w-48 h-2 bg-[#E0D6C7] rounded-full overflow-hidden">
-        <div className="h-full w-full animate-pulse bg-[#4A3820]"></div>
+  // Not admin state
+  if (role !== "admin") {
+    return (
+      <div className="min-h-screen flex items-center justify-center font-sans!">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-[#4A3820] mb-4 font-sans!">
+            Access Denied
+          </h1>
+          <p className="text-[#4A3820]/70 font-sans!">
+            You need administrator privileges to access this page.
+          </p>
+        </div>
       </div>
-      <p className="mt-4 text-[#4A3820] font-medium text-lg font-sans!">
-        Loading team content...
-      </p>
-    </div>
-  );
-}
+    );
+  }
 
   return (
     <div className="px-6 min-h-screen font-sans">

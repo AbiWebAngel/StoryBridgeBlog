@@ -14,10 +14,21 @@ export default async function HomePage() {
   const homeContent = await getHomeContent();
   const latestArticles = await getLatestArticles(6);
 
+ const searchTags = [
+  "what-to-write-wednesday",
+  "author-interview",
+  "teen-writers",
+  "betareader",
+  "feedback",
+  "storybridge",
+  "literacy",
+  "writing",
+];
+
   return (
     <main>
       {/* Search Section */}
-      <SearchComponent />
+      <SearchComponent tags={homeContent?.searchTags} />
 
       {/* Latest Blogs Section */}
       <div className="mb-10">
