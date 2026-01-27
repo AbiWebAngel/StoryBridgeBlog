@@ -262,7 +262,7 @@ const checkPendingDraftConflict = async (articleId: string) => {
  
           {/* Stats Summary */}
           <div className="flex justify-center mb-8">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-xl w-full">
+           <div className="grid grid-cols-2 gap-4 max-w-md mx-auto">
               <div className="bg-white border border-[#D8CDBE] rounded-lg p-4 text-center">
                 <div className="text-sm text-[#4A3820]/70 font-sans!">Total</div>
                 <div className="mt-1 text-2xl font-bold text-[#4A3820] font-sans!">
@@ -438,7 +438,7 @@ const checkPendingDraftConflict = async (articleId: string) => {
               href={`/author/articles/preview/${article.id}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 px-2 py-1 rounded-md border border-[#D8CDBE] text-[#4A3820] hover:bg-[#EFE6D8] text-sm font-medium transition font-sans!"
+              className="inline-flex items-center gap-1 px-2 py-1 rounded-md border border-[#D8CDBE] text-[#4A3820] hover:bg-[#EFE6D8] text-sm font-bold transition font-sans!"
               title="Preview article (opens in new tab)"
             >
               <Eye size={18} />
@@ -467,7 +467,7 @@ const checkPendingDraftConflict = async (articleId: string) => {
               setPendingEditArticleId(null);
             }
           }}
-          className={`inline-flex items-center gap-1 px-2 py-1 rounded-md border text-sm font-medium transition font-sans!
+          className={`inline-flex items-center gap-1 px-2 py-1 rounded-md border text-sm transition font-sans!
             ${
               pendingEditArticleId === article.id
                 ? "border-[#D8CDBE] text-[#4A3820]/50 cursor-not-allowed"
@@ -497,7 +497,7 @@ const checkPendingDraftConflict = async (articleId: string) => {
                   setSelectedArticle(article);
                   setDeleteModalOpen(true);
                 }}
-                className="inline-flex items-center gap-1 px-2 py-1 rounded-md border border-red-200 text-red-600 hover:bg-red-50 text-sm font-medium transition font-sans!"
+                className="inline-flex items-center gap-1 px-2 py-1 rounded-md border border-red-200 text-red-600 hover:bg-red-50 text-sm transition font-sans!"
                 title="Delete article"
               >
                 <Trash2 size={18} />
