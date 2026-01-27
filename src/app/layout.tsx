@@ -36,15 +36,15 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
    return (
     <html lang="en" className={`${cinzel.variable} ${inter.variable} ${jacquesFrancois.variable}`}>
-      <body>
+      <body className="min-h-screen flex flex-col">
         <AuthProvider>
           <header>
             <Navbar />
           </header>
           <main className="grow mt-6 mb-6 pt-2">{children}</main>
-          <footer>
+          <footer/>
             <Footer />
-          </footer>
+        
         </AuthProvider>
       </body>
     </html>

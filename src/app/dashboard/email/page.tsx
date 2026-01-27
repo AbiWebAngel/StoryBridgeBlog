@@ -417,6 +417,13 @@ const handleChangeEmail = async (e: React.FormEvent) => {
   );
 }
 
+  if (!user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-[#4A3820] text-lg font-sans!">
+        Please log in to view page
+      </div>
+    );
+  }
   
   return (
     <div className="min-h-screen px-6 font-sans">

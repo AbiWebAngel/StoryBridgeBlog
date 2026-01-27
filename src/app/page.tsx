@@ -2,7 +2,7 @@ import React from "react";
 import SearchComponent from "../components/home/SearchComponent";
 import NewsletterForm from "../components/NewsletterForm";
 import SectionHeading from "../components/SectionHeading";
-import LatestBlogs from "../components/home/LatestBlogs";
+import LatestBlogs from "../components/blog/LatestBlogs";
 import JoinOurPrograms from "../components/home/JoinOurPrograms";
 import MessageFromDirector from "../components/home/MessageFromDirector";
 import { getHomeContent } from "@/lib/getHomeContent";

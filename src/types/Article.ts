@@ -9,3 +9,4 @@ export type Article = {
   updatedAt: any;
   [key: string]: any;
 };
+

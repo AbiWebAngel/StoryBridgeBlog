@@ -145,8 +145,16 @@ export default function ProfilePage() {
       </div>
     );
   }
-
-  return (    <div className="min-h-screen px-6 font-sans!">
+  
+  if (!user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-[#4A3820] text-lg font-sans!">
+        Please log in to view page
+      </div>
+    );
+  }
+  return (    
+  <div className="min-h-screen px-6 font-sans!">
       <div className="max-w-md mx-auto">
 
         <h1 className="text-3xl font-extrabold text-[#4A3820] mb-6 text-center font-sans!">
