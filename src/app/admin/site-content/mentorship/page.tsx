@@ -17,7 +17,7 @@ export default function AdminMentorshipPage() {
   
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [errorMessage, setErrorMessage] = useState("");
+  const [errorMessage, setErrorMessage] = useState(""); 
   const [successMessage, setSuccessMessage] = useState("");
   
   // Upload progress states for content images

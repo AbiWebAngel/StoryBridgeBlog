@@ -77,7 +77,7 @@ export default function ArticleFilters({
         {/* Search */}
         <input
           type="text"
-          placeholder="Search articles…"
+          placeholder="Search blogs…"
           value={search}
           onChange={(e) => {
             setSearch(e.target.value);
