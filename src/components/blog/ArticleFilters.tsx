@@ -83,7 +83,7 @@ export default function ArticleFilters({
             setSearch(e.target.value);
             setPage(1);
           }}
-          className="w-full sm:w-[280px] px-4 py-2 rounded-full border-4 border-[#805C2C] text-base text-[#403727] placeholder-[#403727] focus:outline-none focus:ring-2 focus:ring-[#805D2D]/40 font-inter"
+          className="w-full sm:w-[280px] px-4 py-2 rounded-full border-4 border-[#805C2C] text-base text-[#403727] placeholder-[#403727] focus:outline-none focus:ring-2 focus:ring-[#805D2D]/40 font-inter font-boldP"
         />
       </div>
 

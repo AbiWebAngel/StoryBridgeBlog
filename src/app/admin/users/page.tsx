@@ -387,18 +387,20 @@ useEffect(() => {
                     const isSuperAdmin = u.uid === "z2Vhrt7WiBSBDLlvnNuJ3PMtsvk2";
                     const isCurrentUser = u.uid === currentAuthUser?.uid;
                     return (
-                      <div
+                     <div
                         key={u.uid}
                         className={`
-                          rounded-xl bg-white border border-[#E6DED1] 
-                          p-5 shadow-sm hover:shadow-md transition-shadow
+                          rounded-xl bg-white border border-[#E6DED1]
+                          p-6 min-h-[160px]
+                          shadow-sm hover:shadow-md transition-shadow
                           ${isCurrentUser ? "border-l-4 border-l-[#805C2C]" : ""}
                           ${u.disabled ? "opacity-70" : ""}
                         `}
-
                       >
+
                         {/* UPPER SECTION: User Info */}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 mb-5">
+
                           {/* User Details */}
                           <div className="min-w-0 flex-1">
                             <div className="flex items-center flex-wrap gap-2 mb-1">
@@ -437,8 +439,9 @@ useEffect(() => {
                         </div>
 
                         {/* LOWER SECTION: Controls - Stack on mobile */}
-                       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 
-                        pt-4 border-t border-[#EDE7DD]">
+                       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-5
+                        pt-6 border-t border-[#EDE7DD]">
+
 
                           {/* Role Selector */}
                           <div className="flex items-center gap-2">
