@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import SearchComponent from "@/components/SearchComponent";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 type BlogFiltersWrapperProps = {
   tags?: string[];
@@ -11,13 +11,31 @@ type BlogFiltersWrapperProps = {
 export default function BlogFiltersWrapper({ tags }: BlogFiltersWrapperProps) {
   const [open, setOpen] = useState(false);
   const searchParams = useSearchParams();
+  const router = useRouter();
+  const hasMounted = useRef(false);
+  const prevHadFilters = useRef<boolean | null>(null);
 
 useEffect(() => {
   const hasFilters =
     searchParams.has("tag") || searchParams.has("search");
 
   setOpen(hasFilters);
-}, [searchParams]);
+
+  // First run: just record state
+  if (prevHadFilters.current === null) {
+    prevHadFilters.current = hasFilters;
+    return;
+  }
+
+  // 🔄 ONLY when filters go from true → false
+  if (prevHadFilters.current && !hasFilters) {
+    router.refresh();
+  }
+
+  prevHadFilters.current = hasFilters;
+}, [searchParams, router]);
+
+
 
 
   return (
