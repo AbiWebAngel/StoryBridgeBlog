@@ -46,11 +46,13 @@ export default async function BlogPage() {
   });
 
   return (
-     <main className="min-h-screen">
-      <Suspense fallback={<BlogLoading />}>
-        {/* <BlogPageClient articles={articles} tags={homeContent?.searchTags} /> */}
-      </Suspense>
-    </main>
+  <main className="min-h-screen">
+    <ArticleFiltersSuspense
+      articles={articles}
+      filterPanel={<BlogFiltersWrapper tags={homeContent?.searchTags} />}
+    />
+
+  </main>
   );
 }
 
