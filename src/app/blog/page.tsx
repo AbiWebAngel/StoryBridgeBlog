@@ -2,8 +2,8 @@ import { collection, getDocs, orderBy, query, where, limit } from "firebase/fire
 import { db } from "@/lib/firebase";
 import { extractExcerptFromBody } from "@/lib/articles/extractExcerpt";
 import ArticleFilters from "@/components/blog/ArticleFilters";
-import NewsletterFormAlt from "@/components/NewsletterFormAlt";
-
+import BlogFiltersWrapper from "@/components/blog/BlogFiltersWrapper";
+import { getHomeContent } from "@/lib/getHomeContent";
 
 export const revalidate = 300;
 
@@ -14,6 +14,7 @@ export const metadata = {
 
 const ITEMS_PER_PAGE = 9;
 const PREFETCH_PAGES = 2;
+const homeContent = await getHomeContent();
 
 export default async function BlogPage() {
   const q = query(
@@ -32,6 +33,7 @@ export default async function BlogPage() {
       id: doc.id,
       title: d.title,
       slug: d.slug,
+      tags: d.tags,
       coverImage: d.coverImage,
       category: d.category ?? "general",
       excerpt: extractExcerptFromBody(d.body, 100),
@@ -39,11 +41,19 @@ export default async function BlogPage() {
     };
   });
 
+const allTags = Array.from(
+  new Set(
+    articles.flatMap((article) => article.tags ?? [])
+  )
+);
+
   return (
     <main className="min-h-screen">
-      <ArticleFilters articles={articles} />
+      <ArticleFilters
+        articles={articles}
+        filterPanel={<BlogFiltersWrapper tags={homeContent?.searchTags} />}
+      />
 
-      <NewsletterFormAlt />
     </main>
   );
 }

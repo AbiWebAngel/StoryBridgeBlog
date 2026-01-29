@@ -1,5 +1,5 @@
 import React from "react";
-import SearchComponent from "../components/home/SearchComponent";
+import SearchComponent from "../components/SearchComponent";
 import NewsletterForm from "../components/NewsletterForm";
 import SectionHeading from "../components/SectionHeading";
 import LatestBlogs from "../components/blog/LatestBlogs";

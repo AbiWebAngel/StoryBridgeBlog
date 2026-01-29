@@ -1,7 +1,9 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState, ReactNode } from "react";
 import AllArticles from "./AllArticles";
+import { useSearchParams } from "next/navigation";
+
 
 const ITEMS_PER_PAGE = 9;
 
@@ -11,31 +13,46 @@ interface Article {
   excerpt: string;
   coverImage: string;
   slug: string;
-  category?: string;
   updatedAt: string | number | Date;
+  tags: string;
 }
+
 
 export default function ArticleFilters({
   articles,
+  filterPanel,
 }: {
   articles: Article[];
+  filterPanel?: ReactNode;
 }) {
-  const [search, setSearch] = useState("");
+  const searchParams = useSearchParams();
+  const urlSearch = searchParams.get("search") ?? ""; // only prefill for search query
+  const urlTag = searchParams.get("tag") ?? "";       // used for filtering only
+
+  const [search, setSearch] = useState(urlSearch);
+
   const [sortOrder, setSortOrder] = useState<"newest" | "oldest">("newest");
   const [page, setPage] = useState(1);
 
   /* ---------------- filtering pipeline ---------------- */
 
   const filteredAndSorted = useMemo(() => {
-    const q = search.trim().toLowerCase();
+  const searchQ = search.trim().toLowerCase();
+  const tagQ = urlTag.trim().toLowerCase();
 
-    const filtered = articles.filter((a) => {
-      const matchesSearch =
-        a.title.toLowerCase().includes(q) ||
-        a.excerpt.toLowerCase().includes(q);
+  const filtered = articles.filter((a) => {
+    const matchesTag = tagQ
+      ? Array.isArray(a.tags) && a.tags.some(t => t.toLowerCase() === tagQ)
+      : true;
 
-      return matchesSearch;
-    });
+    const matchesSearch = searchQ
+      ? a.title.toLowerCase().includes(searchQ) ||
+        a.excerpt.toLowerCase().includes(searchQ)
+      : true;
+
+    return matchesTag && matchesSearch;
+  });
+
 
     return [...filtered].sort((a, b) => {
       const dateA = new Date(a.updatedAt).getTime();
@@ -56,12 +73,20 @@ export default function ArticleFilters({
     return filteredAndSorted.slice(start, start + ITEMS_PER_PAGE);
   }, [filteredAndSorted, page]);
 
+useEffect(() => {
+  setPage(1);
+}, [urlSearch, urlTag]);
+
+
+
   /* ---------------- render ---------------- */
 
   return (
     <section className="w-full px-4 sm:px-6 md:px-8 max-w-[1400px] mx-auto">
+      
       {/* Top controls */}
-      <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mb-6">
+      <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mb-2">
+       
         {/* Sort */}
         <select
           value={sortOrder}
@@ -88,6 +113,9 @@ export default function ArticleFilters({
         />
       </div>
 
+      {/* Row 2: filter toggle button */}
+      {filterPanel}
+
       {/* Articles */}
       <AllArticles articles={paginatedArticles} />
 
@@ -100,7 +128,7 @@ export default function ArticleFilters({
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <div className="flex justify-center gap-4 mt-12 mb-12">
+        <div className="flex justify-center gap-4 mt-12">
           <button
             disabled={page === 1}
             onClick={() => setPage((p) => p - 1)}

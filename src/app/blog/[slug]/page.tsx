@@ -6,7 +6,7 @@ import { notFound, redirect } from "next/navigation";
 import type { Metadata } from "next";
 import BackButton from "@/components/BackButton";
 import FavouriteHeart from "@/components/blog/FavouriteHeart";
-
+import NewsletterFormAlt from "@/components/NewsletterFormAlt";
 
 function looksLikeId(value: string) {
   // UUID v4
@@ -84,7 +84,7 @@ export default async function BlogArticlePage({
 
   return (
     <div className="min-h-screen bg-[#ECE1CF] py-4">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-32">
         
         {/* Back button - matching preview page */}
         <BackButton />
@@ -161,6 +161,8 @@ export default async function BlogArticlePage({
           </article>
         </div>
       </div>
+
+        <NewsletterFormAlt />
     </div>
   );
 }
