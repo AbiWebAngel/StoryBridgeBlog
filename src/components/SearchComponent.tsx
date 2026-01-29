@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 
@@ -18,6 +18,22 @@ export default function SearchComponent({
   const router = useRouter();
   const searchParams = useSearchParams();
   const activeTag = searchParams.get("tag");
+  const prevTagRef = useRef<string | null>(null);
+
+  useEffect(() => {
+  // First render — just record
+  if (prevTagRef.current === null) {
+    prevTagRef.current = activeTag;
+    return;
+  }
+
+  // 🔄 Refresh ONLY when tag actually changes
+  if (prevTagRef.current !== activeTag) {
+    router.refresh();
+  }
+
+  prevTagRef.current = activeTag;
+}, [activeTag, router]);
 
   // Default tags if none are provided
   const defaultTags = [
@@ -81,15 +97,13 @@ export default function SearchComponent({
             Search by tags:
           </h2>
           {activeTag && (
-                  <button
-                    onClick={() => {
-                      router.push("/blog");
-                      router.refresh();
-                    }}
-                    className="mb-6 text-sm font-inter font-semibold text-[#805C2C] underline hover:opacity-80"
-                  >
-                    Clear filters
-                  </button>
+                 <button
+  onClick={() => router.push("/blog")}
+  className="mb-6 text-sm font-inter font-semibold text-[#805C2C] underline hover:opacity-80"
+>
+  Clear filters
+</button>
+
 
                     )}
 
@@ -100,15 +114,14 @@ export default function SearchComponent({
             return (
               <span
                 key={`${tag}-${index}`}
-               onClick={() => {
+              onClick={() => {
                 if (isActive) {
                   router.push("/blog");
-                  router.refresh();
                 } else {
                   router.push(`/blog?tag=${encodeURIComponent(tag)}`);
-                  router.refresh();
                 }
               }}
+
 
                 className={`cursor-pointer px-5 py-2 rounded-full border-2
                   font-medium transition-all duration-200 select-none text-base!
