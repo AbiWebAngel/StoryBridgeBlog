@@ -6,7 +6,6 @@ import ArticleFilters from "@/components/blog/ArticleFilters";
 import BlogFiltersWrapper from "@/components/blog/BlogFiltersWrapper";
 import { getHomeContent } from "@/lib/getHomeContent";
 import ArticleFiltersSuspense from "@/components/blog/ArticleFiltersSuspense";
-import BlogPageClient from "@/components/blog/BlogPageClient";
 
 export const revalidate = 300;
 

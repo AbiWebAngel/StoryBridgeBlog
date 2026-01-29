@@ -1,4 +1,4 @@
-import React from "react";
+import React, { Suspense } from "react";
 import SearchComponent from "../components/SearchComponent";
 import NewsletterForm from "../components/NewsletterForm";
 import SectionHeading from "../components/SectionHeading";
@@ -17,7 +17,9 @@ export default async function HomePage() {
   return (
     <main>
       {/* Search Section */}
-      {/* <SearchComponent tags={homeContent?.searchTags} /> */}
+       <Suspense fallback={null}>
+        <SearchComponent tags={homeContent?.searchTags} />
+      </Suspense>
 
       {/* Latest Blogs Section */}
       <div className="mb-10">
