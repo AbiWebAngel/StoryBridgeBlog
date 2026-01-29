@@ -309,10 +309,10 @@ useEffect(() => {
   <>
     <div className="px-6 min-h-screen font-sans">
       <div className="max-w-5xl mx-auto">
-        <h1 className="text-3xl font-extrabold text-[#4A3820] mb-6 text-center font-sans!">
+        <h1 className="text-3xl font-extrabold text-[#4A3820] mb-4 text-center font-sans!">
           User Management
         </h1> 
-        <div className="h-px bg-[#E6DED1] my-6"></div>
+        <div className="h-px bg-[#E6DED1] my-4"></div>
 
         {/* Guest State - When user is not logged in */}
         {!currentAuthUser && (
@@ -382,45 +382,60 @@ useEffect(() => {
                   </div>
                 ) : (
                 // ADDED: Scrollable container with max height
-               <div className="space-y-6 max-h-[calc(100vh-420px)] overflow-y-auto pr-2">
+               <div
+                  className="
+                    space-y-3
+                    max-h-[80vh]
+                    overflow-y-auto
+                    scrollable-description
+                    pr-2
+                  "
+                >
                   {filteredUsers.map((u) => {
                     const isSuperAdmin = u.uid === "z2Vhrt7WiBSBDLlvnNuJ3PMtsvk2";
                     const isCurrentUser = u.uid === currentAuthUser?.uid;
                     return (
-                     <div
+                      <div
                         key={u.uid}
                         className={`
-                          rounded-xl bg-white border border-[#E6DED1]
-                          p-6 min-h-[160px]
+                          rounded-lg bg-white border border-[#E6DED1]
+                          p-4
                           shadow-sm hover:shadow-md transition-shadow
                           ${isCurrentUser ? "border-l-4 border-l-[#805C2C]" : ""}
                           ${u.disabled ? "opacity-70" : ""}
                         `}
                       >
 
-                        {/* UPPER SECTION: User Info */}
-                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 mb-5">
+                        {/* MAIN COMPACT 3-COLUMN BLOCK */}
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
 
-                          {/* User Details */}
-                          <div className="min-w-0 flex-1">
+                          {/* LEFT — User Info */}
+                          <div className="sm:col-span-2 min-w-0">
                             <div className="flex items-center flex-wrap gap-2 mb-1">
-                              <p className="text-[#4A3820] font-bold">
+                              <p className="text-[#4A3820] font-semibold leading-tight">
                                 {u.firstName} {u.lastName}
                                 {isCurrentUser && (
-                                  <span className="ml-2 px-2 py-1 text-sm! bg-amber-100 text-amber-800 rounded-full">You</span>
+                                  <span className="ml-2 px-2 py-1 text-sm! bg-amber-100 text-amber-800 rounded-full">
+                                    You
+                                  </span>
                                 )}
                               </p>
-                              {/* Role Badges */}
+
+                              {/* Role Tags */}
                               {isSuperAdmin && (
                                 <span className="ml-2 px-2 py-1 text-sm! bg-purple-100 text-purple-800 rounded-full">
                                   Super Admin
                                 </span>
                               )}
-                              {u.role === 'admin' && (
-                                <span className="ml-2 px-2 py-1 text-sm! bg-red-100 text-red-800 rounded-full">Admin</span>
+                              {u.role === "admin" && (
+                                <span className="ml-2 px-2 py-1 text-sm! bg-red-100 text-red-800 rounded-full">
+                                  Admin
+                                </span>
                               )}
-                              {u.role === 'author' && (
-                                <span className="ml-2 px-2 py-1 text-sm! bg-blue-100 text-blue-800 rounded-full">Author</span>
+                              {u.role === "author" && (
+                                <span className="ml-2 px-2 py-1 text-sm! bg-blue-100 text-blue-800 rounded-full">
+                                  Author
+                                </span>
                               )}
                               {u.disabled && (
                                 <span className="ml-2 px-2 py-1 text-sm! bg-gray-200 text-gray-800 rounded-full">
@@ -428,30 +443,26 @@ useEffect(() => {
                                 </span>
                               )}
                             </div>
-                            {/* Email and Date */}
-                            <p className="text-[#4A3820]/80 truncate mb-1">
-                              {u.email}
-                            </p>
+
+                            <p className="text-[#4A3820]/80 truncate text-sm mb-0.5">{u.email}</p>
+
                             <p className="text-sm text-[#4A3820]/60">
                               Joined: {formatDate(u.createdAt)}
                             </p>
                           </div>
-                        </div>
 
-                        {/* LOWER SECTION: Controls - Stack on mobile */}
-                       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-5
-                        pt-6 border-t border-[#EDE7DD]">
+                          {/* RIGHT — Role + Disable Controls */}
+                          <div className="flex flex-col sm:items-end gap-2">
 
-
-                          {/* Role Selector */}
-                          <div className="flex items-center gap-2">
+                            {/* Role Selector */}
                             <select
-                           className={`px-3 py-2 rounded-lg border 
-                          bg-[#F7F2EB] text-[#4A3820] 
-                          focus:ring-2 focus:ring-[#805C2C]/40
-                          disabled:bg-gray-100 disabled:border-gray-300 disabled:text-gray-500
-                          `}
-                              value={u.role || "reader"}
+                              className="
+                                px-3 py-1.5 text-sm rounded-md border 
+                                bg-[#F7F2EB] text-[#4A3820]
+                                focus:ring-2 focus:ring-[#805C2C]/40
+                                disabled:bg-gray-100 disabled:border-gray-300 disabled:text-gray-500
+                              "
+                              value={u.role || 'reader'}
                               disabled={isSuperAdmin || isCurrentUser || updatingUid === u.uid}
                               onChange={(e) => handleRoleChange(u.uid, e.target.value, u)}
                             >
@@ -460,33 +471,31 @@ useEffect(() => {
                               <option value="admin">Admin</option>
                             </select>
 
-                            {updatingUid === u.uid && (
-                              <span className="text-[#4A3820] text-sm">Updating...</span>
-                            )}
-                          </div>
+                            {/* Disable/Enable Button */}
+                            <button
+                              disabled={isSuperAdmin || isCurrentUser || updatingUid === u.uid}
+                              onClick={() => handleDisableClick(u)}
+                              className={`
+                                px-3 py-1.5 text-sm rounded-lg w-full sm:w-auto font-medium 
+                                transition-all duration-200
+                                disabled:opacity-60 disabled:cursor-not-allowed font-sans!
+                                ${
+                                  u.disabled
+                                    ? "border-2 border-emerald-600 text-emerald-600 hover:bg-emerald-600 hover:text-white"
+                                    : "border-2 border-red-500 text-red-500 hover:bg-red-500 hover:text-white"
+                                }
+                              `}
+                            >
+                              {u.disabled ? "Enable User" : "Disable User"}
+                            </button>
 
-                          {/* Disable/Enable Button - New design */}
-                          <button
-                            disabled={isSuperAdmin || isCurrentUser || updatingUid === u.uid}
-                            onClick={() => handleDisableClick(u)}
-                            className={`
-                              px-4 py-2 rounded-lg font-medium transition-all duration-200
-                              w-full sm:w-auto disabled:opacity-60 disabled:cursor-not-allowed font-sans!
-                              ${isSuperAdmin ? 'border-purple-300 text-purple-400 cursor-not-allowed' : ''}
-                              ${u.disabled 
-                                ? "border-2 border-emerald-600 text-emerald-600 hover:bg-emerald-600 hover:text-white" 
-                                : "border-2 border-red-500 text-red-500 hover:bg-red-500 hover:text-white"
-                              }
-                              ${isCurrentUser ? 'border-gray-400 text-gray-500 hover:bg-gray-100 hover:text-gray-500' : ''}
-                            `}
-                          >
-                            {u.disabled ? "Enable User" : "Disable User"}
-                          </button>
+                          </div>
                         </div>
                       </div>
+
                     );
                   })}
-                </div>
+                  </div>
               )}
             </div>
           </>
