@@ -6,6 +6,7 @@ import ArticleFilters from "@/components/blog/ArticleFilters";
 import BlogFiltersWrapper from "@/components/blog/BlogFiltersWrapper";
 import { getHomeContent } from "@/lib/getHomeContent";
 import ArticleFiltersSuspense from "@/components/blog/ArticleFiltersSuspense";
+import BlogPageClient from "@/components/blog/BlogPageClient";
 
 export const revalidate = 300;
 
@@ -46,10 +47,11 @@ export default async function BlogPage() {
 
   return (
   <main className="min-h-screen">
-    <ArticleFiltersSuspense
-      articles={articles}
-      filterPanel={<BlogFiltersWrapper tags={homeContent?.searchTags} />}
-    />
+    <BlogPageClient
+  articles={articles}
+  tags={homeContent?.searchTags}
+/>
+
 
   </main>
   );
