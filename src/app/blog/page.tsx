@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { collection, getDocs, orderBy, query, where, limit } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { extractExcerptFromBody } from "@/lib/articles/extractExcerpt";
@@ -14,6 +15,7 @@ export const metadata = {
 
 const ITEMS_PER_PAGE = 9;
 const PREFETCH_PAGES = 2;
+
 const homeContent = await getHomeContent();
 
 export default async function BlogPage() {
@@ -41,19 +43,22 @@ export default async function BlogPage() {
     };
   });
 
-const allTags = Array.from(
-  new Set(
-    articles.flatMap((article) => article.tags ?? [])
-  )
-);
-
   return (
     <main className="min-h-screen">
-      <ArticleFilters
-        articles={articles}
-        filterPanel={<BlogFiltersWrapper tags={homeContent?.searchTags} />}
-      />
-
+      <Suspense fallback={<BlogLoading />}>
+        <ArticleFilters
+          articles={articles}
+          filterPanel={<BlogFiltersWrapper tags={homeContent?.searchTags} />}
+        />
+      </Suspense>
     </main>
+  );
+}
+
+function BlogLoading() {
+  return (
+    <div className="flex justify-center py-24 text-lg font-semibold text-[#403727]">
+      Loading blogs…
+    </div>
   );
 }

@@ -95,7 +95,7 @@ export default function SearchComponent({
 
             return (
               <span
-                key={index}
+                key={tag}
                 onClick={() => {
                   if (isActive) {
                     router.push("/blog"); // toggle OFF
