@@ -17,7 +17,7 @@ export default async function HomePage() {
   return (
     <main>
       {/* Search Section */}
-      <SearchComponent tags={homeContent?.searchTags} />
+      {/* <SearchComponent tags={homeContent?.searchTags} /> */}
 
       {/* Latest Blogs Section */}
       <div className="mb-10">
