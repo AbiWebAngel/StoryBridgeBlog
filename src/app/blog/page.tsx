@@ -2,6 +2,8 @@ import { collection, getDocs, orderBy, query, where, limit } from "firebase/fire
 import { db } from "@/lib/firebase";
 import { extractExcerptFromBody } from "@/lib/articles/extractExcerpt";
 import ArticleFilters from "@/components/blog/ArticleFilters";
+import NewsletterFormAlt from "@/components/NewsletterFormAlt";
+
 
 export const revalidate = 300;
 
@@ -40,6 +42,8 @@ export default async function BlogPage() {
   return (
     <main className="min-h-screen">
       <ArticleFilters articles={articles} />
+
+      <NewsletterFormAlt />
     </main>
   );
 }

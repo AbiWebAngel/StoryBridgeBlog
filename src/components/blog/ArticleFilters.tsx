@@ -72,6 +72,7 @@ export default function ArticleFilters({
         >
           <option value="newest">Newest first</option>
           <option value="oldest">Oldest first</option>
+          <option value="">Most popular</option>
         </select>
 
         {/* Search */}
@@ -99,7 +100,7 @@ export default function ArticleFilters({
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <div className="flex justify-center gap-4 mt-12">
+        <div className="flex justify-center gap-4 mt-12 mb-12">
           <button
             disabled={page === 1}
             onClick={() => setPage((p) => p - 1)}

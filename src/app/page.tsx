@@ -22,6 +22,7 @@ export default async function HomePage() {
       {/* Latest Blogs Section */}
       <div className="mb-10">
         <SectionHeading
+          title="Check out our latest blog posts"
           src="/assets/headings/home/BlogPosts.png"
           alt="Blog Posts Heading"
           width={500}
@@ -38,6 +39,7 @@ export default async function HomePage() {
         <>
           <div className="mb-2 mt-12">
             <SectionHeading
+              title="Join our programs"
               src="/assets/headings/home/JoinOurPrograms.png"
               alt="Join Our Programs Heading"
               width={300}
@@ -54,6 +56,7 @@ export default async function HomePage() {
         <>
           <div className="mb-12 mt-12">
             <SectionHeading
+              title="Message from director"
               src="/assets/headings/home/MessageFromDirector.png"
               alt="Message From Director Heading"
               width={400}

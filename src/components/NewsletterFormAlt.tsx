@@ -3,7 +3,7 @@
 import { useState, FormEvent, ChangeEvent } from "react";
 import Image from "next/image";
 
-export default function NewsletterForm() {
+export default function NewsletterFormAlt() {
   const [email, setEmail] = useState("");
   const [touched, setTouched] = useState(false);
 
@@ -63,7 +63,6 @@ export default function NewsletterForm() {
       setServerMessage("✅ Thanks for subscribing!");
       setServerError(false);
 
-      // Reset form
       setEmail("");
       setTouched(false);
       setIsValid(null);
@@ -81,13 +80,13 @@ export default function NewsletterForm() {
       {/* Heading */}
       <h1 className="relative">
         {/* 👀 Visually hidden SEO text */}
-        <span className="sr-only">Read our newsletter</span>
+        <span className="sr-only">Like what you read? Sign up for our newsletter to always stay up-to-date with all things storybridge.</span>
 
         {/* Image Heading */}
         <Image
-          src="/assets/headings/about/ReadOurNewsletter.png"
-          alt="Read Our Newsletter"
-          width={320}
+          src="/assets/headings/blog/SignUp2.png"
+          alt="Sign Up for Newsletter"
+          width={400}
           height={230}
           quality={100}
         />
@@ -96,7 +95,7 @@ export default function NewsletterForm() {
         <button
           type="submit"
           form="newsletter-form"
-          className="absolute top-[0px] right-[-15px] sm:top-[-5px] sm:right-10 md:top-[-14px] md:right-[-20px] lg:top-[-32px] lg:right-[-150px] z-10 bg-transparent transition hover:scale-102 hover:brightness-110 cursor-pointer"
+          className="absolute top-[90px] right-[-15px] sm:top-[90px] sm:right-10 md:top-[80px] md:right-[-20px] lg:top-[60px] lg:right-[-150px] z-10 bg-transparent transition hover:scale-102 hover:brightness-110 cursor-pointer"
         >
           <Image
             src="/assets/icons/Send.svg"

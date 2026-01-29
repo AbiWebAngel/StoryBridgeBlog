@@ -7,8 +7,9 @@ interface HeadingProps {
   width: number;
   height: number;
   maxWidth?: string;
-  mobileWidth?: number;       // new optional prop
-  mobileHeight?: number;      // new optional prop
+  mobileWidth?: number;       // optional mobile width
+  mobileHeight?: number;      // optional mobile height
+  title: string;              // 👈 NEW: real heading text for SEO
 }
 
 interface ImageProps {
@@ -22,20 +23,21 @@ interface TextSectionProps {
   heading: HeadingProps;
   text: string;
   image?: ImageProps;
-  responsiveCenter?: boolean; // new prop
-  centerAll?: boolean;        // new prop
+  responsiveCenter?: boolean; // center heading on small screens
+  centerAll?: boolean;        // force center heading
 }
 
 export default function TextSection({
   heading,
   text,
   image,
-  responsiveCenter = true, // default: center on small screens
-  centerAll = false,       // default: do not force center
+  responsiveCenter = true,
+  centerAll = false,
 }: TextSectionProps) {
   return (
     <div className="w-full mt-6 mb-6 px-4 sm:px-6 md:px-20">
-      {/* Heading */}
+      
+      {/* SEO-safe heading */}
       <SectionHeading
         {...heading}
         responsiveCenter={responsiveCenter}

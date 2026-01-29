@@ -34,6 +34,7 @@ export default async function MentorshipPage() {
       <div className="mb-12">
         <TextSection
           heading={{
+            title:"What is mentorship for?",
             src: "/assets/headings/mentorship/WhatIsMentorship.png",
             alt: "What Is Mentorship Heading",
             width: 450,
@@ -49,6 +50,7 @@ export default async function MentorshipPage() {
       {/* How it works Section */}
       <TextWithSideImage
         heading={{
+          title: "Hot it works?",
           src: "/assets/headings/mentorship/HowItWorks.png",
           alt: "How it works Heading",
           width: 250,
@@ -68,6 +70,7 @@ export default async function MentorshipPage() {
       {/* Sign Up Now Section */}
       <div className="mb-10 mt-16">
         <SectionHeading
+         title="Sign up now"
           src="/assets/headings/mentorship/SignUpNow.png"
           alt="Sign Up Now Heading"
           width={190}
@@ -85,6 +88,7 @@ export default async function MentorshipPage() {
       {/* Testimonials Section */}
       <div className="mb-12">
         <SectionHeading
+          title="Our testimonials"
           src="/assets/headings/Testimonials.png"
           alt="Testimonials Heading"
           width={200}

@@ -1,6 +1,6 @@
 import Image from "next/image";
 import SectionHeading from "../SectionHeading";
-import JoinButton from "./JoinButton.client"; // Import the client component
+import JoinButton from "./JoinButton.client"; // client component
 
 interface HeadingProps {
   src: string;
@@ -10,6 +10,7 @@ interface HeadingProps {
   maxWidth?: string;
   mobileWidth?: number;
   mobileHeight?: number;
+  title: string; // 👈 NEW: real SEO text
 }
 
 interface ImageProps {
@@ -26,9 +27,9 @@ interface TextSectionProps {
   responsiveCenter?: boolean;
   centerAll?: boolean;
   buttonText?: string; // Optional button text
-  buttonUrl?: string; // Optional button URL
-  onButtonClick?: () => void; // Optional button click handler
-  showButton?: boolean; // Whether to show the button
+  buttonUrl?: string;  // Optional button URL
+  onButtonClick?: () => void; // Optional click handler
+  showButton?: boolean;       // Whether to show the button
 }
 
 export default function TextSectionWithButton({
@@ -41,18 +42,11 @@ export default function TextSectionWithButton({
   buttonUrl,
   onButtonClick,
   showButton = true,
-}: TextSectionProps & {
-  buttonText?: string;
-  buttonUrl?: string;
-  onButtonClick?: () => void;
-  showButton?: boolean;
-}) {
-  // NOTE: Removed the handleButtonClick function from here
-  // All button logic is now in the client component
-
+}: TextSectionProps) {
   return (
     <div className="w-full mt-6 mb-6 px-4 sm:px-6 md:px-20">
-      {/* Heading */}
+      
+      {/* SEO-safe heading */}
       <SectionHeading
         {...heading}
         responsiveCenter={responsiveCenter}
@@ -78,7 +72,7 @@ export default function TextSectionWithButton({
         </div>
       )}
 
-      {/* Button Container - Centered at bottom */}
+      {/* Button Container */}
       {showButton && (
         <div className="w-full flex justify-center mt-6 lg:mt-8">
           <JoinButton

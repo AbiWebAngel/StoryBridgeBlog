@@ -21,6 +21,7 @@ export default async function TeamPage() {
         <div className="mb-12">
           <TextSectionWithButton
             heading={{ 
+              title:"Join the team",
               src: "/assets/headings/team/JoinTheTeam.png",
               alt: "Join The Team heading", 
               width: 193, 
@@ -47,6 +48,7 @@ export default async function TeamPage() {
         <>
           <div className="mb-8">
             <SectionHeading
+              title="Our team"
               src="/assets/headings/team/OurTeam.png"
               alt="Our Team Heading"
               width={150}

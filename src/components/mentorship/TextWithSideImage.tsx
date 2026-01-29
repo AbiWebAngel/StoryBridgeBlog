@@ -7,6 +7,7 @@ interface HeadingProps {
   width: number;
   height: number;
   maxWidth?: string;
+  title: string; // 👈 NEW: real SEO text
 }
 
 interface ImageProps {
@@ -18,12 +19,12 @@ interface ImageProps {
 
 interface TextSectionProps {
   heading: HeadingProps;
-  text: string | string[]; // Allow both string and array of strings (for lists)
-  image: ImageProps; // Required for this variation
+  text: string | string[]; // string or array for lists
+  image: ImageProps;       // required
   responsiveCenter?: boolean;
   centerAll?: boolean;
-  reverse?: boolean; // New prop to reverse the order on desktop
-  listType?: "unordered" | "ordered"; // New prop to specify list type
+  reverse?: boolean;       // reverse order on desktop
+  listType?: "unordered" | "ordered"; // list type
 }
 
 export default function TextSectionWithSideImage({
@@ -32,14 +33,14 @@ export default function TextSectionWithSideImage({
   image,
   responsiveCenter = true,
   centerAll = false,
-  reverse = false, // Default: text on left, image on right
-  listType = "unordered", // Default to unordered list
+  reverse = false,
+  listType = "unordered",
 }: TextSectionProps) {
   const isList = Array.isArray(text);
 
   return (
     <div className="w-full mt-6 mb-6 px-4 sm:px-6 md:px-20">
-      {/* Heading */}
+      {/* SEO-friendly Heading */}
       <SectionHeading
         {...heading}
         responsiveCenter={responsiveCenter}
@@ -47,11 +48,14 @@ export default function TextSectionWithSideImage({
       />
 
       {/* Content Container */}
-      <div className={`mt-4 flex flex-col lg:flex-row gap-8 ${reverse ? 'lg:flex-row-reverse' : ''}`}>
-        {/* Text Content - 2/3 width on desktop */}
+      <div
+        className={`mt-4 flex flex-col lg:flex-row gap-8 ${
+          reverse ? "lg:flex-row-reverse" : ""
+        }`}
+      >
+        {/* Text Content - 2/3 width */}
         <div className="lg:w-2/3">
           {isList ? (
-            // Conditionally render ordered or unordered list
             listType === "ordered" ? (
               <ol className="list-decimal pl-6 space-y-3 text-left lg:text-left">
                 {text.map((item, index) => (
@@ -70,13 +74,11 @@ export default function TextSectionWithSideImage({
               </ul>
             )
           ) : (
-            <p className="text-center lg:text-left leading-[2.2]">
-              {text}
-            </p>
+            <p className="text-center lg:text-left leading-[2.2]">{text}</p>
           )}
         </div>
 
-        {/* Image - 1/3 width on desktop */}
+        {/* Image - 1/3 width */}
         <div className="lg:w-1/3 flex justify-center md:justify-center lg:justify-start">
           <div className="max-w-xs md:max-w-sm lg:max-w-full mx-auto lg:mx-0">
             <Image

@@ -45,6 +45,7 @@ const bookImages: ImageAsset[] =
 
       <TextSection
         heading={{
+          title: "Mission Statement",
           src: "/assets/headings/about/MissionStatement.png",
           alt: "Mission Statement",
           width: 360,
@@ -59,6 +60,7 @@ const bookImages: ImageAsset[] =
       <div className="mt-12">
         <TextSection
           heading={{
+            title:"Who we are",
             src: "/assets/headings/about/WhoWeAre.png",
             alt: "Who We Are",
             width: 230,
@@ -72,6 +74,7 @@ const bookImages: ImageAsset[] =
       <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 lg:gap-x-4 gap-y-6 mt-8">
         <TextSection
           heading={{
+             title:"What we do?",
             src: "/assets/headings/about/WhatWeDo.png",
             alt: "What We Do",
             width: 240,
@@ -89,6 +92,7 @@ const bookImages: ImageAsset[] =
 
         <TextSection
           heading={{
+            title:"Why it matters",
             src: "/assets/headings/about/WhyItMatters.png",
             alt: "Why It Matters",
             width: 290,
@@ -101,6 +105,7 @@ const bookImages: ImageAsset[] =
 
       <div className="mb-12">
         <SectionHeading
+          title="Our Testimonials"
           src="/assets/headings/Testimonials.png"
           alt="Testimonials Heading"
           width={200}
