@@ -385,7 +385,7 @@ useEffect(() => {
                <div
                   className="
                     space-y-3
-                    max-h-[80vh]
+                    max-h-[75vh]
                     overflow-y-auto
                     scrollable-description
                     pr-2
