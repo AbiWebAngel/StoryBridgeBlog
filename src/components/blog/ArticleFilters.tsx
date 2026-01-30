@@ -14,8 +14,10 @@ interface Article {
   coverImage: string;
   slug: string;
   updatedAt: string | number | Date;
-  tags: string;
+  tags: string[];
+  readCount: number;
 }
+
 
 
 export default function ArticleFilters({
@@ -31,7 +33,8 @@ export default function ArticleFilters({
 
   const [search, setSearch] = useState(urlSearch);
 
-  const [sortOrder, setSortOrder] = useState<"newest" | "oldest">("newest");
+  const [sortOrder, setSortOrder] =
+  useState<"newest" | "oldest" | "popular">("newest");
   const [page, setPage] = useState(1);
 
   /* ---------------- filtering pipeline ---------------- */
@@ -55,6 +58,10 @@ export default function ArticleFilters({
 
 
     return [...filtered].sort((a, b) => {
+      if (sortOrder === "popular") {
+        return (b.readCount ?? 0) - (a.readCount ?? 0);
+      }
+
       const dateA = new Date(a.updatedAt).getTime();
       const dateB = new Date(b.updatedAt).getTime();
 
@@ -62,7 +69,8 @@ export default function ArticleFilters({
         ? dateB - dateA
         : dateA - dateB;
     });
-  }, [articles, search, sortOrder]);
+  }, [articles, search, sortOrder, urlTag]);
+
 
   /* ---------------- pagination ---------------- */
 
@@ -88,25 +96,20 @@ useEffect(() => {
       <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mb-2">
        
         {/* Sort */}
-        <select
+       <select
           value={sortOrder}
           onChange={(e) =>
-            setSortOrder(e.target.value as "newest" | "oldest")
+            setSortOrder(e.target.value as "newest" | "oldest" | "popular")
           }
           className="px-4 py-2 rounded-full border border-gray-300 bg-white
                     focus:outline-none focus:ring-2 focus:ring-[#CF822A]
                     font-inter text-base"
         >
-          <option key="newest" value="newest">
-            Newest first
-          </option>
-          <option key="oldest" value="oldest">
-            Oldest first
-          </option>
-          <option key="popular" value="">
-            Most popular
-          </option>
+          <option value="newest">Newest first</option>
+          <option value="oldest">Oldest first</option>
+          <option value="popular">Most popular</option>
         </select>
+
 
 
         {/* Search */}

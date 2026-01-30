@@ -32,7 +32,7 @@ export default async function BlogPage() {
   const articles = snapshot.docs.map((doc) => {
     const d = doc.data();
 
-    return {
+   return {
       id: doc.id,
       title: d.title,
       slug: d.slug,
@@ -41,6 +41,7 @@ export default async function BlogPage() {
       category: d.category ?? "general",
       excerpt: extractExcerptFromBody(d.body, 100),
       updatedAt: d.updatedAt?.toDate?.() ?? d.updatedAt,
+      readCount: d.readCount ?? 0,
     };
   });
 
