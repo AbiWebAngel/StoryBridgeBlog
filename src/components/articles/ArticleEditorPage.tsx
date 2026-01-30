@@ -718,6 +718,9 @@ useEffect(() => {
         const usedAssets = extractArticleAssets({ coverImage, body });
         unusedAssets = findUnusedAssets(uploadedAssets, usedAssets);
       }
+      const articleRef = doc(db, "articles", articleIdRef.current);
+      const snap = await getDoc(articleRef);
+      const alreadyPublishedAt = snap.exists() ? snap.data().publishedAt : null;
 
       await setDoc(
         doc(db, "articles", articleIdRef.current),
@@ -727,10 +730,16 @@ useEffect(() => {
           ...getAuthorPayload(),
           updatedAt: serverTimestamp(),
 
-          // 👇 ADD THIS LOGIC
-          ...(articleData.status === "published" && {
-            publishedAt: serverTimestamp(),
+          // ✅ initialize once, never overwrite
+          ...(mode === "new" && {
+            readCount: 0,
           }),
+
+            ...(articleData.status === "published" &&
+        !alreadyPublishedAt && {
+          publishedAt: serverTimestamp(),
+        }),
+
         },
         { merge: true }
       );

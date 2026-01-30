@@ -54,21 +54,36 @@ export default function SearchComponent({
     router.push(`/blog?search=${encodeURIComponent(searchText)}`);
   };
 
+  const handleIconClick = () => {
+    handleSubmit();
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") {
+      handleSubmit();
+    }
+  };
+
   return (
     <div className={`${showSearchBar ? "mt-12" : ""} mb-16 relative ${showSearchBar ? "" : "pt-8"}`}>
       {/* Conditional Search Box */}
       {showSearchBar && (
         <div className="absolute -top-5.5 right-0 w-80 md:w-96 z-10">
           <div className="relative">
-            {/* Icon */}
-            <div className="absolute left-8 top-1/2 -translate-y-1/2 pointer-events-none z-10">
+            {/* Clickable Icon */}
+            <button
+              type="button"
+              onClick={handleIconClick}
+              className="absolute left-8 top-1/2 -translate-y-1/2 z-10 cursor-pointer hover:opacity-80 transition-opacity"
+              aria-label="Search"
+            >
               <Image
                 src="/assets/icons/home/search.png"
                 alt="Search"
                 width={25}
                 height={25}
               />
-            </div>
+            </button>
 
             {/* Input */}
             <input
@@ -76,7 +91,7 @@ export default function SearchComponent({
               placeholder="Start typing to search"
               value={searchText}
               onChange={(e) => setSearchText(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
+              onKeyDown={handleKeyDown}
               className="font-inter w-full rounded-l-full rounded-r-none border-4 border-l-[#805C2C] border-y-[#805C2C] border-r-0
                        bg-[#C6B49C] pt-3 pb-[0.6rem] pl-16 pr-10 text-[#403727] font-bold placeholder-[#403727]
                        outline-none focus:ring-2 focus:ring-[#805D2D]/40 transition"

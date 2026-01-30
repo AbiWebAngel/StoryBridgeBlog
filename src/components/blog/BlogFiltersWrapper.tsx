@@ -14,7 +14,7 @@ export default function BlogFiltersWrapper({ tags }: BlogFiltersWrapperProps) {
   
 useEffect(() => {
   const hasFilters =
-    searchParams.has("tag") || searchParams.has("search");
+    searchParams.has("tag");
 
   setOpen(hasFilters);
 }, [searchParams]);
