@@ -4,7 +4,6 @@ import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 
-
 type SearchComponentProps = {
   tags?: string[];
   showSearchBar?: boolean; // New prop to control search bar visibility
@@ -56,7 +55,7 @@ export default function SearchComponent({
   };
 
   return (
-    <div className={`mt-12 mb-16 relative ${showSearchBar ? "" : "pt-8"}`}>
+    <div className={`${showSearchBar ? "mt-12" : ""} mb-16 relative ${showSearchBar ? "" : "pt-8"}`}>
       {/* Conditional Search Box */}
       {showSearchBar && (
         <div className="absolute -top-5.5 right-0 w-80 md:w-96 z-10">
@@ -92,19 +91,17 @@ export default function SearchComponent({
       {/* Section with border */}
       <section className="font-inter w-full bg-[#DDD2C3] py-8 relative overflow-hidden border-y-4 border-[#805C2C]">
         {/* Search by tags */}
-        <div className="flex flex-col items-center py-4 space-y-4">
+        <div className={`flex flex-col items-center ${showSearchBar ? "py-4" : ""} space-y-4`}>
           <h2 className="font-inter text-lg font-bold text-[#805C2C]">
             Search by tags:
           </h2>
           {activeTag && (
                  <button
-  onClick={() => router.push("/blog")}
-  className="mb-6 text-sm font-inter font-semibold text-[#805C2C] underline hover:opacity-80"
->
-  Clear filters
-</button>
-
-
+                  onClick={() => router.push("/blog")}
+                  className="mb-6 text-sm font-inter font-semibold text-[#805C2C] underline hover:opacity-80"
+                >
+                  Clear filters
+                </button>
                     )}
 
           <div className="flex flex-wrap justify-center gap-4 max-w-3xl">
