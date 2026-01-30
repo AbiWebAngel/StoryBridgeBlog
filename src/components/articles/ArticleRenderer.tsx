@@ -15,9 +15,6 @@ import { DraggableHeading } from "@/components/editor/extensions/DraggableHeadin
 import { DraggableCodeBlock } from "@/components/editor/extensions/DraggableCodeBlock";
 import Color from "@tiptap/extension-color";
 import { TextStyle } from "@tiptap/extension-text-style";
-
-
-// 👇 import the SAME node used in the editor
 import { ImageWithRemove } from "@/components/editor/extensions/ImageWithRemove";
 import { useEffect } from "react";
 
@@ -26,97 +23,66 @@ type Props = {
 };
 
 export default function ArticleRenderer({ content }: Props) {
-const editor = useEditor({
-  editable: false,
-  immediatelyRender: false,
-extensions: [
-  StarterKit,
-  TextStyle,
-  Color, // 👈 THIS is the missing piece
-  Underline,
-  Link.configure({
-    openOnClick: true,
-    autolink: true,
-    HTMLAttributes: {
-      rel: "noopener noreferrer nofollow",
-      target: "_blank",
-    },
-  }),
-  TextAlign.configure({
-    types: ["heading", "paragraph"],
-  }),
-  Table.configure({
-    resizable: true,
-  }),
-  TableRow,
-  TableHeader,
-  TableCell,
-  YouTube.extend({
-  addNodeView() {
-    return ({ node, HTMLAttributes }) => {
-      // Log node + attrs again for safety
-      console.log("🔥 YouTube Node:", node);
-      console.log("🔥 YouTube ATTRS:", node.attrs);
+  const editor = useEditor({
+    editable: false,
+    immediatelyRender: false,
+    extensions: [
+      StarterKit,
+      TextStyle,
+      Color,
+      Underline,
+      Link.configure({
+        openOnClick: true,
+        autolink: true,
+        HTMLAttributes: {
+          rel: "noopener noreferrer nofollow",
+          target: "_blank",
+        },
+      }),
+      TextAlign.configure({
+        types: ["heading", "paragraph"],
+      }),
+      Table.configure({
+        resizable: true,
+      }),
+      TableRow,
+      TableHeader,
+      TableCell,
+      YouTube.extend({
+        addNodeView() {
+          return ({ node }) => {
+            const wrapper = document.createElement("div");
+            wrapper.className = "youtube-embed-debug";
 
-      // Create wrapper
-      const wrapper = document.createElement("div");
-      wrapper.className = "youtube-embed-debug";
+            const iframe = document.createElement("iframe");
+            iframe.src = node.attrs.src;
+            iframe.width = node.attrs.width || 640;
+            iframe.height = node.attrs.height || 360;
+            iframe.setAttribute("frameborder", "0");
+            iframe.setAttribute("allowfullscreen", "true");
 
-      // Create iframe
-      const iframe = document.createElement("iframe");
-      iframe.src = node.attrs.src;
-      iframe.width = node.attrs.width || 640;
-      iframe.height = node.attrs.height || 360;
-      iframe.setAttribute("frameborder", "0");
-      iframe.setAttribute("allowfullscreen", "true");
+            wrapper.appendChild(iframe);
 
-      wrapper.appendChild(iframe);
-
-      // Log the DOM node AFTER it's created
-      console.log("🔥 Rendered DOM:", wrapper);
-
-      return {
-        dom: wrapper,
-      };
-    };
-  },
-}),
-
-
-  ImageWithRemove,
-  DraggableParagraph,
-  DraggableHeading,
-  DraggableCodeBlock,
-],
-
-
-});
-
-
-console.log("Renderer content:", content);
-
-useEffect(() => {
-  if (content) {
-    console.log("Renderer content:", content);
-  }
-}, [content]);
-
-useEffect(() => {
-  if (!editor) return;
-
-  console.log("Schema nodes:", Object.keys(editor.schema.nodes));
-}, [editor]);
-
-useEffect(() => {
-  if (!editor || !content) return;
-
-  editor.commands.setContent(content, {
-    emitUpdate: false,
+            return {
+              dom: wrapper,
+            };
+          };
+        },
+      }),
+      ImageWithRemove,
+      DraggableParagraph,
+      DraggableHeading,
+      DraggableCodeBlock,
+    ],
   });
 
-  console.log("Editor JSON after setContent:", editor.getJSON());
-}, [editor, content]);
+  useEffect(() => {
+    if (!editor || !content) return;
 
+    editor.commands.setContent(content, {
+      emitUpdate: false,
+    });
+  }, [editor, content]);
 
   if (!editor) return null;
 

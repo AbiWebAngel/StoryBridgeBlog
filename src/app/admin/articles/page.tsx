@@ -29,7 +29,7 @@ interface AdminArticle extends Article {
   authorId?: string;
   createdAt: Timestamp;
   updatedAt: Timestamp;
-  views?: number;
+  readCount: number;
 }
 
 // Status badge component matching your design
@@ -150,7 +150,7 @@ export default function AdminArticlesPage() {
         case "title-desc":
           return (b.title || "").localeCompare(a.title || "");
         case "views-desc":
-          return (b.views || 0) - (a.views || 0);
+          return (b.readCount || 0) - (a.readCount || 0);
         default:
           return 0;
       }
@@ -425,11 +425,13 @@ const checkPendingDraftConflict = async (articleId: string) => {
             </div>
           </td>
 
-          <td className="px-4 py-4">
+         <td className="px-4 py-4 text-center">
             <div className="text-base font-medium text-[#4A3820] font-sans!">
-              {article.views || 0}
+              {article.readCount ?? 0}
             </div>
           </td>
+
+
 
           <td className="px-4 py-4">
             <div className="flex items-center gap-2 whitespace-nowrap">
