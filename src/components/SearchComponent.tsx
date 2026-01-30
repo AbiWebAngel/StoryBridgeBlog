@@ -125,7 +125,7 @@ export default function SearchComponent({
 
             return (
               <span
-                key={`${tag}-${index}`}
+                key={tag}
               onClick={() => {
                 if (isActive) {
                   router.push("/blog");

@@ -93,12 +93,21 @@ useEffect(() => {
           onChange={(e) =>
             setSortOrder(e.target.value as "newest" | "oldest")
           }
-          className="px-4 py-2 rounded-full border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-[#CF822A] font-inter text-base"
+          className="px-4 py-2 rounded-full border border-gray-300 bg-white
+                    focus:outline-none focus:ring-2 focus:ring-[#CF822A]
+                    font-inter text-base"
         >
-          <option value="newest">Newest first</option>
-          <option value="oldest">Oldest first</option>
-          <option value="">Most popular</option>
+          <option key="newest" value="newest">
+            Newest first
+          </option>
+          <option key="oldest" value="oldest">
+            Oldest first
+          </option>
+          <option key="popular" value="">
+            Most popular
+          </option>
         </select>
+
 
         {/* Search */}
         <input

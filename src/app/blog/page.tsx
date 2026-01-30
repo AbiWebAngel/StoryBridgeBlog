@@ -46,10 +46,11 @@ export default async function BlogPage() {
 
   return (
   <main className="min-h-screen">
-    <ArticleFiltersSuspense
-      articles={articles}
-      filterPanel={<BlogFiltersWrapper tags={homeContent?.searchTags} />}
-    />
+   <ArticleFiltersSuspense
+    articles={articles}
+    filterPanel={<BlogFiltersWrapper key="blog-filters" tags={homeContent?.searchTags} />}
+  />
+
 
   </main>
   );
