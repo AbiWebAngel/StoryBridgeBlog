@@ -7,6 +7,8 @@ import type { Metadata } from "next";
 import BackButton from "@/components/BackButton";
 import FavouriteHeart from "@/components/blog/FavouriteHeart";
 import NewsletterFormAlt from "@/components/NewsletterFormAlt";
+import TrackRead from "@/components/blog/TrackRead";
+
 
 function looksLikeId(value: string) {
   // UUID v4
@@ -83,6 +85,9 @@ export default async function BlogArticlePage({
 
 
   return (
+    <>
+    <TrackRead articleId={post.id} />
+
     <div className="min-h-screen bg-[#ECE1CF] py-4">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-32">
         
@@ -135,25 +140,24 @@ export default async function BlogArticlePage({
           </div>
 
           {/* Featured Image */}
-        {post.coverImage && (
-          <div className="mb-8">
-            <div className="relative w-full aspect-[2/1] rounded-[20px] overflow-hidden">
-              <Image
-                src={post.coverImage}
-                alt={post.coverImageAlt || post.title || "Article cover"}
-                fill
-                priority
-                style={{
-                  objectFit: "cover",
-                  objectPosition: post.coverImagePosition
-                    ? `${post.coverImagePosition.x}% ${post.coverImagePosition.y}%`
-                    : "50% 50%",
-                }}
-              />
+          {post.coverImage && (
+            <div className="mb-8">
+              <div className="relative w-full aspect-[2/1] rounded-[20px] overflow-hidden">
+                <Image
+                  src={post.coverImage}
+                  alt={post.coverImageAlt || post.title || "Article cover"}
+                  fill
+                  priority
+                  style={{
+                    objectFit: "cover",
+                    objectPosition: post.coverImagePosition
+                      ? `${post.coverImagePosition.x}% ${post.coverImagePosition.y}%`
+                      : "50% 50%",
+                  }}
+                />
+              </div>
             </div>
-          </div>
-        )}
-
+          )}
 
           {/* Article Content */}
           <article className="article-content">
@@ -164,5 +168,6 @@ export default async function BlogArticlePage({
 
         <NewsletterFormAlt />
     </div>
+    </>
   );
 }
