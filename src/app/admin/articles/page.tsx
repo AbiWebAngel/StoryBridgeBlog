@@ -84,6 +84,8 @@ export default function AdminArticlesPage() {
   const [draftConflictUsers, setDraftConflictUsers] = useState<any[]>([]);
   const [pendingEditArticleId, setPendingEditArticleId] = useState<string | null>(null);
   const [showDraftWarning, setShowDraftWarning] = useState(false);
+  const [sortKey, setSortKey] = useState<"title" | "author" | "status" | "updatedAt" | "views">("updatedAt");
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
 
 
   // Fetch all articles
@@ -139,25 +141,50 @@ export default function AdminArticlesPage() {
     }
 
     // Apply sorting
-    result.sort((a, b) => {
-      switch (sortBy) {
-        case "newest":
-          return b.updatedAt.toMillis() - a.updatedAt.toMillis();
-        case "oldest":
-          return a.updatedAt.toMillis() - b.updatedAt.toMillis();
-        case "title-asc":
-          return (a.title || "").localeCompare(b.title || "");
-        case "title-desc":
-          return (b.title || "").localeCompare(a.title || "");
-        case "views-desc":
-          return (b.readCount || 0) - (a.readCount || 0);
-        default:
-          return 0;
-      }
-    });
+  result.sort((a, b) => {
+  let A: any;
+  let B: any;
+
+  switch (sortKey) {
+    case "title":
+      A = a.title || "";
+      B = b.title || "";
+      return sortDir === "asc"
+        ? A.localeCompare(B)
+        : B.localeCompare(A);
+
+    case "author":
+      A = a.authorName || "";
+      B = b.authorName || "";
+      return sortDir === "asc"
+        ? A.localeCompare(B)
+        : B.localeCompare(A);
+
+    case "status":
+      A = a.status;
+      B = b.status;
+      return sortDir === "asc"
+        ? A.localeCompare(B)
+        : B.localeCompare(A);
+
+    case "views":
+      A = a.readCount || 0;
+      B = b.readCount || 0;
+      break;
+
+    case "updatedAt":
+    default:
+      A = a.updatedAt.toMillis();
+      B = b.updatedAt.toMillis();
+      break;
+  }
+
+  return sortDir === "asc" ? A - B : B - A;
+});
+
 
     setFilteredArticles(result);
-  }, [articles, search, statusFilter, sortBy]);
+  }, [articles, search, statusFilter, sortKey, sortDir]);
 
   const handleDeleteSuccess = () => {
     // Re-fetch articles
@@ -205,6 +232,17 @@ const checkPendingDraftConflict = async (articleId: string) => {
     ...doc.data(),
   }));
 };
+
+
+const handleHeaderSort = (key: typeof sortKey) => {
+  if (sortKey === key) {
+    setSortDir(sortDir === "asc" ? "desc" : "asc");
+  } else {
+    setSortKey(key);
+    setSortDir("asc");
+  }
+};
+
 
   // Updated loading state UI
   if (loading || !authReady) {
@@ -302,18 +340,6 @@ const checkPendingDraftConflict = async (articleId: string) => {
               <option value="draft">Draft</option>
             </select>
 
-            {/* Sort */}
-            <select
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value as SortOption)}
-              className="p-3 rounded-lg border border-[#D8CDBE] bg-white focus:outline-none focus:ring-2 focus:ring-[#CABAA2] text-base font-sans!"
-            >
-              <option value="newest">Newest First</option>
-              <option value="oldest">Oldest First</option>
-              <option value="title-asc">Title A-Z</option>
-              <option value="title-desc">Title Z-A</option>
-              <option value="views-desc">Most Views</option>
-            </select>
           </div>
         </div>
 
@@ -340,27 +366,94 @@ const checkPendingDraftConflict = async (articleId: string) => {
     <div className="overflow-x-auto scrollable-description">
   <table className="min-w-full divide-y divide-[#D8CDBE]">
     <thead>
-      <tr>
-        <th className="px-4 py-3 text-left text-lg font-medium text-[#4A3820] uppercase tracking-wider font-sans!">
-          Article
-        </th>
-        <th className="px-4 py-3 text-left text-lg font-medium text-[#4A3820] uppercase tracking-wider font-sans!">
-          Author
-        </th>
-        <th className="px-4 py-3 text-left text-lg font-medium text-[#4A3820] uppercase tracking-wider font-sans!">
-          Status
-        </th>
-        <th className="px-4 py-3 text-left text-lg font-medium text-[#4A3820] uppercase tracking-wider font-sans!">
-          Updated
-        </th>
-        <th className="px-4 py-3 text-left text-lg font-medium text-[#4A3820] uppercase tracking-wider font-sans!">
-          Views
-        </th>
-        <th className="px-4 py-3 text-left text-lg font-medium text-[#4A3820] uppercase tracking-wider font-sans!">
-          Actions
-        </th>
-      </tr>
-    </thead>
+  <tr>
+    {/* ARTICLE */}
+    <th
+      onClick={() => handleHeaderSort("title")}
+      className="px-4 py-3 text-left text-lg font-medium text-[#4A3820]
+                 uppercase tracking-wider font-sans! cursor-pointer select-none"
+    >
+      <span className="inline-flex items-center gap-1 whitespace-nowrap">
+        Article
+        {sortKey === "title" && (
+          <span className="text-base leading-none">
+            {sortDir === "asc" ? "↑" : "↓"}
+          </span>
+        )}
+      </span>
+    </th>
+
+    {/* AUTHOR */}
+    <th
+      onClick={() => handleHeaderSort("author")}
+      className="px-4 py-3 text-left text-lg font-medium text-[#4A3820]
+                 uppercase tracking-wider font-sans! cursor-pointer select-none"
+    >
+      <span className="inline-flex items-center gap-1 whitespace-nowrap">
+        Author
+        {sortKey === "author" && (
+          <span className="text-base leading-none">
+            {sortDir === "asc" ? "↑" : "↓"}
+          </span>
+        )}
+      </span>
+    </th>
+
+    {/* STATUS */}
+    <th
+      onClick={() => handleHeaderSort("status")}
+      className="px-4 py-3 text-left text-lg font-medium text-[#4A3820]
+                 uppercase tracking-wider font-sans! cursor-pointer select-none"
+    >
+      <span className="inline-flex items-center gap-1 whitespace-nowrap">
+        Status
+        {sortKey === "status" && (
+          <span className="text-base leading-none">
+            {sortDir === "asc" ? "↑" : "↓"}
+          </span>
+        )}
+      </span>
+    </th>
+
+    {/* UPDATED */}
+    <th
+      onClick={() => handleHeaderSort("updatedAt")}
+      className="px-4 py-3 text-left text-lg font-medium text-[#4A3820]
+                 uppercase tracking-wider font-sans! cursor-pointer select-none"
+    >
+      <span className="inline-flex items-center gap-1 whitespace-nowrap">
+        Updated
+        {sortKey === "updatedAt" && (
+          <span className="text-base leading-none">
+            {sortDir === "asc" ? "↑" : "↓"}
+          </span>
+        )}
+      </span>
+    </th>
+
+    {/* VIEWS */}
+    <th
+      onClick={() => handleHeaderSort("views")}
+      className="px-4 py-3 text-left text-lg font-medium text-[#4A3820]
+                 uppercase tracking-wider font-sans! cursor-pointer select-none"
+    >
+      <span className="inline-flex items-center gap-1 whitespace-nowrap">
+        Views
+        {sortKey === "views" && (
+          <span className="text-base leading-none">
+            {sortDir === "asc" ? "↑" : "↓"}
+          </span>
+        )}
+      </span>
+    </th>
+
+    {/* ACTIONS – not sortable, innocent bystander */}
+    <th className="px-4 py-3 text-left text-lg font-medium text-[#4A3820] uppercase tracking-wider font-sans!">
+      Actions
+    </th>
+  </tr>
+</thead>
+
 
     <tbody className="divide-y divide-[#D8CDBE]">
       {filteredArticles.map((article) => (

@@ -43,7 +43,7 @@ export default function DashboardHome() {
   const authorOptions: Option[] = [
     { label: "My Articles", href: "/author/articles", icon: FiFileText },
     { label: "Write New Article", href: "/author/articles/new", icon: FiBook },
-    { label: "Analytics", href: "/dashboard/analytics", icon: FiUsers },
+    { label: "Analytics", href: "/author/analytics", icon: FiUsers },
   ];
 
   const adminOptions: Option[] = [

@@ -84,7 +84,7 @@ export default function NewsletterFormAlt() {
 
         {/* Image Heading */}
         <Image
-          src="/assets/headings/blog/SignUp2.png"
+          src="/assets/headings/blog/SignUp.png"
           alt="Sign Up for Newsletter"
           width={400}
           height={230}

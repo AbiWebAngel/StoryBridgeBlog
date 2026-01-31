@@ -955,22 +955,22 @@ useEffect(() => {
               <label className="block text-lg font-bold text-[#4A3820] mb-3 font-sans!">
                 Cover Image
               </label>
-          {articleReady && articleIdRef.current && (
-          <CoverUpload
-            value={coverImage}
-            articleId={articleIdRef.current}
-            position={articleData.coverImagePosition}
-            onPositionChange={(pos) => updateArticleData({ coverImagePosition: pos })}
-            onChange={(url) => {
-              updateArticleData({ coverImage: url });
-              if (url) {
-                setUploadedAssets(prev =>
-                  prev.includes(url) ? prev : [...prev, url]
-                );
-              }
-            }}
-          />
-        )}
+            {articleReady && articleIdRef.current && (
+            <CoverUpload
+              value={coverImage}
+              articleId={articleIdRef.current}
+              position={articleData.coverImagePosition}
+              onPositionChange={(pos) => updateArticleData({ coverImagePosition: pos })}
+              onChange={(url) => {
+                updateArticleData({ coverImage: url });
+                if (url) {
+                  setUploadedAssets(prev =>
+                    prev.includes(url) ? prev : [...prev, url]
+                  );
+                }
+              }}
+            />
+          )}
 
 
               <div className="mt-4">
