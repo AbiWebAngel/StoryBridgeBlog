@@ -431,8 +431,6 @@ const checkPendingDraftConflict = async (articleId: string) => {
             </div>
           </td>
 
-
-
           <td className="px-4 py-4">
             <div className="flex items-center gap-2 whitespace-nowrap">
               <a

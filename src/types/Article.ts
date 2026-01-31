@@ -8,5 +8,6 @@ export type Article = {
   status: string;
   updatedAt: any;
   [key: string]: any;
+  readCount: number; 
 };
 

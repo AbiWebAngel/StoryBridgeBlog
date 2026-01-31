@@ -1,5 +1,7 @@
 import Image from "next/image";
 import { Article } from "@/types/Article";
+import { Eye } from "lucide-react";
+
 
 interface ArticleCardProps {
   article: Article;
@@ -7,6 +9,8 @@ interface ArticleCardProps {
 }
 
 export default function ArticleCard({ article, onDelete }: ArticleCardProps) {
+  const views = article.readCount ?? 0;
+ 
   return (
     <div className="bg-white border border-[#D8CDBE] rounded-lg shadow-md p-5 flex flex-col hover:shadow-lg transition font-sans">
       
@@ -19,6 +23,15 @@ export default function ArticleCard({ article, onDelete }: ArticleCardProps) {
           className="relative w-full h-48 mb-5 rounded-lg overflow-hidden border border-[#D8CDBE] block cursor-pointer"
           title="Open preview in new tab"
         >
+          {/* Views badge */}
+          {article.status === "published" && (
+           <div className="absolute bottom-2 right-2 z-10 flex items-center gap-1 bg-black/60 text-white text-xs px-2 py-1 rounded-full backdrop-blur-sm">
+
+              <Eye size={14} />
+              {views.toLocaleString()}
+            </div>
+          )}
+
           <Image
             src={article.coverImage}
             alt={article.coverImageAlt || article.title || "Article cover"}
@@ -60,19 +73,33 @@ export default function ArticleCard({ article, onDelete }: ArticleCardProps) {
         </p>
       )}
 
-      {/* STATUS + DATE */}
+     
+      {/* STATUS + DATE + VIEWS */}
       <div className="flex items-center justify-between text-sm text-[#4A3820]/70 mb-5 pt-4 border-t border-[#D8CDBE] font-sans">
         <span className={`font-semibold ${article.status === 'published' ? 'text-green-700' : 'text-amber-700'}`}>
           {article.status?.charAt(0).toUpperCase() + article.status?.slice(1)}
         </span>
-        <span className="font-medium">
-          {article.updatedAt?.toDate
-            ? new Date(article.updatedAt.toDate()).toLocaleDateString('en-GB', { year: 'numeric', month: 'short', day: 'numeric' })
-            : article.createdAt?.toDate
-            ? new Date(article.createdAt.toDate()).toLocaleDateString('en-GB', { year: 'numeric', month: 'short', day: 'numeric' })
-            : 'No date'}
-        </span>
+
+        <div className="flex items-center gap-4">
+          {/* Date */}
+          <span className="font-medium">
+            {article.updatedAt?.toDate
+              ? new Date(article.updatedAt.toDate()).toLocaleDateString("en-GB", {
+                  year: "numeric",
+                  month: "short",
+                  day: "numeric",
+                })
+              : article.createdAt?.toDate
+              ? new Date(article.createdAt.toDate()).toLocaleDateString("en-GB", {
+                  year: "numeric",
+                  month: "short",
+                  day: "numeric",
+                })
+              : "No date"}
+          </span>
+        </div>
       </div>
+
 
   
         {/* CONTROLS */}
