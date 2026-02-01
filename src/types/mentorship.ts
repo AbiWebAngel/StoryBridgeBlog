@@ -19,6 +19,7 @@ export interface MentorshipSection {
   title: string;
   description: string;
   buttonText: string;
+  buttonUrl?: string;
   image: ImageAsset;
 }
 

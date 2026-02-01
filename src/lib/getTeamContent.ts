@@ -1,4 +1,5 @@
 import { adminDb } from "@/lib/firebaseAdmin";
+import { TeamContent } from "@/types/team";
 
 export interface TeamMember {
   id: number;
@@ -11,13 +12,6 @@ export interface TeamMember {
   };
 }
 
-
-export type TeamContent = {
-  joinTeamText: string;
-  matchesCount: number;
-  workshopsCount: number;
-  teamMembers: TeamMember[];
-};
 
 export async function getTeamContent(): Promise<TeamContent | null> {
   try {
@@ -32,6 +26,7 @@ export async function getTeamContent(): Promise<TeamContent | null> {
 
     // Return null if document exists but has no meaningful data
     const hasContent = data?.joinTeamText || 
+                      data?.joinUrl || // Add this
                       data?.matchesCount || 
                       data?.workshopsCount || 
                       (data?.teamMembers && data.teamMembers.length > 0);
@@ -42,6 +37,7 @@ export async function getTeamContent(): Promise<TeamContent | null> {
 
     return {
       joinTeamText: data?.joinTeamText ?? "",
+      joinUrl: data?.joinUrl ?? "", // Add this line
       matchesCount: data?.matchesCount ?? 0,
       workshopsCount: data?.workshopsCount ?? 0,
       teamMembers: data?.teamMembers ?? [],

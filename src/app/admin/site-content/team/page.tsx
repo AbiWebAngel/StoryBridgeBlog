@@ -26,12 +26,13 @@ export default function AdminTeamPage() {
   const sessionId = useRef(crypto.randomUUID()).current;
   const [pendingAssets, setPendingAssets] = useState<string[]>([]);
 
-  const [content, setContent] = useState<TeamContent>({
-    joinTeamText: "",
-    matchesCount: 0,
-    workshopsCount: 0,
-    teamMembers: [],
-  });
+ const [content, setContent] = useState<TeamContent>({
+  joinTeamText: "",
+  joinUrl: "", // Add this
+  matchesCount: 0,
+  workshopsCount: 0,
+  teamMembers: [],
+});
 
   // Upload function
   async function uploadAsset(
@@ -95,6 +96,7 @@ export default function AdminTeamPage() {
           const data = snap.data();
          const loaded: TeamContent = {
           joinTeamText: data.joinTeamText || "",
+          joinUrl: data.joinUrl || "", // Add this
           matchesCount: data.matchesCount || 0,
           workshopsCount: data.workshopsCount || 0,
           teamMembers: (data.teamMembers || []).map((m: any) => ({
@@ -219,11 +221,13 @@ export default function AdminTeamPage() {
         setPendingAssets([]);
       }
 
+      // In the handleSave function, update the setDoc call:
       await setDoc(
         ref,
         {
           ...finalContent,
           joinTeamText: finalContent.joinTeamText.trim(),
+          joinUrl: finalContent.joinUrl?.trim() || "", // Add this line
           teamMembers: finalContent.teamMembers.map(m => ({
             ...m,
             name: m.name.trim(),
@@ -437,6 +441,20 @@ export default function AdminTeamPage() {
                   placeholder="Enter the text for the 'Join The Team' section..."
                 />
               </div>
+
+            {/* Join Team URL */}
+            <div className="bg-white rounded-lg border border-[#D8CDBE] p-5 shadow-md">
+              <label className="block text-lg font-bold text-[#4A3820] mb-3 font-sans!">
+                Join Team URL
+              </label>
+              <input
+                type="url"
+                value={content.joinUrl || ""}
+                onChange={(e) => handleContentChange("joinUrl", e.target.value)}
+                className="w-full px-4 py-3 rounded-lg border-2 border-[#805C2C] bg-white text-[#4A3820] placeholder-[#4A3820]/60 focus:outline-none focus:ring-2 focus:ring-[#805C2C]/50"
+                placeholder="https://example.com/join-us"
+              />
+            </div>
 
               {/* Tally Counter Stats */}
               <div className="bg-white rounded-lg border border-[#D8CDBE] p-5 shadow-md">

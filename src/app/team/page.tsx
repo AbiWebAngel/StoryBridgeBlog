@@ -17,6 +17,7 @@ export default async function TeamPage() {
   return (
     <main>
       {/* Only show Join Us section if there's content */}
+
       {joinTeamText && (
         <div className="mb-12">
           <TextSectionWithButton
@@ -29,6 +30,8 @@ export default async function TeamPage() {
               maxWidth: "270px"
             }}
             text={joinTeamText}
+            // Use the joinUrl from Firestore if available, otherwise fallback to /apply
+            buttonUrl={teamContent?.joinUrl || "/apply"} 
           />
         </div>
       )}

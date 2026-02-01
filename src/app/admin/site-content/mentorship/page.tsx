@@ -55,6 +55,7 @@ export default function AdminMentorshipPage() {
         title: "",
         description: "",
         buttonText: "",
+        buttonUrl: "",
         image: {
           src: "",
           alt: "",
@@ -66,6 +67,7 @@ export default function AdminMentorshipPage() {
         title: "",
         description: "",
         buttonText: "",
+        buttonUrl: "",
         image: {
           src: "",
           alt: "",
@@ -382,30 +384,33 @@ export default function AdminMentorshipPage() {
               height: finalContent.howItWorks.image.height,
             },
           },
-          signUpNow: {
-            menteeSection: {
-              title: finalContent.signUpNow.menteeSection.title.trim(),
-              description: finalContent.signUpNow.menteeSection.description.trim(),
-              buttonText: finalContent.signUpNow.menteeSection.buttonText.trim(),
-              image: {
-                src: finalContent.signUpNow.menteeSection.image.src.trim(),
-                alt: finalContent.signUpNow.menteeSection.image.alt.trim(),
-                width: finalContent.signUpNow.menteeSection.image.width,
-                height: finalContent.signUpNow.menteeSection.image.height,
-              },
-            },
-            mentorSection: {
-              title: finalContent.signUpNow.mentorSection.title.trim(),
-              description: finalContent.signUpNow.mentorSection.description.trim(),
-              buttonText: finalContent.signUpNow.mentorSection.buttonText.trim(),
-              image: {
-                src: finalContent.signUpNow.mentorSection.image.src.trim(),
-                alt: finalContent.signUpNow.mentorSection.image.alt.trim(),
-                width: finalContent.signUpNow.mentorSection.image.width,
-                height: finalContent.signUpNow.mentorSection.image.height,
-              },
+        // In the handleSave function, update the setDoc call for signUpNow:
+        signUpNow: {
+          menteeSection: {
+            title: finalContent.signUpNow.menteeSection.title.trim(),
+            description: finalContent.signUpNow.menteeSection.description.trim(),
+            buttonText: finalContent.signUpNow.menteeSection.buttonText.trim(),
+            buttonUrl: finalContent.signUpNow.menteeSection.buttonUrl?.trim() || "", // Add this
+            image: {
+              src: finalContent.signUpNow.menteeSection.image.src.trim(),
+              alt: finalContent.signUpNow.menteeSection.image.alt.trim(),
+              width: finalContent.signUpNow.menteeSection.image.width,
+              height: finalContent.signUpNow.menteeSection.image.height,
             },
           },
+          mentorSection: {
+            title: finalContent.signUpNow.mentorSection.title.trim(),
+            description: finalContent.signUpNow.mentorSection.description.trim(),
+            buttonText: finalContent.signUpNow.mentorSection.buttonText.trim(),
+            buttonUrl: finalContent.signUpNow.mentorSection.buttonUrl?.trim() || "", // Add this
+            image: {
+              src: finalContent.signUpNow.mentorSection.image.src.trim(),
+              alt: finalContent.signUpNow.mentorSection.image.alt.trim(),
+              width: finalContent.signUpNow.mentorSection.image.width,
+              height: finalContent.signUpNow.mentorSection.image.height,
+            },
+          },
+        },
           testimonials: {
           testimonials: finalContent.testimonials.testimonials.map((t) => ({
             text: t.text.trim(),
@@ -848,6 +853,31 @@ export default function AdminMentorshipPage() {
                       />
                     </div>
 
+                    {/* In the mentee section, after the Button Text input */}
+                    <div>
+                      <label className="block text-sm font-medium text-[#4A3820] mb-2">
+                        Button URL
+                      </label>
+                      <input
+                        type="url"
+                        value={content.signUpNow.menteeSection.buttonUrl || ""}
+                        onChange={(e) =>
+                          setContent((prev) => ({
+                            ...prev,
+                            signUpNow: {
+                              ...prev.signUpNow,
+                              menteeSection: {
+                                ...prev.signUpNow.menteeSection,
+                                buttonUrl: e.target.value,
+                              },
+                            },
+                          }))
+                        }
+                        className="w-full px-4 py-2 rounded-lg border-2 border-[#805C2C] bg-white text-[#4A3820] placeholder-[#4A3820]/60 focus:outline-none focus:ring-2 focus:ring-[#805C2C]/50"
+                        placeholder="https://example.com/mentee-application"
+                      />
+                    </div>
+
                     {renderImageUpload(
                       "Mentee Image",
                       content.signUpNow.menteeSection.image.src,
@@ -990,7 +1020,31 @@ export default function AdminMentorshipPage() {
                         placeholder="Get Started"
                       />
                     </div>
-
+                    
+                  
+                    <div>
+                      <label className="block text-sm font-medium text-[#4A3820] mb-2">
+                        Button URL
+                      </label>
+                      <input
+                        type="url"
+                        value={content.signUpNow.mentorSection.buttonUrl || ""}
+                        onChange={(e) =>
+                          setContent((prev) => ({
+                            ...prev,
+                            signUpNow: {
+                              ...prev.signUpNow,
+                              mentorSection: {
+                                ...prev.signUpNow.mentorSection,
+                                buttonUrl: e.target.value,
+                              },
+                            },
+                          }))
+                        }
+                        className="w-full px-4 py-2 rounded-lg border-2 border-[#805C2C] bg-white text-[#4A3820] placeholder-[#4A3820]/60 focus:outline-none focus:ring-2 focus:ring-[#805C2C]/50"
+                        placeholder="https://example.com/mentee-application"
+                      />
+                    </div>
                     {renderImageUpload(
                       "Mentor Image",
                       content.signUpNow.mentorSection.image.src,

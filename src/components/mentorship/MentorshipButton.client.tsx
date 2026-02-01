@@ -5,28 +5,31 @@ interface MentorshipButtonProps {
   buttonText?: string;
   customUrl?: string;
   className?: string;
+  buttonUrl?: string;
 }
 
 export default function MentorshipButton({ 
   type,
   buttonText = "Get Started",
-  customUrl,
+  buttonUrl,
   className = ""
 }: MentorshipButtonProps) {
   
   const handleClick = () => {
-    let url;
     
-    if (customUrl) {
-      url = customUrl;
-    } else if (type === 'mentor') {
-      url = process.env.NEXT_PUBLIC_BECOMING_MENTOR_FORM_URL;
+    if (buttonUrl) {
+      // If admin has provided a custom URL, use it
+      window.open(buttonUrl, "_blank");
     } else {
-      url = process.env.NEXT_PUBLIC_FINDING_MENTOR_FORM_URL;
-    }
+          const fallbackUrls = {
+        mentor: "/apply",  // Replace with actual default if needed
+        mentee: "/apply"   // Replace with actual default if needed
+      };
     
-    if (url) {
-      window.open(url, "_blank");
+      const url = fallbackUrls[type];
+      if (url) {
+        window.open(url, "_blank");
+      }
     }
   };
 

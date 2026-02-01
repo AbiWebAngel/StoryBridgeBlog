@@ -2,12 +2,14 @@
 import Image from "next/image";
 import MentorshipButton from "./MentorshipButton.client";
 
+
 // Define the interface for props
 interface SignUpNowProps {
   menteeSection: {
     title: string;
     description: string;
     buttonText: string;
+    buttonUrl?: string;
     image: {
       src: string;
       alt: string;
@@ -19,6 +21,7 @@ interface SignUpNowProps {
     title: string;
     description: string;
     buttonText: string;
+    buttonUrl?: string;
     image: {
       src: string;
       alt: string;
@@ -50,6 +53,7 @@ export default function SignUpNow({
                 <MentorshipButton 
                   type="mentee"
                   buttonText={menteeSection.buttonText}
+                  buttonUrl={menteeSection.buttonUrl}
                 />
               </div>
             </div>
@@ -84,6 +88,7 @@ export default function SignUpNow({
                 <MentorshipButton 
                   type="mentor"
                   buttonText={mentorSection.buttonText}
+                   buttonUrl={mentorSection.buttonUrl}
                 />
               </div>
             </div>

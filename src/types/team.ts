@@ -12,6 +12,7 @@ export type TeamMember = {
 
 export type TeamContent = {
   joinTeamText: string;
+  joinUrl: string; // Add this line
   matchesCount: number;
   workshopsCount: number;
   teamMembers: TeamMember[];
