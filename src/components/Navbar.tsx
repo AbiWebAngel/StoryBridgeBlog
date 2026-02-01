@@ -7,6 +7,7 @@ import LoginModal from "./LoginModal";
 import RegisterModal from "./RegisterModal";
 import { useAuth } from "@/context/AuthContext";
 import Avatar from "@/components/Avatar"; // adjust the path if needed
+import { getNavigationClient } from "@/lib/getNavigationClient";
 
 
 const links = [
@@ -29,12 +30,17 @@ const links = [
   { href: "/blog", label: "Blog" },
 ];
 
+
+
+
 const Navbar = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [loginModalOpen, setLoginModalOpen] = useState(false);
   const [registerModalOpen, setRegisterModalOpen] = useState(false);
   const pathname = usePathname(); // Get current path for router events
   const { user, logout } = useAuth();
+  const [isWideEnough, setIsWideEnough] = useState(true);
+  const [donateUrl, setDonateUrl] = useState("/apply");
 
   // Close menu when route changes
   useEffect(() => {
@@ -93,6 +99,24 @@ const Navbar = () => {
     }, 300);
   };
 
+useEffect(() => {
+  const checkWidth = () => {
+    // Adjust 1150 to whatever feels right
+    setIsWideEnough(window.innerWidth >= 1150);
+  };
+
+  checkWidth();
+  window.addEventListener("resize", checkWidth);
+  return () => window.removeEventListener("resize", checkWidth);
+}, []);
+
+
+useEffect(() => {
+  getNavigationClient().then((nav) => {
+    if (nav?.donateUrl) setDonateUrl(nav.donateUrl);
+  });
+}, []);
+
   return (
     <>
       <nav className="relative flex items-center justify-between w-full shadow-lg navbar h-14 md:h-16 lg:h-28">
@@ -110,7 +134,7 @@ const Navbar = () => {
         </div>
 
         {/* Desktop menu */}
-        <div className="hidden lg:flex flex-1 items-center justify-center min-w-0 overflow-visible pt-2">
+       <div className={`${isWideEnough ? "flex" : "hidden"} flex-1 items-center justify-center min-w-0 overflow-visible pt-2`}>
           <ul className="flex gap-6 xl:gap-8 text-white text-sm xl:text-base font-bold tracking-wide truncate overflow-visible">
             {links.map((link, i) => (
               <li
@@ -168,7 +192,7 @@ const Navbar = () => {
         {/* Right controls */}
         <div className="flex items-center gap-3 mr-4">
           {/* Hamburger */}
-          <div className="lg:hidden h-full flex items-center">
+          <div className={`${isWideEnough ? "hidden" : "flex"} h-full items-center`}>
             <button
               onClick={() => setMenuOpen(!menuOpen)}
               className="focus:outline-none"
@@ -195,9 +219,17 @@ const Navbar = () => {
               )}
             </button>
           </div>
+        {/* Donate Button (Desktop) */}
+        <Link
+          href={donateUrl}
+          className={`${isWideEnough ? "inline-block" : "hidden"} bg-[#F0B800] text-[#4A3518] font-bold px-4 py-2 rounded-lg shadow-sm hover:bg-[#F1C98C] transition-colors`}
+        >
+          Donate
+        </Link>
+
 
         {/* Profile */}
-        <div className="hidden lg:flex items-center">
+        <div className={`${isWideEnough ? "flex" : "hidden"} items-center`}>
           <ul className="flex gap-3">
             <li className="relative group">
 
@@ -346,6 +378,20 @@ const Navbar = () => {
     
   {/* Mobile Profile / User Links */}
 <div className="w-full border-t border-white/50 mt-4 pt-6 space-y-3">
+{/* Donate Button (Mobile) */}
+<li
+  className="w-full px-4 py-3 hover:bg-[#A07845] text-center font-bold transition-opacity duration-300"
+  style={{
+    opacity: menuOpen ? 1 : 0,
+    transitionDelay: menuOpen ? `${(links.length + 1) * 50}ms` : '0ms',
+  }}
+>
+  <Link href={donateUrl} onClick={() => setMenuOpen(false)}>
+    Donate
+  </Link>
+</li>
+
+
   {user ? (
     <>
       {/* Greeting */}

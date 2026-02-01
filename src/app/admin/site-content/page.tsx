@@ -1,10 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { FiFileText, FiUsers, FiHome, FiAward      } from "react-icons/fi";
+import { FiFileText, FiUsers, FiHome, FiAward,FiNavigation } from "react-icons/fi";
 import { IconType } from "react-icons";
 import { useAuth, } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
+import { db } from "@/lib/firebase";
+import { doc, getDoc, setDoc } from "firebase/firestore";
 
 
 interface Option {
@@ -16,7 +19,10 @@ interface Option {
 export default function SiteContentDashboard() {
   const { user,authReady } = useAuth();
   const router = useRouter();
- 
+  const [navModalOpen, setNavModalOpen] = useState(false);
+  const [donateUrl, setDonateUrl] = useState("");
+  const [saving, setSaving] = useState(false);
+
 
   // Content management cards
  const contentOptions: Option[] = [
@@ -38,17 +44,58 @@ export default function SiteContentDashboard() {
   {
     label: "Edit Mentorship",
     href: "/admin/site-content/mentorship",
-    icon: FiAward     , // Clear differentiation from Team
+    icon: FiAward,
+  },
+    {
+    label: "Edit Donate Link",
+    href: "#",            // no real navigation anymore
+    icon: FiNavigation,
   },
 ];
+const loadNavigation = async () => {
+  const ref = doc(db, "siteContent", "navigation");
+  const snap = await getDoc(ref);
+
+  if (snap.exists()) {
+    setDonateUrl(snap.data()?.donateUrl || "");
+  }
+};
+
+const saveNavigation = async () => {
+  try {
+    setSaving(true);
+
+    await setDoc(
+      doc(db, "siteContent", "navigation"),
+      { donateUrl },
+      { merge: true }
+    );
+
+    setNavModalOpen(false);
+  } catch (err) {
+    alert("Failed to save navigation");
+    console.error(err);
+  } finally {
+    setSaving(false);
+  }
+};
 
   const renderCard = (option: Option) => {
     const Icon = option.icon;
+
+    const handleClick = (e: React.MouseEvent) => {
+    if (option.label === "Edit Donate Link") {
+      e.preventDefault();
+      loadNavigation();
+      setNavModalOpen(true);
+    }
+  };
 
     return (
       <Link
         key={option.label}
         href={option.href}
+        onClick={handleClick}
         className="flex flex-col items-center justify-center py-6 px-8 border border-[#D8CDBE] rounded-md bg-white/40 text-[#4A3820] hover:bg-[#E6DCCB] transition-colors duration-200 text-lg font-medium group text-center"
         style={{ minWidth: "200px", minHeight: "120px" }}
       >
@@ -115,6 +162,45 @@ if (!user) {
         </div>
 
       </div>
+
+      {/* Navigation Modal */}
+      {navModalOpen && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+          <div className="bg-[#F0E8DB] border border-[#D8CDBE] rounded-lg shadow-xl p-6 w-[90%] max-w-md">
+            
+            <h3 className="text-xl font-bold text-[#4A3820] mb-4 font-sans!">
+              Edit Donate Link
+            </h3>
+
+            <input
+              type="text"
+              value={donateUrl}
+              onChange={(e) => setDonateUrl(e.target.value)}
+              placeholder="https://..."
+              className="w-full px-3 py-2 border border-[#D8CDBE] rounded mb-4"
+            />
+
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setNavModalOpen(false)}
+                className="px-4 py-2 text-[#4A3820] font-sans!"
+              >
+                Cancel
+              </button>
+
+              <button
+                onClick={saveNavigation}
+                disabled={saving}
+                className="bg-[#4A3820] text-white px-4 py-2 rounded hover:bg-[#6D4F27] font-sans!"
+              >
+                {saving ? "Saving…" : "Save"}
+              </button>
+            </div>
+
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
