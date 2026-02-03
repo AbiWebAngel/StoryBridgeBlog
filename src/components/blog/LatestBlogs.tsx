@@ -30,7 +30,7 @@ export default function LatestBlogs({
   }
 
   return (
-    <div className="w-full px-4 sm:px-6 md:px-8 flex flex-col items-center space-y-12">
+    <div className="w-full px-4 sm:px-6 md:px-8 flex flex-col items-center space-y-10">
       {articles.map((item) => {
         if (!item.id || !item.title) return null;
 
