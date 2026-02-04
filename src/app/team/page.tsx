@@ -25,9 +25,9 @@ export default async function TeamPage() {
               title:"Join the team",
               src: "/assets/headings/team/JoinTheTeam.png",
               alt: "Join The Team heading", 
-              width: 193, 
+              width: 230, 
               height: 100,
-              maxWidth: "270px"
+              maxWidth: "230px"
             }}
             text={joinTeamText}
             // Use the joinUrl from Firestore if available, otherwise fallback to /apply
@@ -54,8 +54,9 @@ export default async function TeamPage() {
               title="Our team"
               src="/assets/headings/team/OurTeam.png"
               alt="Our Team Heading"
-              width={150}
+              width={130}
               height={50}
+              maxWidth="130"
               centerAll={true}
             />
           </div>

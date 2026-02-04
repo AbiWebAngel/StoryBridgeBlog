@@ -39,7 +39,7 @@ export default async function BetaReadingPage() {
             alt: "What Is BetaReading Heading",
             width: 240,
             height: 180,
-            maxWidth: "240px",
+            maxWidth: "230px",
           }}
           text={betareadingContent.whatIsBetareading.text}
         />
@@ -51,9 +51,9 @@ export default async function BetaReadingPage() {
           title: "What we offer:",
           src: "/assets/headings/betareading/WhatWeOffer.png",
           alt: "What we offer Heading",
-          width: 250,
+          width: 240,
           height: 180,
-          maxWidth: "250px",
+          maxWidth: "240px",
         }}
         text={betareadingContent.whatWeOffer.text}
         image={{

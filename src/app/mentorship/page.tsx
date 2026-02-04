@@ -37,9 +37,9 @@ export default async function MentorshipPage() {
             title:"What is mentorship for?",
             src: "/assets/headings/mentorship/WhatIsMentorship.png",
             alt: "What Is Mentorship Heading",
-            width: 430,
+            width: 420,
             height: 180,
-            maxWidth: "430px",
+            maxWidth: "420px",
             mobileWidth: 200,
             mobileHeight: 80,
           }}
