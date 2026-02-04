@@ -1,7 +1,7 @@
 import SectionHeading from "@/components/SectionHeading";
 import TextSection from "@/components/TextSection";
 import TextWithSideImage from "@/components/mentorship/TextWithSideImage";
-import SignUpNow from "@/components/mentorship/SignUpNow";
+import SignUpNow from "@/components/SignUpNow";
 import Testimonials from "../../components/Testimonials";
 import { getMentorshipContent } from "@/lib/getMentorshipContent";
 
@@ -37,9 +37,9 @@ export default async function MentorshipPage() {
             title:"What is mentorship for?",
             src: "/assets/headings/mentorship/WhatIsMentorship.png",
             alt: "What Is Mentorship Heading",
-            width: 450,
+            width: 430,
             height: 180,
-            maxWidth: "450px",
+            maxWidth: "430px",
             mobileWidth: 200,
             mobileHeight: 80,
           }}
@@ -53,9 +53,9 @@ export default async function MentorshipPage() {
           title: "Hot it works?",
           src: "/assets/headings/mentorship/HowItWorks.png",
           alt: "How it works Heading",
-          width: 250,
+          width: 230,
           height: 180,
-          maxWidth: "250px",
+          maxWidth: "230px",
         }}
         text={mentorshipContent.howItWorks.text}
         image={{
@@ -68,21 +68,22 @@ export default async function MentorshipPage() {
       />
 
       {/* Sign Up Now Section */}
-      <div className="mb-10 mt-16">
+      <div className="mb-8 mt-14">
         <SectionHeading
          title="Sign up now"
           src="/assets/headings/mentorship/SignUpNow.png"
           alt="Sign Up Now Heading"
           width={190}
           height={50}
+          maxWidth="190"
           centerAll={true}
         />
       </div>
       
       {/* Pass the data to SignUpNow component */}
       <SignUpNow 
-        menteeSection={mentorshipContent.signUpNow.menteeSection}
-        mentorSection={mentorshipContent.signUpNow.mentorSection}
+        leftSection={mentorshipContent.signUpNow.menteeSection}
+        rightSection={mentorshipContent.signUpNow.mentorSection}
       />
 
       {/* Testimonials Section */}
@@ -93,6 +94,7 @@ export default async function MentorshipPage() {
           alt="Testimonials Heading"
           width={200}
           height={50}
+          maxWidth="200"
           centerAll={true}
         />
       </div>

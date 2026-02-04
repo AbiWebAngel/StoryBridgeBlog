@@ -2,6 +2,8 @@ import type { HomeContent } from "@/types/home";
 import type { AboutContent } from "@/types/about"; // Or wherever AboutContent is defined
 import type { TeamContent } from "@/types/team"; 
 import type { MentorshipContent } from "@/types/mentorship";
+import type { BetareadingContent } from "@/types/betareading";
+
 /**
  * Extracts all R2 asset URLs referenced by Home content.
  * Used for safe asset garbage collection.
@@ -76,6 +78,34 @@ export function extractAssetUrlsFromMentorship(content: MentorshipContent): stri
   }
 
   // Testimonials images
+  content.testimonials.testimonials.forEach((testimonial) => {
+    if (testimonial.image) {
+      urls.push(testimonial.image);
+    }
+  });
+
+  return urls.filter(Boolean);
+}
+
+export function extractAssetUrlsFromBetareading(content: BetareadingContent): string[] {
+  const urls: string[] = [];
+
+  // What We Offer image
+  if (content.whatWeOffer.image.src) {
+    urls.push(content.whatWeOffer.image.src);
+  }
+
+  // Finding Beta Readers image
+  if (content.signUpNow.findingBetaReadersSection.image.src) {
+    urls.push(content.signUpNow.findingBetaReadersSection.image.src);
+  }
+
+  // Becoming Beta Reader image
+  if (content.signUpNow.becomingBetaReaderSection.image.src) {
+    urls.push(content.signUpNow.becomingBetaReaderSection.image.src);
+  }
+
+  // Testimonial images
   content.testimonials.testimonials.forEach((testimonial) => {
     if (testimonial.image) {
       urls.push(testimonial.image);

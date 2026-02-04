@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { FiFileText, FiUsers, FiHome, FiAward,FiNavigation } from "react-icons/fi";
+import { FiFileText, FiUsers, FiHome, FiAward,FiNavigation,FiEdit3 } from "react-icons/fi";
 import { IconType } from "react-icons";
 import { useAuth, } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
@@ -45,6 +45,11 @@ export default function SiteContentDashboard() {
     label: "Edit Mentorship",
     href: "/admin/site-content/mentorship",
     icon: FiAward,
+  },
+   {
+    label: "Edit Beta Reading",
+    href: "/admin/site-content/betareading",
+    icon: FiUsers,
   },
     {
     label: "Edit Donate Link",

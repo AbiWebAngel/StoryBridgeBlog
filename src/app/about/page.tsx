@@ -48,9 +48,9 @@ const bookImages: ImageAsset[] =
           title: "Mission Statement",
           src: "/assets/headings/about/MissionStatement.png",
           alt: "Mission Statement",
-          width: 360,
+          width: 340,
           height: 180,
-          maxWidth: "360px",
+          maxWidth: "340px",
         }}
         text={content.missionStatement}
       />
@@ -63,9 +63,9 @@ const bookImages: ImageAsset[] =
             title:"Who we are",
             src: "/assets/headings/about/WhoWeAre.png",
             alt: "Who We Are",
-            width: 230,
+            width: 210,
             height: 180,
-            maxWidth: "230px",
+            maxWidth: "210px",
           }}
           text={content.whoWeAre}
         />
@@ -77,9 +77,9 @@ const bookImages: ImageAsset[] =
              title:"What we do?",
             src: "/assets/headings/about/WhatWeDo.png",
             alt: "What We Do",
-            width: 240,
+            width: 210,
             height: 200,
-            maxWidth: "240px",
+            maxWidth: "210px",
           }}
           text={content.whatWeDo}
           image={{
@@ -95,9 +95,9 @@ const bookImages: ImageAsset[] =
             title:"Why it matters",
             src: "/assets/headings/about/WhyItMatters.png",
             alt: "Why It Matters",
-            width: 290,
+            width: 270,
             height: 200,
-            maxWidth: "290px",
+            maxWidth: "270px",
           }}
           text={content.whyItMatters}
         />
@@ -110,6 +110,7 @@ const bookImages: ImageAsset[] =
           alt="Testimonials Heading"
           width={200}
           height={50}
+          maxWidth="200"
           centerAll={true}
         />
       </div>

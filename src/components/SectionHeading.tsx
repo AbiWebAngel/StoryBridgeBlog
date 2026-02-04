@@ -47,49 +47,52 @@ export default function SectionHeading({
   const mobileSrc = generateMobileSrc(src);
 
   return (
-    <h1 className="w-full mt-6 relative">
-      {/* 🔥 Hidden but SEO-friendly real text */}
-      <span className="sr-only">{title}</span>
+  <div className="w-full mt-6 relative">
+    <h1 className="sr-only">{title}</h1>
 
-      <div className={`flex w-full ${justifyClass}`}>
-        <div style={{ maxWidth }}>
-          {hasMobileDimensions ? (
-            <>
-              <div className="block md:hidden">
-                <Image
-                  src={mobileSrc}
-                  alt={alt}
-                  width={mobileWidth!}
-                  height={mobileHeight!}
-                  className="w-full h-auto"
-                  onError={(e) => {
-                    const img = e.target as HTMLImageElement;
-                    img.src = src;
-                  }}
-                />
-              </div>
+    <div className={`flex w-full ${justifyClass}`}>
+      <div
+        className={maxWidth ? "inline-block" : "w-full"}
+        style={maxWidth ? { maxWidth } : undefined}
+      >
+        {hasMobileDimensions ? (
+          <>
+            <div className="block md:hidden">
+              <Image
+                src={mobileSrc}
+                alt={alt}
+                width={mobileWidth!}
+                height={mobileHeight!}
+                className="w-full h-auto"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).src = src;
+                }}
+              />
+            </div>
 
-              <div className="hidden md:block">
-                <Image
-                  src={src}
-                  alt={alt}
-                  width={width}
-                  height={height}
-                  className="w-full h-auto"
-                />
-              </div>
-            </>
-          ) : (
-            <Image
-              src={src}
-              alt={alt}
-              width={width}
-              height={height}
-              className="w-full h-auto"
-            />
-          )}
-        </div>
+            <div className="hidden md:block">
+              <Image
+                src={src}
+                alt={alt}
+                width={width}
+                height={height}
+                className="w-full h-auto"
+              />
+            </div>
+          </>
+        ) : (
+          <Image
+            src={src}
+            alt={alt}
+            width={width}
+            height={height}
+            className="w-full h-auto"
+          />
+        )}
       </div>
-    </h1>
-  );
+    </div>
+
+  </div>
+);
+
 }

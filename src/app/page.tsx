@@ -29,6 +29,7 @@ export default async function HomePage() {
           alt="Blog Posts Heading"
           width={500}
           height={50}
+          maxWidth="500"
           mobileWidth={200}
           mobileHeight={40}
           centerAll={true}
@@ -46,6 +47,7 @@ export default async function HomePage() {
               alt="Join Our Programs Heading"
               width={300}
               height={50}
+              maxWidth="300"
               centerAll={true}
             />
           </div>
@@ -63,6 +65,7 @@ export default async function HomePage() {
               alt="Message From Director Heading"
               width={400}
               height={50}
+              maxWidth="400"
               centerAll={true}
             />
           </div>
