@@ -67,7 +67,7 @@ export default function LatestBlogs({
 
             {/* Body */}
             <LoadingLink href={href} className="block">
-              <div className="flex flex-col lg:flex-row pb-4 px-4 sm:px-6 md:px-8 gap-3 flex-1 cursor-pointer">
+              <div className="flex flex-col lg:flex-row items-center pb-4 px-4 sm:px-6 md:px-8 gap-3 flex-1 cursor-pointer">
                 {/* Image */}
                 <div className="relative w-full max-w-[280px] h-[160px] sm:h-[180px] lg:h-[160px] overflow-hidden rounded-[30px] flex-shrink-0">
                   <Image
