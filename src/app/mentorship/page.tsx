@@ -71,7 +71,7 @@ export default async function MentorshipPage() {
       <div className="mb-8 mt-14">
         <SectionHeading
          title="Sign up now"
-          src="/assets/headings/mentorship/SignUpNow.png"
+          src="/assets/headings/SignUpNow.png"
           alt="Sign Up Now Heading"
           width={190}
           height={50}

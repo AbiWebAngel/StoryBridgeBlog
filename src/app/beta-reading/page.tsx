@@ -49,7 +49,7 @@ export default async function BetaReadingPage() {
       <TextWithSideImage
         heading={{
           title: "What we offer:",
-          src: "/assets/headings/betareading/WhatWeoffer.png",
+          src: "/assets/headings/betareading/WhatWeOffer.png",
           alt: "What we offer Heading",
           width: 250,
           height: 180,
@@ -69,7 +69,7 @@ export default async function BetaReadingPage() {
       <div className="mb-8 mt-14">
         <SectionHeading
           title="Sign up now"
-          src="/assets/headings/mentorship/SignUpNow.png"
+          src="/assets/headings/SignUpNow.png"
           alt="Sign Up Now Heading"
           width={190}
           height={50}
