@@ -1,10 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { FiFileText, FiUsers, FiHome, FiAward,FiNavigation,FiEdit3 } from "react-icons/fi";
+import { FiUsers, FiHome, FiAward,FiNavigation, FiInfo, FiCpu, FiBookOpen, FiPackage } from "react-icons/fi";
 import { IconType } from "react-icons";
 import { useAuth, } from "@/context/AuthContext";
-import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { db } from "@/lib/firebase";
 import { doc, getDoc, setDoc } from "firebase/firestore";
@@ -18,7 +17,6 @@ interface Option {
 
 export default function SiteContentDashboard() {
   const { user,authReady } = useAuth();
-  const router = useRouter();
   const [navModalOpen, setNavModalOpen] = useState(false);
   const [donateUrl, setDonateUrl] = useState("");
   const [saving, setSaving] = useState(false);
@@ -29,34 +27,44 @@ export default function SiteContentDashboard() {
   {
     label: "Edit Homepage",
     href: "/admin/site-content/homepage",
-    icon: FiHome,
+    icon: FiHome, // ✅ homepage = home icon
   },
   {
     label: "Edit About Page",
     href: "/admin/site-content/about",
-    icon: FiFileText,
+    icon: FiInfo, // better than FiFileText for "about info"
   },
   {
     label: "Edit Team Page",
     href: "/admin/site-content/team",
-    icon: FiUsers,
+    icon: FiUsers, // keeps the team/users icon
   },
   {
     label: "Edit Mentorship",
     href: "/admin/site-content/mentorship",
-    icon: FiAward,
+    icon: FiAward, // keeps award/trophy for mentorship
   },
-   {
+  {
     label: "Edit Beta Reading",
     href: "/admin/site-content/betareading",
-    icon: FiUsers,
+    icon: FiBookOpen, // represents reading or book content
   },
-    {
-    label: "Edit Donate Link",
-    href: "#",            // no real navigation anymore
-    icon: FiNavigation,
+  {
+    label: "Edit Workshops",
+    href: "/admin/site-content/workshops",
+    icon: FiCpu, // could represent sessions/learning/workshops
   },
+  {
+    label: "Edit Resources",
+    href: "/admin/site-content/resources",
+    icon: FiPackage, // packages, resources, or downloadable content
+  },
+  { label: "Edit Donate Link",
+     href: "#",
+     icon: FiNavigation,
+   }, // no real navigation anymore icon: FiNavigation, },
 ];
+
 const loadNavigation = async () => {
   const ref = doc(db, "siteContent", "navigation");
   const snap = await getDoc(ref);

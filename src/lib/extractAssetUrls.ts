@@ -3,6 +3,7 @@ import type { AboutContent } from "@/types/about"; // Or wherever AboutContent i
 import type { TeamContent } from "@/types/team"; 
 import type { MentorshipContent } from "@/types/mentorship";
 import type { BetareadingContent } from "@/types/betareading";
+import type { WorkshopContent } from "@/types/workshops";
 
 /**
  * Extracts all R2 asset URLs referenced by Home content.
@@ -113,4 +114,17 @@ export function extractAssetUrlsFromBetareading(content: BetareadingContent): st
   });
 
   return urls.filter(Boolean);
+}
+
+export function extractAssetUrlsFromWorkshops(content: WorkshopContent): string[] {
+  const urls: string[] = [];
+  
+  // Extract image URLs from events
+  content.events.forEach(event => {
+    if (event.image?.src) {
+      urls.push(event.image.src);
+    }
+  });
+  
+  return urls;
 }

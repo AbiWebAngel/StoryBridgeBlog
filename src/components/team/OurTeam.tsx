@@ -14,7 +14,7 @@ export interface TeamMember {
 }
 
 interface OurTeamProps {
-  teamData: TeamMember[]; // Now this is required
+  teamData: TeamMember[];
 }
 
 export default function OurTeam({ teamData }: OurTeamProps) {
@@ -22,13 +22,12 @@ export default function OurTeam({ teamData }: OurTeamProps) {
     <section className="w-full bg-[#D1BDA1] py-12 px-4 sm:px-6 md:px-8 lg:px-12">
       <div className="max-w-6xl mx-auto space-y-8">
         {teamData.map((member) => (
-          <div
+          <article
             key={member.id}
             className="flex w-full h-70 sm:h-80 rounded-l-[30px] overflow-hidden shadow-xl"
           >
-        
-            {/* Image Section - 1/4 of card */}
-            <div className="w-1/4 relative h-full">
+            {/* Image Section as <figure> */}
+            <figure className="w-1/4 relative h-full">
               <Image
                 src={member.image.src}
                 alt={member.image.alt || member.name}
@@ -36,32 +35,26 @@ export default function OurTeam({ teamData }: OurTeamProps) {
                 sizes="25vw"
                 className="object-cover rounded-l-[30px]"
               />
-            </div>
+            </figure>
 
-
-            {/* Text Section - 3/4 of card with straight right side */}
+            {/* Text Section */}
             <div className="w-3/4 bg-[#EDE5D8] p-6 sm:p-8 flex flex-col">
-            
-              <div className="space-y-3 sm:space-y-4 mb-4">
-                {/* Name */}
-                <h3 className="font-cinzel font-bold text-[24px]  text-[#000000] uppercase">
+              <header className="space-y-3 sm:space-y-4 mb-4">
+                <h3 className="font-cinzel font-bold text-[24px] text-[#000000] uppercase">
                   {member.name}
                 </h3>
-                
-                {/* Role */}
                 <p className="font-jacques-francois text-[#403F3C]">
                   {member.role}
                 </p>
-              </div>
-              
-              {/* Scrollable Description */}
-              <div className="flex-1 overflow-y-auto pr-2 scrollable-description">
+              </header>
+
+              <section className="flex-1 overflow-y-auto pr-2 scrollable-description">
                 <p className="font-jacques-francois text-[16px] sm:text-[18px] text-[#403727] leading-[2.2]">
                   {member.description}
                 </p>
-              </div>
+              </section>
             </div>
-          </div>
+          </article>
         ))}
       </div>
     </section>

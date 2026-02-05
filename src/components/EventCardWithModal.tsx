@@ -192,8 +192,9 @@ export default function EventCardWithModal({
                 : event.date;
 
             return (
-              <div key={event.id} className="my-8">
+              <article key={event.id} className="my-8">
                 <div className="relative w-full h-[300px] sm:h-[350px] rounded-[30px] overflow-hidden shadow-xl bg-[#EDE5D8]">
+
                   <div className="h-full w-full p-6 sm:p-8 flex flex-col pr-0 sm:pr-[50%]">
                     <h3 className="font-cinzel font-bold !text-[22px] sm:text-[32px] text-[#000000] uppercase mb-2">
                       {event.title}
@@ -247,7 +248,7 @@ export default function EventCardWithModal({
                     </div>
                   </div>
                 </div>
-              </div>
+              </article>
             );
           })}
         </div>
