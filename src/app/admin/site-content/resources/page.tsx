@@ -11,7 +11,7 @@ import {
 import type { WorkshopContent, WorkshopEvent } from "@/types/workshops";
 import { extractAssetUrlsFromWorkshops } from "@/lib/extractAssetUrls";
 import FloatingSaveBar from "@/components/admin/FloatingSaveBar";
-import { Timestamp } from "firebase/firestore";
+
 
 export default function AdminWorkshopsPage() {
   const { user, role, authReady } = useAuth();
@@ -22,7 +22,7 @@ export default function AdminWorkshopsPage() {
   const [successMessage, setSuccessMessage] = useState("");
   
   // Upload progress states for content images
-  const [whatAreWorkshopsImageUploadProgress, setWhatAreWorkshopsImageUploadProgress] = useState<number | null>(null);
+
   const [eventImageUploadProgress, setEventImageUploadProgress] = useState<Record<number, number | null>>({});
 
   const [originalContent, setOriginalContent] = useState<WorkshopContent | null>(null);
