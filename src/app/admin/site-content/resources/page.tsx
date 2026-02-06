@@ -11,6 +11,7 @@ import {
 import type { WorkshopContent, WorkshopEvent } from "@/types/workshops";
 import { extractAssetUrlsFromWorkshops } from "@/lib/extractAssetUrls";
 import FloatingSaveBar from "@/components/admin/FloatingSaveBar";
+import { compressImageClient } from "@/lib/compressImage";
 
 
 export default function AdminWorkshopsPage() {
@@ -253,11 +254,12 @@ export default function AdminWorkshopsPage() {
     folder: string,
     onProgress?: (p: number) => void
   ): Promise<string> {
+    const compressedFile = await compressImageClient(file);
     return new Promise((resolve, reject) => {
       const xhr = new XMLHttpRequest();
       const form = new FormData();
 
-      form.append("file", file);
+      form.append("file", compressedFile);
       form.append("folder", folder);
       form.append("sessionId", sessionId);
       form.append("draft", "true");

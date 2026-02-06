@@ -254,14 +254,6 @@ export default function AdminWorkshopsPage() {
     onProgress?: (p: number) => void
   ): Promise<string> {
     const compressedFile = await compressImageClient(file);
-    
-    console.log(
-  "Upload size:",
-  Math.round(file.size / 1024),
-  "→",
-  Math.round(compressedFile.size / 1024),
-  "KB"
-);
 
     return new Promise((resolve, reject) => {
       

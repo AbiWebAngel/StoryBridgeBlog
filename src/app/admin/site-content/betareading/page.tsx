@@ -11,6 +11,7 @@ import {
 import type { BetareadingContent, Testimonial } from "@/types/betareading";
 import { extractAssetUrlsFromBetareading } from "@/lib/extractAssetUrls";
 import FloatingSaveBar from "@/components/admin/FloatingSaveBar";
+import { compressImageClient } from "@/lib/compressImage";
 
 export default function AdminBetareadingPage() {
   const { user, role, authReady } = useAuth();
@@ -179,11 +180,13 @@ export default function AdminBetareadingPage() {
     folder: string,
     onProgress?: (p: number) => void
   ): Promise<string> {
+
+     const compressedFile = await compressImageClient(file);
     return new Promise((resolve, reject) => {
       const xhr = new XMLHttpRequest();
       const form = new FormData();
 
-      form.append("file", file);
+      form.append("file", compressedFile);
       form.append("folder", folder);
       form.append("sessionId", sessionId);
       form.append("draft", "true");
