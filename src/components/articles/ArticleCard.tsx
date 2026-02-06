@@ -83,20 +83,21 @@ export default function ArticleCard({ article, onDelete }: ArticleCardProps) {
         <div className="flex items-center gap-4">
           {/* Date */}
           <span className="font-medium">
-            {article.updatedAt?.toDate
-              ? new Date(article.updatedAt.toDate()).toLocaleDateString("en-GB", {
+            {article.publishedAt?.toDate
+              ? new Date(article.publishedAt.toDate()).toLocaleDateString("en-GB", {
                   year: "numeric",
                   month: "short",
                   day: "numeric",
                 })
-              : article.createdAt?.toDate
-              ? new Date(article.createdAt.toDate()).toLocaleDateString("en-GB", {
+              : article.updatedAt?.toDate
+              ? new Date(article.updatedAt.toDate()).toLocaleDateString("en-GB", {
                   year: "numeric",
                   month: "short",
                   day: "numeric",
                 })
               : "No date"}
           </span>
+
         </div>
       </div>
 

@@ -80,15 +80,35 @@ export default function PreviewArticlePage() {
             content: body?.content ?? body ?? [] 
           };
         }
+        function normalizeDate(val: any) {
+          if (!val) return null;
 
+          // Case 1: Firestore Timestamp (client SDK)
+          if (typeof val.toDate === "function") {
+            return val.toDate();
+          }
+
+          // Case 2: Raw Firestore Timestamp object from API:
+          // { _seconds: number, _nanoseconds: number }
+          if (val._seconds) {
+            return new Date(val._seconds * 1000);
+          }
+
+          // Case 3: Already a string
+          if (typeof val === "string") {
+            return new Date(val);
+          }
+
+          return null;
+        }
+        const published = normalizeDate(data.publishedAt);
+        const updated = normalizeDate(data.updatedAt);
         // Prepare post data
         const postData = {
-          ...data,
-          body,
-          date: data.updatedAt?.toDate?.()?.toISOString() ?? 
-                data.createdAt?.toDate?.()?.toISOString() ?? 
-                new Date().toISOString(),
-        };
+            ...data,
+            body,
+            date: (published ?? updated ?? new Date()).toISOString(),
+          };
 
         setPost(postData);
         setErrorMsg(null);
