@@ -38,6 +38,7 @@
     "@tiptap/starter-kit": "^3.14.0",
     "@tiptap/y-tiptap": "^3.0.1",
     "axios": "^1.11.0",
+    "browser-image-compression": "^2.0.2",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
     "docx": "^9.5.1",

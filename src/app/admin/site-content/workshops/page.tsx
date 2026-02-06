@@ -11,7 +11,8 @@ import {
 import type { WorkshopContent, WorkshopEvent } from "@/types/workshops";
 import { extractAssetUrlsFromWorkshops } from "@/lib/extractAssetUrls";
 import FloatingSaveBar from "@/components/admin/FloatingSaveBar";
-import { Timestamp } from "firebase/firestore";
+import { compressImageClient } from "@/lib/compressImage";
+
 
 export default function AdminWorkshopsPage() {
   const { user, role, authReady } = useAuth();
@@ -22,7 +23,6 @@ export default function AdminWorkshopsPage() {
   const [successMessage, setSuccessMessage] = useState("");
   
   // Upload progress states for content images
-  const [whatAreWorkshopsImageUploadProgress, setWhatAreWorkshopsImageUploadProgress] = useState<number | null>(null);
   const [eventImageUploadProgress, setEventImageUploadProgress] = useState<Record<number, number | null>>({});
 
   const [originalContent, setOriginalContent] = useState<WorkshopContent | null>(null);
@@ -253,11 +253,22 @@ export default function AdminWorkshopsPage() {
     folder: string,
     onProgress?: (p: number) => void
   ): Promise<string> {
+    const compressedFile = await compressImageClient(file);
+    
+    console.log(
+  "Upload size:",
+  Math.round(file.size / 1024),
+  "→",
+  Math.round(compressedFile.size / 1024),
+  "KB"
+);
+
     return new Promise((resolve, reject) => {
+      
       const xhr = new XMLHttpRequest();
       const form = new FormData();
 
-      form.append("file", file);
+      form.append("file", compressedFile);
       form.append("folder", folder);
       form.append("sessionId", sessionId);
       form.append("draft", "true");

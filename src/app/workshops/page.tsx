@@ -5,6 +5,8 @@ import TextSection from "@/components/TextSection";
 import EventCardWithModal from "@/components/EventCardWithModal";
 import { getWorkshopsContent } from "@/lib/getWorkshopsContent";
 
+
+
 export default async function WorkshopsPage() {
   // Fetch workshops content from Firestore
   const workshopsContent = await getWorkshopsContent();
