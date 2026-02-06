@@ -55,7 +55,7 @@ export default function WritingCompetitionsGrid({
 
       {/* Modal Container */}
       <div className="flex min-h-full items-center justify-center p-4">
-        <div className="relative bg-white rounded-[30px] shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+       <div className="relative bg-white rounded-[30px] shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto scrollable-description">
           {selectedCompetition && (
             <div className="p-6 sm:p-10 space-y-6">
               {/* Close Button */}
