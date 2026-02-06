@@ -245,8 +245,6 @@ export default function EventCardWithModal({
       </div>
 
 
-
-
   {/* Desktop layout (unchanged) */}
   <div className="hidden sm:block max-w-6xl mx-auto space-y-8">
 

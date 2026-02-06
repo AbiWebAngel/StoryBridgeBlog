@@ -2,7 +2,7 @@
 import NewsletterForm from "@/components/NewsletterForm";
 import SectionHeading from "@/components/SectionHeading";
 import TextSection from "@/components/TextSection";
-import EventCardWithModal from "@/components/EventCardWithModal";
+import EventCardWithModal from "@/components/workshops/EventCardWithModal";
 import { getWorkshopsContent } from "@/lib/getWorkshopsContent";
 
 

@@ -4,7 +4,7 @@ import type { TeamContent } from "@/types/team";
 import type { MentorshipContent } from "@/types/mentorship";
 import type { BetareadingContent } from "@/types/betareading";
 import type { WorkshopContent } from "@/types/workshops";
-
+import type { ResourceContent } from "@/types/resources";
 /**
  * Extracts all R2 asset URLs referenced by Home content.
  * Used for safe asset garbage collection.
@@ -126,5 +126,18 @@ export function extractAssetUrlsFromWorkshops(content: WorkshopContent): string[
     }
   });
   
+  return urls;
+}
+
+export function extractAssetUrlsFromResources(content: ResourceContent): string[] {
+  const urls: string[] = [];
+
+  // Extract magazine image URLs
+  content.magazines.forEach((magazine) => {
+    if (magazine.image.src) {
+      urls.push(magazine.image.src);
+    }
+  });
+
   return urls;
 }

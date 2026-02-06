@@ -1,3 +1,4 @@
+// app/admin/resources/page.tsx
 "use client";
 
 import { useState, useEffect, useRef } from "react";
@@ -8,13 +9,12 @@ import {
   isNonEmptyString,
   isNonEmptyArray,
 } from "@/lib/contentValidation";
-import type { WorkshopContent, WorkshopEvent } from "@/types/workshops";
-import { extractAssetUrlsFromWorkshops } from "@/lib/extractAssetUrls";
+import type { ResourceContent, MagazineItem, SummerProgram, WritingCompetitionItem } from "@/types/resources";
+import { extractAssetUrlsFromResources } from "@/lib/extractAssetUrls";
 import FloatingSaveBar from "@/components/admin/FloatingSaveBar";
 import { compressImageClient } from "@/lib/compressImage";
 
-
-export default function AdminWorkshopsPage() {
+export default function AdminResourcesPage() {
   const { user, role, authReady } = useAuth();
   
   const [loading, setLoading] = useState(true);
@@ -22,105 +22,226 @@ export default function AdminWorkshopsPage() {
   const [errorMessage, setErrorMessage] = useState(""); 
   const [successMessage, setSuccessMessage] = useState("");
   
-  // Upload progress states for content images
-
-  const [eventImageUploadProgress, setEventImageUploadProgress] = useState<Record<number, number | null>>({});
-
-  const [originalContent, setOriginalContent] = useState<WorkshopContent | null>(null);
+  
+  // Upload progress states
+  const [magazineImageUploadProgress, setMagazineImageUploadProgress] = useState<Record<number, number | null>>({});
+  const [competitionImageUploadProgress, setCompetitionImageUploadProgress] = useState<Record<number, number | null>>({});
+  const [originalContent, setOriginalContent] = useState<ResourceContent | null>(null);
   const [uploading, setUploading] = useState(false);
   const sessionId = useRef(crypto.randomUUID()).current;
   const [pendingAssets, setPendingAssets] = useState<string[]>([]);
 
-  const [content, setContent] = useState<WorkshopContent>({
-    whatAreWorkshops: {
-      text: "",
-    },
-    events: [
+  const [content, setContent] = useState<ResourceContent>({
+    magazines: [
       {
         id: 1,
-        title: "Finding Your Voice",
-        date: new Date("2026-03-15"),
-        description: "A beginner-friendly workshop focused on helping writers discover their unique tone and style through short prompts and group feedback.",
-        fullDescription: "Join us for our flagship technology conference featuring industry leaders, hands-on workshops, and networking opportunities. This year's theme focuses on AI innovation and sustainable tech solutions. We'll have keynote speakers from top tech companies, interactive sessions, and plenty of opportunities to network with like-minded professionals in the industry.",
+        title: "Works on Paper",
+        description: "Joan Jonas's work encompasses video, performance, installation, sound, text, and sculpture.",
         image: {
           src: "",
-          alt: "Tech Conference 2024"
-        },
-        location: "San Francisco, CA",
-        category: "Workshop",
-        additionalInfo: [
-          "Multiple tracks: AI, Web3, Cloud Computing",
-          "Free swag and conference materials",
-          "Networking cocktail hour each evening",
-          "Career fair with top tech companies",
-          "Workshops require separate registration"
-        ],
-        registrationLink: "/apply"
+          alt: "Literacy Today Magazine Cover"
+        }
       },
       {
         id: 2,
-        title: "From Idea to First Draft",
-        date: new Date("2026-04-05"),
-        description: "This workshop guides writers through turning vague ideas into complete first drafts. Perfect if you have many ideas but a suspicious lack of finished stories.",
-        fullDescription: "Join us for our flagship technology conference featuring industry leaders, hands-on workshops, and networking opportunities. This year's theme focuses on AI innovation and sustainable tech solutions. We'll have keynote speakers from top tech companies, interactive sessions, and plenty of opportunities to network with like-minded professionals in the industry.",
+        title: "Donate to The Paris Review",
+        description: "The Paris Review is not only the preeminent literary quarterly in America but also a 501(c)(3) nonprofit organization.",
         image: {
           src: "",
-          alt: "Tech Conference 2024"
-        },
-        location: "San Francisco, CA",
-        category: "Workshop",
-        additionalInfo: [
-          "Multiple tracks: AI, Web3, Cloud Computing",
-          "Free swag and conference materials",
-          "Networking cocktail hour each evening",
-          "Career fair with top tech companies",
-          "Workshops require separate registration"
-        ],
-        registrationLink: "/apply"
+          alt: "Reading Horizons Magazine Cover"
+        }
       },
       {
         id: 3,
-        title: "Editing Without Fear",
-        date: new Date("2026-05-07"),
-        description: "A practical workshop on revising your work without getting stuck in perfectionism. You'll learn how to edit with purpose instead of deleting everything in frustration.",
-        fullDescription: "Join us for our flagship technology conference featuring industry leaders, hands-on workshops, and networking opportunities. This year's theme focuses on AI innovation and sustainable tech solutions. We'll have keynote speakers from top tech companies, interactive sessions, and plenty of opportunities to network with like-minded professionals in the industry.",
+        title: "Mold and Melancholia",
+        description: "In London, trash is called rubbish and taking it out is a science.",
         image: {
           src: "",
-          alt: "Tech Conference 2024"
-        },
-        location: "San Francisco, CA",
-        category: "Workshop",
+          alt: "Word Power Magazine Cover"
+        }
+      }
+    ],
+    summerPrograms: [
+      {
+        id: 1,
+        title: "🌴 Summer Writing Sprint",
+        duration: "4-6 Weeks",
+        location: "Online (Live Virtual Sessions)",
+        shortDescription: "A fast-paced program designed to help writers finish a short story, novella, or first draft through weekly prompts, deadlines, and accountability check-ins.",
+        fullDescription: "The Summer Writing Sprint is an intensive 4-6 week program designed to help writers complete a substantial writing project. Each week, you'll receive carefully crafted writing prompts, participate in structured writing sessions, and join accountability check-ins with fellow writers. The program includes weekly feedback sessions, progress tracking, and personalized guidance from experienced writing mentors.",
+        bestFor: "Writers who need structure and momentum",
+        outcome: "A completed draft by summer's end",
         additionalInfo: [
-          "Multiple tracks: AI, Web3, Cloud Computing",
-          "Free swag and conference materials",
-          "Networking cocktail hour each evening",
-          "Career fair with top tech companies",
-          "Workshops require separate registration"
+          "Weekly live writing sessions",
+          "Personalized feedback on 2 chapters",
+          "Access to private writing community",
+          "Progress tracking dashboard",
+          "Final manuscript review"
         ],
-        registrationLink: "/apply"
+        registrationLink: "/apply",
+        category: "Writing & Creative Arts"
+      },
+      {
+        id: 2,
+        title: "📚 Teen & YA Summer Writing Camp",
+        duration: "8 Weeks",
+        location: "New York City, NY Campus",
+        shortDescription: "A guided creative writing program for middle grade and young adult writers, featuring craft lessons, writing exercises, and peer feedback in a supportive environment.",
+        fullDescription: "Our Summer Coding Bootcamp is designed for beginners and intermediate learners looking to build practical web development skills. Over 8 weeks, you'll learn HTML, CSS, JavaScript, and React through project-based learning. Each module includes hands-on exercises, code reviews, and collaborative projects.",
+        bestFor: "Aspiring teen authors",
+        outcome: "Polished short stories and stronger writing confidence",
+        additionalInfo: [
+          "Weekly live writing sessions",
+          "Personalized feedback on 2 chapters",
+          "Access to private writing community",
+          "Progress tracking dashboard",
+          "Final manuscript review"
+        ],
+        registrationLink: "/apply",
+        category: "Writing & Creative Arts"
+      },
+      {
+        id: 3,
+        title: "✍️ Revise & Polish Bootcamp",
+        duration: "6 Weeks",
+        location: "Los Angeles, CA Workshop",
+        shortDescription: "A revision-focused summer intensive where writers bring an existing draft and work through pacing, character depth, and clarity with targeted feedback.",
+        fullDescription: "This masterclass takes you through the complete digital art workflow, from sketching to final rendering. You'll learn to use tools like Photoshop and Procreate, develop your unique style, and create professional-quality illustrations suitable for portfolios and client work.",
+        bestFor: "Writers with finished drafts",
+        outcome: "Submission-ready manuscripts",
+        additionalInfo: [
+          "Weekly live writing sessions",
+          "Personalized feedback on 2 chapters",
+          "Access to private writing community",
+          "Progress tracking dashboard",
+          "Final manuscript review"
+        ],
+        registrationLink: "/apply",
+        category: "Writing & Creative Arts"
       },
       {
         id: 4,
-        title: "Writing Strong Characters",
-        date: new Date("2026-05-10"),
-        description: "Learn how to create believable characters with clear motivations, flaws, and growth. By the end, your characters will feel less like cardboard cutouts and more like real people.",
-        fullDescription: "Join us for our flagship technology conference featuring industry leaders, hands-on workshops, and networking opportunities. This year's theme focuses on AI innovation and sustainable tech solutions. We'll have keynote speakers from top tech companies, interactive sessions, and plenty of opportunities to network with like-minded professionals in the industry.",
-        image: {
-          src: "",
-          alt: "Tech Conference 2024"
-        },
-        location: "San Francisco, CA",
-        category: "Workshop",
+        title: "🌞 Daily Prompt Challenge",
+        duration: "30 Days",
+        location: "Online (Self-Paced)",
+        shortDescription: "A low-pressure, high-fun challenge with one creative prompt per day to build consistency and experiment with voice, genre, and style.",
+        fullDescription: "The Summer Writing Sprint is an intensive 4-6 week program designed to help writers complete a substantial writing project. Each week, you'll receive carefully crafted writing prompts, participate in structured writing sessions, and join accountability check-ins with fellow writers. The program includes weekly feedback sessions, progress tracking, and personalized guidance from experienced writing mentors.",
+        bestFor: "Busy writers or beginners",
+        outcome: "Stronger habits and creative flow",
         additionalInfo: [
-          "Multiple tracks: AI, Web3, Cloud Computing",
-          "Free swag and conference materials",
-          "Networking cocktail hour each evening",
-          "Career fair with top tech companies",
-          "Workshops require separate registration"
+          "Weekly live writing sessions",
+          "Personalized feedback on 2 chapters",
+          "Access to private writing community",
+          "Progress tracking dashboard",
+          "Final manuscript review"
         ],
-        registrationLink: "/apply"
+        registrationLink: "/apply",
+        category: "Writing & Creative Arts"
+      },
+      {
+        id: 5,
+        title: "🧠 Craft Deep-Dive Series",
+        duration: "8 Weeks",
+        location: "Chicago, IL Creative Center",
+        shortDescription: "Weekly mini-courses focusing on one skill at a time—dialogue, tension, worldbuilding, or theme—with examples and short writing assignments.",
+        fullDescription: "Our Summer Coding Bootcamp is designed for beginners and intermediate learners looking to build practical web development skills. Over 8 weeks, you'll learn HTML, CSS, JavaScript, and React through project-based learning. Each module includes hands-on exercises, code reviews, and collaborative projects.",
+        bestFor: "Skill-builders",
+        outcome: "Noticeable craft improvement in targeted areas",
+        additionalInfo: [
+          "Weekly live writing sessions",
+          "Personalized feedback on 2 chapters",
+          "Access to private writing community",
+          "Progress tracking dashboard",
+          "Final manuscript review"
+        ],
+        registrationLink: "/apply",
+        category: "Writing & Creative Arts"
+      },
+      {
+        id: 6,
+        title: "👥 Summer Critique Circles",
+        duration: "6 Weeks",
+        location: "Hybrid (Online + Boston, MA)",
+        shortDescription: "Small, moderated critique groups that meet weekly to exchange feedback, discuss craft, and keep each other accountable.",
+        fullDescription: "This masterclass takes you through the complete digital art workflow, from sketching to final rendering. You'll learn to use tools like Photoshop and Procreate, develop your unique style, and create professional-quality illustrations suitable for portfolios and client work.",
+        bestFor: "Writers who thrive on community",
+        outcome: "Actionable feedback and writing friendships",
+        additionalInfo: [
+          "Weekly live writing sessions",
+          "Personalized feedback on 2 chapters",
+          "Access to private writing community",
+          "Progress tracking dashboard",
+          "Final manuscript review"
+        ],
+        registrationLink: "/apply",
+        category: "Writing & Creative Arts"
       },
     ],
+writingCompetitions: [
+  {
+    id: 1,
+    title: "Annual Short Story Contest",
+    description: "Submit your best unpublished short fiction (up to 5,000 words) for a chance to win cash prizes and publication.",
+    deadline: new Date("2025-06-30"), // Date object
+    prize: "$2,000 Grand Prize + Publication",
+    entryFee: "$15 per entry",
+    eligibility: "Open to all writers 18+, worldwide",
+    rules: [
+      "Stories must be unpublished",
+      "Maximum 5,000 words",
+      "No simultaneous submissions",
+      "Standard manuscript format",
+      "Judging is blind"
+    ],
+    registrationLink: "/apply",
+    image: {
+      src: "",
+      alt: "Short Story Contest Banner"
+    }
+  },
+  {
+    id: 2,
+    title: "Poetry Prize 2025",
+    description: "Awarding excellence in poetry across all forms and styles. Submit up to 3 poems for consideration.",
+    deadline: new Date("2025-05-15"), // Changed from string to Date object
+    prize: "$1,500 First Prize + Feature",
+    entryFee: "$10 for 3 poems",
+    eligibility: "All poets writing in English",
+    rules: [
+      "Up to 3 poems per entry",
+      "Maximum 100 lines per poem",
+      "Previously published poems accepted if rights retained",
+      "No identifying information on poems",
+      "Multiple entries allowed"
+    ],
+    registrationLink: "/apply",
+    image: {
+      src: "",
+      alt: "Poetry Prize Banner"
+    }
+  },
+  {
+    id: 3,
+    title: "Flash Fiction Challenge",
+    description: "Create a complete story in 1,000 words or less. Fast-paced, creative, and open to all genres.",
+    deadline: new Date("2025-07-31"), // Changed from string to Date object
+    prize: "$500 Winner + Anthology Inclusion",
+    entryFee: "Free for first entry",
+    eligibility: "Any writer, any age",
+    rules: [
+      "Exactly 1,000 words maximum",
+      "Any genre welcome",
+      "Original work only",
+      "One free entry per person",
+      "Additional entries $5 each"
+    ],
+    registrationLink: "/apply",
+    image: {
+      src: "",
+      alt: "Flash Fiction Challenge Banner"
+    }
+  }
+]
   });
 
   // Load Firestore data
@@ -133,106 +254,133 @@ export default function AdminWorkshopsPage() {
 
       setLoading(true);
       try {
-        const ref = doc(db, "siteContent", "workshops");
+        const ref = doc(db, "siteContent", "resources");
         const snap = await getDoc(ref);
 
         if (snap.exists()) {
           const data = snap.data();
+          
+          const loaded: ResourceContent = {
 
-            const eventsWithDates = (data.events || []).map((event: any) => ({
-            ...event,
-            date: event.date ? (event.date.toDate ? event.date.toDate() : new Date(event.date)) : null,
-        }));
-          const loaded: WorkshopContent = {
-            whatAreWorkshops: data.whatAreWorkshops || {
-              text: "",
-            },
-            events: eventsWithDates || [
+            magazines: data.magazines || [
               {
                 id: 1,
-                title: "Finding Your Voice",
-                date: new Date("2026-03-15"),
-                description: "A beginner-friendly workshop focused on helping writers discover their unique tone and style through short prompts and group feedback.",
-                fullDescription: "Join us for our flagship technology conference featuring industry leaders, hands-on workshops, and networking opportunities. This year's theme focuses on AI innovation and sustainable tech solutions. We'll have keynote speakers from top tech companies, interactive sessions, and plenty of opportunities to network with like-minded professionals in the industry.",
+                title: "Works on Paper",
+                description: "Joan Jonas's work encompasses video, performance, installation, sound, text, and sculpture.",
                 image: {
                   src: "",
-                  alt: "Tech Conference 2024"
-                },
-                location: "San Francisco, CA",
-                category: "Workshop",
-                additionalInfo: [
-                  "Multiple tracks: AI, Web3, Cloud Computing",
-                  "Free swag and conference materials",
-                  "Networking cocktail hour each evening",
-                  "Career fair with top tech companies",
-                  "Workshops require separate registration"
-                ],
-                registrationLink: "/apply"
+                  alt: "Literacy Today Magazine Cover"
+                }
               },
               {
                 id: 2,
-                title: "From Idea to First Draft",
-                date: new Date("2026-04-05"),
-                description: "This workshop guides writers through turning vague ideas into complete first drafts. Perfect if you have many ideas but a suspicious lack of finished stories.",
-                fullDescription: "Join us for our flagship technology conference featuring industry leaders, hands-on workshops, and networking opportunities. This year's theme focuses on AI innovation and sustainable tech solutions. We'll have keynote speakers from top tech companies, interactive sessions, and plenty of opportunities to network with like-minded professionals in the industry.",
+                title: "Donate to The Paris Review",
+                description: "The Paris Review is not only the preeminent literary quarterly in America but also a 501(c)(3) nonprofit organization.",
                 image: {
                   src: "",
-                  alt: "Tech Conference 2024"
-                },
-                location: "San Francisco, CA",
-                category: "Workshop",
-                additionalInfo: [
-                  "Multiple tracks: AI, Web3, Cloud Computing",
-                  "Free swag and conference materials",
-                  "Networking cocktail hour each evening",
-                  "Career fair with top tech companies",
-                  "Workshops require separate registration"
-                ],
-                registrationLink: "/apply"
+                  alt: "Reading Horizons Magazine Cover"
+                }
               },
               {
                 id: 3,
-                title: "Editing Without Fear",
-                date: new Date("2026-05-07"),
-                description: "A practical workshop on revising your work without getting stuck in perfectionism. You'll learn how to edit with purpose instead of deleting everything in frustration.",
-                fullDescription: "Join us for our flagship technology conference featuring industry leaders, hands-on workshops, and networking opportunities. This year's theme focuses on AI innovation and sustainable tech solutions. We'll have keynote speakers from top tech companies, interactive sessions, and plenty of opportunities to network with like-minded professionals in the industry.",
+                title: "Mold and Melancholia",
+                description: "In London, trash is called rubbish and taking it out is a science.",
                 image: {
                   src: "",
-                  alt: "Tech Conference 2024"
-                },
-                location: "San Francisco, CA",
-                category: "Workshop",
-                additionalInfo: [
-                  "Multiple tracks: AI, Web3, Cloud Computing",
-                  "Free swag and conference materials",
-                  "Networking cocktail hour each evening",
-                  "Career fair with top tech companies",
-                  "Workshops require separate registration"
-                ],
-                registrationLink: "/apply"
-              },
+                  alt: "Word Power Magazine Cover"
+                }
+              }
+            ],
+            summerPrograms: data.summerPrograms || [
               {
-                id: 4,
-                title: "Writing Strong Characters",
-                date: new Date("2026-05-10"),
-                description: "Learn how to create believable characters with clear motivations, flaws, and growth. By the end, your characters will feel less like cardboard cutouts and more like real people.",
-                fullDescription: "Join us for our flagship technology conference featuring industry leaders, hands-on workshops, and networking opportunities. This year's theme focuses on AI innovation and sustainable tech solutions. We'll have keynote speakers from top tech companies, interactive sessions, and plenty of opportunities to network with like-minded professionals in the industry.",
-                image: {
-                  src: "",
-                  alt: "Tech Conference 2024"
-                },
-                location: "San Francisco, CA",
-                category: "Workshop",
+                id: 1,
+                title: "🌴 Summer Writing Sprint",
+                duration: "4-6 Weeks",
+                location: "Online (Live Virtual Sessions)",
+                shortDescription: "A fast-paced program designed to help writers finish a short story, novella, or first draft through weekly prompts, deadlines, and accountability check-ins.",
+                fullDescription: "The Summer Writing Sprint is an intensive 4-6 week program designed to help writers complete a substantial writing project. Each week, you'll receive carefully crafted writing prompts, participate in structured writing sessions, and join accountability check-ins with fellow writers. The program includes weekly feedback sessions, progress tracking, and personalized guidance from experienced writing mentors.",
+                bestFor: "Writers who need structure and momentum",
+                outcome: "A completed draft by summer's end",
                 additionalInfo: [
-                  "Multiple tracks: AI, Web3, Cloud Computing",
-                  "Free swag and conference materials",
-                  "Networking cocktail hour each evening",
-                  "Career fair with top tech companies",
-                  "Workshops require separate registration"
+                  "Weekly live writing sessions",
+                  "Personalized feedback on 2 chapters",
+                  "Access to private writing community",
+                  "Progress tracking dashboard",
+                  "Final manuscript review"
                 ],
-                registrationLink: "/apply"
+                registrationLink: "/apply",
+                category: "Writing & Creative Arts"
               },
             ],
+           writingCompetitions: data.writingCompetitions ? data.writingCompetitions.map((comp: any) => ({
+              ...comp,
+              // Convert string deadline to Date object
+             deadline: comp.deadline ? new Date(comp.deadline) : new Date(),
+            })) : [
+              {
+                id: 1,
+                title: "Annual Short Story Contest",
+                description: "Submit your best unpublished short fiction (up to 5,000 words) for a chance to win cash prizes and publication.",
+                deadline: new Date("2025-06-30"), // Date object
+                prize: "$2,000 Grand Prize + Publication",
+                entryFee: "$15 per entry",
+                eligibility: "Open to all writers 18+, worldwide",
+                rules: [
+                  "Stories must be unpublished",
+                  "Maximum 5,000 words",
+                  "No simultaneous submissions",
+                  "Standard manuscript format",
+                  "Judging is blind"
+                ],
+                registrationLink: "/apply",
+                image: {
+                  src: "",
+                  alt: "Short Story Contest Banner"
+                }
+              },
+              {
+                id: 2,
+                title: "Poetry Prize 2025",
+                description: "Awarding excellence in poetry across all forms and styles. Submit up to 3 poems for consideration.",
+                deadline: new Date("2025-05-15"),
+                prize: "$1,500 First Prize + Feature",
+                entryFee: "$10 for 3 poems",
+                eligibility: "All poets writing in English",
+                rules: [
+                  "Up to 3 poems per entry",
+                  "Maximum 100 lines per poem",
+                  "Previously published poems accepted if rights retained",
+                  "No identifying information on poems",
+                  "Multiple entries allowed"
+                ],
+                registrationLink: "/apply",
+                image: {
+                  src: "",
+                  alt: "Poetry Prize Banner"
+                }
+              },
+              {
+                id: 3,
+                title: "Flash Fiction Challenge",
+                description: "Create a complete story in 1,000 words or less. Fast-paced, creative, and open to all genres.",
+                deadline: new Date("2025-07-31"),
+                prize: "$500 Winner + Anthology Inclusion",
+                entryFee: "Free for first entry",
+                eligibility: "Any writer, any age",
+                rules: [
+                  "Exactly 1,000 words maximum",
+                  "Any genre welcome",
+                  "Original work only",
+                  "One free entry per person",
+                  "Additional entries $5 each"
+                ],
+                registrationLink: "/apply",
+                image: {
+                  src: "",
+                  alt: "Flash Fiction Challenge Banner"
+                }
+              }
+            ]
           };
 
           setContent(loaded);
@@ -255,6 +403,7 @@ export default function AdminWorkshopsPage() {
     onProgress?: (p: number) => void
   ): Promise<string> {
     const compressedFile = await compressImageClient(file);
+
     return new Promise((resolve, reject) => {
       const xhr = new XMLHttpRequest();
       const form = new FormData();
@@ -294,56 +443,128 @@ export default function AdminWorkshopsPage() {
     });
   }
 
-  function validateWorkshopsContent(content: WorkshopContent): string | null {
-    // Validate "What are Workshops" section
-    if (!isNonEmptyString(content.whatAreWorkshops.text)) {
-      return "Description text in 'What are Workshops' section must be filled.";
+  function validateResourcesContent(content: ResourceContent): string | null {
+    // Validate magazines
+    for (let i = 0; i < content.magazines.length; i++) {
+      const magazine = content.magazines[i];
+      
+      if (!isNonEmptyString(magazine.title)) {
+        return `Magazine #${i + 1}: Title must be filled.`;
+      }
+      
+      if (!isNonEmptyString(magazine.description)) {
+        return `Magazine #${i + 1}: Description must be filled.`;
+      }
+      
+      if (!isNonEmptyString(magazine.image.src)) {
+        return `Magazine #${i + 1}: Image must be uploaded.`;
+      }
+      
+      if (!isNonEmptyString(magazine.image.alt)) {
+        return `Magazine #${i + 1}: Image alt text must be filled.`;
+      }
     }
 
-    // Validate each event
-    for (let i = 0; i < content.events.length; i++) {
-      const event = content.events[i];
+    // Validate summer programs
+    for (let i = 0; i < content.summerPrograms.length; i++) {
+      const program = content.summerPrograms[i];
       
-      if (!isNonEmptyString(event.title)) {
-        return `Event #${i + 1}: Title must be filled.`;
+      if (!isNonEmptyString(program.title)) {
+        return `Summer Program #${i + 1}: Title must be filled.`;
       }
       
-      if (!isNonEmptyString(event.description)) {
-        return `Event #${i + 1}: Description must be filled.`;
+      if (!isNonEmptyString(program.duration)) {
+        return `Summer Program #${i + 1}: Duration must be filled.`;
       }
       
-      if (!isNonEmptyString(event.fullDescription)) {
-        return `Event #${i + 1}: Full description must be filled.`;
+      if (!isNonEmptyString(program.location)) {
+        return `Summer Program #${i + 1}: Location must be filled.`;
       }
       
-      if (!isNonEmptyString(event.location)) {
-        return `Event #${i + 1}: Location must be filled.`;
+      if (!isNonEmptyString(program.shortDescription)) {
+        return `Summer Program #${i + 1}: Short description must be filled.`;
       }
       
-      if (!isNonEmptyString(event.category)) {
-        return `Event #${i + 1}: Category must be filled.`;
+      if (!isNonEmptyString(program.fullDescription)) {
+        return `Summer Program #${i + 1}: Full description must be filled.`;
       }
       
-      if (!isNonEmptyString(event.registrationLink)) {
-        return `Event #${i + 1}: Registration link must be filled.`;
+      if (!isNonEmptyString(program.bestFor)) {
+        return `Summer Program #${i + 1}: 'Best for' must be filled.`;
       }
       
-      if (!isNonEmptyString(event.image.src)) {
-        return `Event #${i + 1}: Image must be uploaded.`;
+      if (!isNonEmptyString(program.outcome)) {
+        return `Summer Program #${i + 1}: Outcome must be filled.`;
       }
       
-      if (!isNonEmptyString(event.image.alt)) {
-        return `Event #${i + 1}: Image alt text must be filled.`;
+      if (!isNonEmptyString(program.category)) {
+        return `Summer Program #${i + 1}: Category must be filled.`;
       }
       
-      if (!isNonEmptyArray(event.additionalInfo)) {
-        return `Event #${i + 1}: Additional info must have at least one item.`;
+      if (!isNonEmptyString(program.registrationLink)) {
+        return `Summer Program #${i + 1}: Registration link must be filled.`;
+      }
+      
+      if (!isNonEmptyArray(program.additionalInfo)) {
+        return `Summer Program #${i + 1}: Additional info must have at least one item.`;
       }
       
       // Validate each additional info point
-      for (let j = 0; j < event.additionalInfo.length; j++) {
-        if (!isNonEmptyString(event.additionalInfo[j])) {
-          return `Event #${i + 1}: Additional info point #${j + 1} cannot be empty.`;
+      for (let j = 0; j < program.additionalInfo.length; j++) {
+        if (!isNonEmptyString(program.additionalInfo[j])) {
+          return `Summer Program #${i + 1}: Additional info point #${j + 1} cannot be empty.`;
+        }
+      }
+    }
+
+    // Validate writing competitions
+    for (let i = 0; i < content.writingCompetitions.length; i++) {
+      const competition = content.writingCompetitions[i];
+      
+      if (!isNonEmptyString(competition.title)) {
+        return `Writing Competition #${i + 1}: Title must be filled.`;
+      }
+      
+      if (!isNonEmptyString(competition.description)) {
+        return `Writing Competition #${i + 1}: Description must be filled.`;
+      }
+      
+        if (!competition.deadline || !(competition.deadline instanceof Date) || isNaN(competition.deadline.getTime())) {
+          return `Writing Competition #${i + 1}: Deadline must be a valid date.`;
+        }
+      
+      if (!isNonEmptyString(competition.prize)) {
+        return `Writing Competition #${i + 1}: Prize must be filled.`;
+      }
+      
+      if (!isNonEmptyString(competition.entryFee)) {
+        return `Writing Competition #${i + 1}: Entry fee must be filled.`;
+      }
+      
+      if (!isNonEmptyString(competition.eligibility)) {
+        return `Writing Competition #${i + 1}: Eligibility must be filled.`;
+      }
+      
+      if (!isNonEmptyString(competition.registrationLink)) {
+        return `Writing Competition #${i + 1}: Registration link must be filled.`;
+      }
+      
+      if (!isNonEmptyString(competition.image.src)) {
+        return `Writing Competition #${i + 1}: Image must be uploaded.`;
+      }
+      
+      if (!isNonEmptyString(competition.image.alt)) {
+        return `Writing Competition #${i + 1}: Image alt text must be filled.`;
+      }
+      
+      if (!isNonEmptyArray(competition.rules)) {
+        return `Writing Competition #${i + 1}: Rules must have at least one item.`;
+      }
+      
+      // Validate each rule
+      for (let j = 0; j < competition.rules.length; j++) {
+        if (!isNonEmptyString(competition.rules[j])) {
+          return `Writing Competition #${i + 1}: Rule #${j + 1} cannot be empty.`;
         }
       }
     }
@@ -359,7 +580,7 @@ export default function AdminWorkshopsPage() {
     }
 
     // 🔎 Validate BEFORE saving
-    const validationError = validateWorkshopsContent(content);
+    const validationError = validateResourcesContent(content);
     if (validationError) {
       setErrorMessage(validationError);
       return;
@@ -376,16 +597,14 @@ export default function AdminWorkshopsPage() {
         throw new Error("Insufficient permissions. Admin or author role required.");
       }
 
-      const ref = doc(db, "siteContent", "workshops");
+      const ref = doc(db, "siteContent", "resources");
 
       // Replace temp URLs with permanent ones
       let finalContent = content;
 
       if (pendingAssets.length) {
-        // ✅ 1. Figure out what assets are actually used
-        const usedAssets = extractAssetUrlsFromWorkshops(content);
+        const usedAssets = extractAssetUrlsFromResources(content);
 
-        // ✅ 2. Only promote assets that are still referenced
         const assetsToPromote = pendingAssets.filter(url =>
           usedAssets.includes(url)
         );
@@ -399,44 +618,77 @@ export default function AdminWorkshopsPage() {
 
           const { replacements } = await res.json();
 
+          // Update magazine images
+          const updatedMagazines = content.magazines.map(magazine => ({
+            ...magazine,
+            image: {
+              ...magazine.image,
+              src: replacements[magazine.image.src] ?? magazine.image.src,
+            },
+          }));
+
+          // Update competition images
+          const updatedCompetitions = content.writingCompetitions.map(competition => ({
+            ...competition,
+            image: {
+              ...competition.image,
+              src: replacements[competition.image.src] ?? competition.image.src,
+            },
+          }));
+
           finalContent = {
             ...content,
-            events: content.events.map(event => ({
-              ...event,
-              image: {
-                ...event.image,
-                src: replacements[event.image.src] ?? event.image.src,
-              },
-            })),
+            magazines: updatedMagazines,
+            writingCompetitions: updatedCompetitions,
           };
 
           setContent(finalContent);
         }
 
-        // 🧹 Clear all pending assets (used or not)
+        // 🧹 Clear all pending assets
         setPendingAssets([]);
       }
 
       await setDoc(
         ref,
         {
-          whatAreWorkshops: {
-            text: finalContent.whatAreWorkshops.text.trim(),
-          },
-          events: finalContent.events.map(event => ({
-            id: event.id,
-            title: event.title.trim(),
-            date: event.date,
-            description: event.description.trim(),
-            fullDescription: event.fullDescription.trim(),
+          magazines: finalContent.magazines.map(magazine => ({
+            id: magazine.id,
+            title: magazine.title.trim(),
+            description: magazine.description.trim(),
             image: {
-              src: event.image.src.trim(),
-              alt: event.image.alt.trim(),
+              src: magazine.image.src.trim(),
+              alt: magazine.image.alt.trim(),
             },
-            location: event.location.trim(),
-            category: event.category.trim(),
-            additionalInfo: event.additionalInfo.map(info => info.trim()),
-            registrationLink: event.registrationLink.trim(),
+          })),
+          summerPrograms: finalContent.summerPrograms.map(program => ({
+            id: program.id,
+            title: program.title.trim(),
+            duration: program.duration.trim(),
+            location: program.location.trim(),
+            shortDescription: program.shortDescription.trim(),
+            fullDescription: program.fullDescription.trim(),
+            bestFor: program.bestFor.trim(),
+            outcome: program.outcome.trim(),
+            category: program.category.trim(),
+            additionalInfo: program.additionalInfo.map(info => info.trim()),
+            registrationLink: program.registrationLink.trim(),
+          })),
+          // In handleSave function:
+          writingCompetitions: finalContent.writingCompetitions.map(competition => ({
+            id: competition.id,
+            title: competition.title.trim(),
+            description: competition.description.trim(),
+            deadline: competition.deadline.toISOString(), // Convert Date to ISO string
+            prize: competition.prize.trim(),
+            entryFee: competition.entryFee.trim(),
+            eligibility: competition.eligibility.trim(),
+            rules: competition.rules.map(rule => rule.trim()),
+            registrationLink: competition.registrationLink.trim(),
+            image: {
+              src: competition.image.src.trim(),
+              alt: competition.image.alt.trim(),
+            },
           })),
           updatedAt: new Date(),
         },
@@ -445,8 +697,8 @@ export default function AdminWorkshopsPage() {
 
       // 🧹 Delete unused R2 assets
       if (originalContent) {
-        const before = new Set(extractAssetUrlsFromWorkshops(originalContent));
-        const after = new Set(extractAssetUrlsFromWorkshops(finalContent));
+        const before = new Set(extractAssetUrlsFromResources(originalContent));
+        const after = new Set(extractAssetUrlsFromResources(finalContent));
 
         const unusedAssets = [...before].filter((url) => !after.has(url));
 
@@ -461,7 +713,7 @@ export default function AdminWorkshopsPage() {
         );
       }
 
-      setSuccessMessage("Workshops page content saved successfully!");
+      setSuccessMessage("Resources page content saved successfully!");
       setOriginalContent(structuredClone(finalContent));
 
       setTimeout(() => setSuccessMessage(""), 3000);
@@ -473,58 +725,152 @@ export default function AdminWorkshopsPage() {
     }
   }
 
-  // Handle event changes
-  const handleEventChange = (index: number, field: keyof WorkshopEvent, value: any) => {
+  // Handle magazine changes
+  const handleMagazineChange = (index: number, field: keyof MagazineItem, value: any) => {
     setContent((prev) => {
-      const updatedEvents = [...prev.events];
-      updatedEvents[index] = {
-        ...updatedEvents[index],
-        [field]: value,
-      };
+      const updatedMagazines = [...prev.magazines];
+      if (field === "image") {
+        updatedMagazines[index] = {
+          ...updatedMagazines[index],
+          image: {
+            ...updatedMagazines[index].image,
+            ...value,
+          },
+        };
+      } else {
+        updatedMagazines[index] = {
+          ...updatedMagazines[index],
+          [field]: value,
+        };
+      }
       return {
         ...prev,
-        events: updatedEvents,
+        magazines: updatedMagazines,
       };
     });
   };
 
-  // Handle additional info changes
-  const handleAdditionalInfoChange = (eventIndex: number, infoIndex: number, value: string) => {
+  // Handle program changes
+  const handleProgramChange = (index: number, field: keyof SummerProgram, value: any) => {
     setContent((prev) => {
-      const updatedEvents = [...prev.events];
-      const updatedAdditionalInfo = [...updatedEvents[eventIndex].additionalInfo];
+      const updatedPrograms = [...prev.summerPrograms];
+      updatedPrograms[index] = {
+        ...updatedPrograms[index],
+        [field]: value,
+      };
+      return {
+        ...prev,
+        summerPrograms: updatedPrograms,
+      };
+    });
+  };
+
+  // Handle additional info changes for programs
+  const handleProgramAdditionalInfoChange = (programIndex: number, infoIndex: number, value: string) => {
+    setContent((prev) => {
+      const updatedPrograms = [...prev.summerPrograms];
+      const updatedAdditionalInfo = [...updatedPrograms[programIndex].additionalInfo];
       updatedAdditionalInfo[infoIndex] = value;
       
-      updatedEvents[eventIndex] = {
-        ...updatedEvents[eventIndex],
+      updatedPrograms[programIndex] = {
+        ...updatedPrograms[programIndex],
         additionalInfo: updatedAdditionalInfo,
       };
       
       return {
         ...prev,
-        events: updatedEvents,
+        summerPrograms: updatedPrograms,
       };
     });
   };
 
-  // Add new event
-  const addEvent = () => {
+  // Handle competition changes
+  const handleCompetitionChange = (index: number, field: keyof WritingCompetitionItem, value: any) => {
+    setContent((prev) => {
+      const updatedCompetitions = [...prev.writingCompetitions];
+      if (field === "image") {
+        updatedCompetitions[index] = {
+          ...updatedCompetitions[index],
+          image: {
+            ...updatedCompetitions[index].image,
+            ...value,
+          },
+        };
+      } else {
+        updatedCompetitions[index] = {
+          ...updatedCompetitions[index],
+          [field]: value,
+        };
+      }
+      return {
+        ...prev,
+        writingCompetitions: updatedCompetitions,
+      };
+    });
+  };
+
+  // Handle competition rules changes
+  const handleCompetitionRuleChange = (compIndex: number, ruleIndex: number, value: string) => {
+    setContent((prev) => {
+      const updatedCompetitions = [...prev.writingCompetitions];
+      const updatedRules = [...updatedCompetitions[compIndex].rules];
+      updatedRules[ruleIndex] = value;
+      
+      updatedCompetitions[compIndex] = {
+        ...updatedCompetitions[compIndex],
+        rules: updatedRules,
+      };
+      
+      return {
+        ...prev,
+        writingCompetitions: updatedCompetitions,
+      };
+    });
+  };
+
+  // Add new magazine
+  const addMagazine = () => {
     setContent((prev) => ({
       ...prev,
-      events: [
-        ...prev.events,
+      magazines: [
+        ...prev.magazines,
         {
-          id: prev.events.length + 1,
+          id: prev.magazines.length + 1,
           title: "",
-          date: new Date(),
           description: "",
-          fullDescription: "",
           image: {
             src: "",
             alt: "",
           },
+        },
+      ],
+    }));
+  };
+
+  // Remove magazine
+  const removeMagazine = (index: number) => {
+    setContent((prev) => ({
+      ...prev,
+      magazines: prev.magazines.filter((_, i) => i !== index),
+    }));
+  };
+
+  // Add new program
+  const addProgram = () => {
+    setContent((prev) => ({
+      ...prev,
+      summerPrograms: [
+        ...prev.summerPrograms,
+        {
+          id: prev.summerPrograms.length + 1,
+          title: "",
+          duration: "",
           location: "",
-          category: "Workshop",
+          shortDescription: "",
+          fullDescription: "",
+          bestFor: "",
+          outcome: "",
+          category: "Writing & Creative Arts",
           additionalInfo: [""],
           registrationLink: "",
         },
@@ -532,40 +878,104 @@ export default function AdminWorkshopsPage() {
     }));
   };
 
-  // Remove event
-  const removeEvent = (index: number) => {
+  // Remove program
+  const removeProgram = (index: number) => {
     setContent((prev) => ({
       ...prev,
-      events: prev.events.filter((_, i) => i !== index),
+      summerPrograms: prev.summerPrograms.filter((_, i) => i !== index),
     }));
   };
 
-  // Add additional info point
-  const addAdditionalInfo = (eventIndex: number) => {
+  // Add new competition
+
+const addCompetition = () => {
+  setContent((prev) => ({
+    ...prev,
+    writingCompetitions: [
+      ...prev.writingCompetitions,
+      {
+        id: prev.writingCompetitions.length + 1,
+        title: "",
+        description: "",
+        deadline: new Date(), // Changed from empty string to Date
+        prize: "",
+        entryFee: "",
+        eligibility: "",
+        rules: [""],
+        registrationLink: "",
+        image: {
+          src: "",
+          alt: "",
+        },
+      },
+    ],
+  }));
+};
+
+  // Remove competition
+  const removeCompetition = (index: number) => {
+    setContent((prev) => ({
+      ...prev,
+      writingCompetitions: prev.writingCompetitions.filter((_, i) => i !== index),
+    }));
+  };
+
+  // Add additional info point to program
+  const addProgramAdditionalInfo = (programIndex: number) => {
     setContent((prev) => {
-      const updatedEvents = [...prev.events];
-      updatedEvents[eventIndex] = {
-        ...updatedEvents[eventIndex],
-        additionalInfo: [...updatedEvents[eventIndex].additionalInfo, ""],
+      const updatedPrograms = [...prev.summerPrograms];
+      updatedPrograms[programIndex] = {
+        ...updatedPrograms[programIndex],
+        additionalInfo: [...updatedPrograms[programIndex].additionalInfo, ""],
       };
       return {
         ...prev,
-        events: updatedEvents,
+        summerPrograms: updatedPrograms,
       };
     });
   };
 
-  // Remove additional info point
-  const removeAdditionalInfo = (eventIndex: number, infoIndex: number) => {
+  // Remove additional info point from program
+  const removeProgramAdditionalInfo = (programIndex: number, infoIndex: number) => {
     setContent((prev) => {
-      const updatedEvents = [...prev.events];
-      updatedEvents[eventIndex] = {
-        ...updatedEvents[eventIndex],
-        additionalInfo: updatedEvents[eventIndex].additionalInfo.filter((_, i) => i !== infoIndex),
+      const updatedPrograms = [...prev.summerPrograms];
+      updatedPrograms[programIndex] = {
+        ...updatedPrograms[programIndex],
+        additionalInfo: updatedPrograms[programIndex].additionalInfo.filter((_, i) => i !== infoIndex),
       };
       return {
         ...prev,
-        events: updatedEvents,
+        summerPrograms: updatedPrograms,
+      };
+    });
+  };
+
+  // Add rule to competition
+  const addCompetitionRule = (compIndex: number) => {
+    setContent((prev) => {
+      const updatedCompetitions = [...prev.writingCompetitions];
+      updatedCompetitions[compIndex] = {
+        ...updatedCompetitions[compIndex],
+        rules: [...updatedCompetitions[compIndex].rules, ""],
+      };
+      return {
+        ...prev,
+        writingCompetitions: updatedCompetitions,
+      };
+    });
+  };
+
+  // Remove rule from competition
+  const removeCompetitionRule = (compIndex: number, ruleIndex: number) => {
+    setContent((prev) => {
+      const updatedCompetitions = [...prev.writingCompetitions];
+      updatedCompetitions[compIndex] = {
+        ...updatedCompetitions[compIndex],
+        rules: updatedCompetitions[compIndex].rules.filter((_, i) => i !== ruleIndex),
+      };
+      return {
+        ...prev,
+        writingCompetitions: updatedCompetitions,
       };
     });
   };
@@ -577,7 +987,7 @@ export default function AdminWorkshopsPage() {
           <div className="h-full w-full animate-pulse bg-[#4A3820]"></div>
         </div>
         <p className="mt-4 text-[#4A3820] font-medium text-lg font-sans!">
-          Loading site content workshops...
+          Loading site content resources...
         </p>
       </div>
     );
@@ -688,7 +1098,7 @@ export default function AdminWorkshopsPage() {
     <div className="px-6 min-h-screen font-sans">
       <div className="max-w-4xl mx-auto">
         <h1 className="text-3xl font-extrabold text-[#4A3820] mb-6 text-center font-sans!">
-          Workshops Page Management
+          Resources Page Management
         </h1>
 
         {/* Messages */}
@@ -707,64 +1117,36 @@ export default function AdminWorkshopsPage() {
         {/* Main Content Card */}
         <div className="bg-[#F0E8DB] border border-[#D8CDBE] rounded-lg shadow-md p-6 sm:p-8 mb-8">
           <h2 className="text-2xl font-medium text-[#4A3820] mb-6 font-sans!">
-            Edit Workshops Page Content
+            Edit Resources Page Content
           </h2>
 
           {loading ? (
             <p className="text-center text-[#4A3820] py-8">Loading content...</p>
           ) : (
             <div className="space-y-8">
-              {/* What are Workshops Section */}
-              <div className="bg-white rounded-lg border border-[#D8CDBE] p-5 shadow-md">
-                <h3 className="text-xl font-bold text-[#4A3820] mb-6 font-sans!">
-                  What are Workshops Section
-                </h3>
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-[#4A3820] mb-2">
-                      Description Text
-                    </label>
-                    <textarea
-                      value={content.whatAreWorkshops.text}
-                      onChange={(e) =>
-                        setContent((prev) => ({
-                          ...prev,
-                          whatAreWorkshops: {
-                            ...prev.whatAreWorkshops,
-                            text: e.target.value,
-                          },
-                        }))
-                      }
-                      className="w-full px-4 py-2 rounded-lg border-2 border-[#805C2C] bg-white text-[#4A3820] placeholder-[#4A3820]/60 focus:outline-none focus:ring-2 focus:ring-[#805C2C]/50 min-h-50"
-                      placeholder="Enter description text about workshops..."
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Events Section */}
+              {/* Literacy Magazines Section */}
               <div className="bg-white rounded-lg border border-[#D8CDBE] p-5 shadow-md">
                 <div className="flex justify-between items-center mb-6">
                   <h3 className="text-xl font-bold text-[#4A3820] font-sans!">
-                    Upcoming Workshops
+                    Literacy Magazines
                   </h3>
                   <button
-                    onClick={addEvent}
+                    onClick={addMagazine}
                     className="px-4 py-2 rounded-lg border-2 border-[#805C2C] text-[#805C2C] font-medium hover:bg-[#F0E8DB] transition-colors font-sans!"
                   >
-                    + Add Workshop
+                    + Add Magazine
                   </button>
                 </div>
 
                 <div className="mt-6 space-y-6">
-                  {content.events.map((event, index) => (
+                  {content.magazines.map((magazine, index) => (
                     <div key={index} className="border-2 border-[#D8CDBE] rounded-lg p-5 bg-[#F9F5F0]">
                       <div className="flex justify-between items-start mb-4">
                         <h4 className="font-bold text-[#4A3820] font-sans!">
-                          Workshop #{index + 1}
+                          Magazine #{index + 1}
                         </h4>
                         <button
-                          onClick={() => removeEvent(index)}
+                          onClick={() => removeMagazine(index)}
                           className="px-3 py-1 rounded-lg border-2 border-red-500 text-red-500 text-sm hover:bg-red-50 transition-colors font-sans!"
                         >
                           Remove
@@ -778,52 +1160,359 @@ export default function AdminWorkshopsPage() {
                           </label>
                           <input
                             type="text"
-                            value={event.title}
-                            onChange={(e) => handleEventChange(index, "title", e.target.value)}
+                            value={magazine.title}
+                            onChange={(e) => handleMagazineChange(index, "title", e.target.value)}
                             className="w-full px-4 py-2 rounded-lg border-2 border-[#805C2C] bg-white text-[#4A3820] placeholder-[#4A3820]/60 focus:outline-none focus:ring-2 focus:ring-[#805C2C]/50"
-                            placeholder="Workshop title"
+                            placeholder="Magazine title"
                           />
                         </div>
 
+                        <div>
+                          <label className="block text-sm font-medium text-[#4A3820] mb-2">
+                            Description
+                          </label>
+                          <textarea
+                            value={magazine.description}
+                            onChange={(e) => handleMagazineChange(index, "description", e.target.value)}
+                            className="w-full px-4 py-2 rounded-lg border-2 border-[#805C2C] bg-white text-[#4A3820] placeholder-[#4A3820]/60 focus:outline-none focus:ring-2 focus:ring-[#805C2C]/50 min-h-20"
+                            placeholder="Magazine description"
+                          />
+                        </div>
 
-                    <div>
-                    <label className="block text-sm font-medium text-[#4A3820] mb-2">
-                        Date
-                    </label>
-                    <input
-                        type="date"
-                        value={event.date && !isNaN(event.date.getTime()) ? event.date.toISOString().split('T')[0] : ""}
-                        onChange={(e) => {
-                        const value = e.target.value;
-                        if (value) {
-                            handleEventChange(index, "date", new Date(value));
-                        } else {
-                            // Handle empty date - could set to null or keep as invalid Date
-                            // Choose one of these options:
-                            
-                            // Option 1: Set to null (requires updating the type)
-                            // handleEventChange(index, "date", null);
-                            
-                            // Option 2: Set to a default valid date
-                            handleEventChange(index, "date", new Date());
-                            
-                            // Option 3: Set to an invalid date but handle it differently
-                            // handleEventChange(index, "date", new Date(""));
-                        }
-                        }}
-                        className="w-full px-4 py-2 rounded-lg border-2 border-[#805C2C] bg-white text-[#4A3820] placeholder-[#4A3820]/60 focus:outline-none focus:ring-2 focus:ring-[#805C2C]/50"
-                    />
+                        {/* Magazine Image Upload */}
+                        {renderImageUpload(
+                          `Magazine ${index + 1} Image`,
+                          magazine.image.src,
+                          async (file) => {
+                            setUploading(true);
+                            try {
+                              setMagazineImageUploadProgress((prev) => ({ ...prev, [index]: 0 }));
+                              const url = await uploadAsset(
+                                file,
+                                "resources/magazines",
+                                (p) => setMagazineImageUploadProgress((prev) => ({ ...prev, [index]: p }))
+                              );
+                              handleMagazineChange(index, "image", { src: url });
+                            } catch (err) {
+                              console.error("Upload error:", err);
+                            } finally {
+                              setMagazineImageUploadProgress((prev) => ({ ...prev, [index]: null }));
+                              setUploading(false);
+                            }
+                          },
+                          magazineImageUploadProgress[index] || null,
+                          magazine.image.alt
+                        )}
+
+                        <div>
+                          <label className="block text-sm font-medium text-[#4A3820] mb-2">
+                            Image Alt Text
+                          </label>
+                          <input
+                            type="text"
+                            value={magazine.image.alt}
+                            onChange={(e) => handleMagazineChange(index, "image", { alt: e.target.value })}
+                            className="w-full px-4 py-2 rounded-lg border-2 border-[#805C2C] bg-white text-[#4A3820] placeholder-[#4A3820]/60 focus:outline-none focus:ring-2 focus:ring-[#805C2C]/50"
+                            placeholder="Describe the magazine image"
+                          />
+                        </div>
+                      </div>
                     </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Writing Competitions Section */}
+              <div className="bg-white rounded-lg border border-[#D8CDBE] p-5 shadow-md">
+                <div className="flex justify-between items-center mb-6">
+                  <h3 className="text-xl font-bold text-[#4A3820] font-sans!">
+                    Writing Competitions
+                  </h3>
+                  <button
+                    onClick={addCompetition}
+                    className="px-4 py-2 rounded-lg border-2 border-[#805C2C] text-[#805C2C] font-medium hover:bg-[#F0E8DB] transition-colors font-sans!"
+                  >
+                    + Add Competition
+                  </button>
+                </div>
+
+                <div className="mt-6 space-y-6">
+                  {content.writingCompetitions.map((competition, index) => (
+                    <div key={index} className="border-2 border-[#D8CDBE] rounded-lg p-5 bg-[#F9F5F0]">
+                      <div className="flex justify-between items-start mb-4">
+                        <h4 className="font-bold text-[#4A3820] font-sans!">
+                          Competition #{index + 1}
+                        </h4>
+                        <button
+                          onClick={() => removeCompetition(index)}
+                          className="px-3 py-1 rounded-lg border-2 border-red-500 text-red-500 text-sm hover:bg-red-50 transition-colors font-sans!"
+                        >
+                          Remove
+                        </button>
+                      </div>
+
+                      <div className="space-y-4">
+                        <div>
+                          <label className="block text-sm font-medium text-[#4A3820] mb-2">
+                            Title
+                          </label>
+                          <input
+                            type="text"
+                            value={competition.title}
+                            onChange={(e) => handleCompetitionChange(index, "title", e.target.value)}
+                            className="w-full px-4 py-2 rounded-lg border-2 border-[#805C2C] bg-white text-[#4A3820] placeholder-[#4A3820]/60 focus:outline-none focus:ring-2 focus:ring-[#805C2C]/50"
+                            placeholder="Competition title"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-medium text-[#4A3820] mb-2">
+                            Description
+                          </label>
+                          <textarea
+                            value={competition.description}
+                            onChange={(e) => handleCompetitionChange(index, "description", e.target.value)}
+                            className="w-full px-4 py-2 rounded-lg border-2 border-[#805C2C] bg-white text-[#4A3820] placeholder-[#4A3820]/60 focus:outline-none focus:ring-2 focus:ring-[#805C2C]/50 min-h-20"
+                            placeholder="Brief description of the competition"
+                          />
+                        </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-medium text-[#4A3820] mb-2">
+                            Deadline
+                          </label>
+                          <input
+                            type="date"
+                            value={competition.deadline && !isNaN(competition.deadline.getTime()) 
+                              ? competition.deadline.toISOString().split('T')[0] 
+                              : ""}
+                            onChange={(e) => {
+                              const value = e.target.value;
+                              if (value) {
+                                handleCompetitionChange(index, "deadline", new Date(value));
+                              } else {
+                                handleCompetitionChange(index, "deadline", new Date());
+                              }
+                            }}
+                            className="w-full px-4 py-2 rounded-lg border-2 border-[#805C2C] bg-white text-[#4A3820] placeholder-[#4A3820]/60 focus:outline-none focus:ring-2 focus:ring-[#805C2C]/50"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-medium text-[#4A3820] mb-2">
+                            Prize
+                          </label>
+                          <input
+                            type="text"
+                            value={competition.prize}
+                            onChange={(e) => handleCompetitionChange(index, "prize", e.target.value)}
+                            className="w-full px-4 py-2 rounded-lg border-2 border-[#805C2C] bg-white text-[#4A3820] placeholder-[#4A3820]/60 focus:outline-none focus:ring-2 focus:ring-[#805C2C]/50"
+                            placeholder="e.g., $2,000 Grand Prize + Publication"
+                          />
+                        </div>
+                      </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-sm font-medium text-[#4A3820] mb-2">
+                              Entry Fee
+                            </label>
+                            <input
+                              type="text"
+                              value={competition.entryFee}
+                              onChange={(e) => handleCompetitionChange(index, "entryFee", e.target.value)}
+                              className="w-full px-4 py-2 rounded-lg border-2 border-[#805C2C] bg-white text-[#4A3820] placeholder-[#4A3820]/60 focus:outline-none focus:ring-2 focus:ring-[#805C2C]/50"
+                              placeholder="e.g., $15 per entry"
+                            />
+                          </div>
+
+                          <div>
+                            <label className="block text-sm font-medium text-[#4A3820] mb-2">
+                              Eligibility
+                            </label>
+                            <input
+                              type="text"
+                              value={competition.eligibility}
+                              onChange={(e) => handleCompetitionChange(index, "eligibility", e.target.value)}
+                              className="w-full px-4 py-2 rounded-lg border-2 border-[#805C2C] bg-white text-[#4A3820] placeholder-[#4A3820]/60 focus:outline-none focus:ring-2 focus:ring-[#805C2C]/50"
+                              placeholder="e.g., Open to all writers 18+, worldwide"
+                            />
+                          </div>
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-medium text-[#4A3820] mb-2">
+                            Registration Link
+                          </label>
+                          <input
+                            type="url"
+                            value={competition.registrationLink}
+                            onChange={(e) => handleCompetitionChange(index, "registrationLink", e.target.value)}
+                            className="w-full px-4 py-2 rounded-lg border-2 border-[#805C2C] bg-white text-[#4A3820] placeholder-[#4A3820]/60 focus:outline-none focus:ring-2 focus:ring-[#805C2C]/50"
+                            placeholder="https://example.com/register"
+                          />
+                        </div>
+
+                        {/* Competition Image Upload */}
+                        {renderImageUpload(
+                          `Competition ${index + 1} Image`,
+                          competition.image.src,
+                          async (file) => {
+                            setUploading(true);
+                            try {
+                              setCompetitionImageUploadProgress((prev) => ({ ...prev, [index]: 0 }));
+                              const url = await uploadAsset(
+                                file,
+                                "resources/competitions",
+                                (p) => setCompetitionImageUploadProgress((prev) => ({ ...prev, [index]: p }))
+                              );
+                              handleCompetitionChange(index, "image", { src: url });
+                            } catch (err) {
+                              console.error("Upload error:", err);
+                            } finally {
+                              setCompetitionImageUploadProgress((prev) => ({ ...prev, [index]: null }));
+                              setUploading(false);
+                            }
+                          },
+                          competitionImageUploadProgress[index] || null,
+                          competition.image.alt
+                        )}
+
+                        <div>
+                          <label className="block text-sm font-medium text-[#4A3820] mb-2">
+                            Image Alt Text
+                          </label>
+                          <input
+                            type="text"
+                            value={competition.image.alt}
+                            onChange={(e) => handleCompetitionChange(index, "image", { alt: e.target.value })}
+                            className="w-full px-4 py-2 rounded-lg border-2 border-[#805C2C] bg-white text-[#4A3820] placeholder-[#4A3820]/60 focus:outline-none focus:ring-2 focus:ring-[#805C2C]/50"
+                            placeholder="Describe the competition image"
+                          />
+                        </div>
+
+                        {/* Rules */}
+                        <div>
+                          <div className="flex justify-between items-center mb-2">
+                            <label className="block text-sm font-medium text-[#4A3820]">
+                              Competition Rules
+                            </label>
+                            <button
+                              type="button"
+                              onClick={() => addCompetitionRule(index)}
+                              className="px-3 py-1 text-sm rounded-lg border border-[#805C2C] text-[#805C2C] hover:bg-[#F0E8DB] transition-colors font-sans!"
+                            >
+                              + Add Rule
+                            </button>
+                          </div>
+                          {competition.rules.map((rule, ruleIndex) => (
+                            <div key={ruleIndex} className="flex items-start gap-2 mb-2">
+                              <span className="mt-2 text-[#4A3820]">•</span>
+                              <div className="flex-1 flex items-center gap-2">
+                                <textarea
+                                  value={rule}
+                                  onChange={(e) => handleCompetitionRuleChange(index, ruleIndex, e.target.value)}
+                                  className="flex-1 px-4 py-2 rounded-lg border-2 border-[#805C2C] bg-white text-[#4A3820] placeholder-[#4A3820]/60 focus:outline-none focus:ring-2 focus:ring-[#805C2C]/50 min-h-15"
+                                  placeholder={`Rule ${ruleIndex + 1}`}
+                                />
+                                <button
+                                  type="button"
+                                  onClick={() => removeCompetitionRule(index, ruleIndex)}
+                                  className="px-2 py-1 text-sm rounded-lg border border-red-500 text-red-500 hover:bg-red-50 transition-colors font-sans!"
+                                >
+                                  Remove
+                                </button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Summer Programs Section */}
+              <div className="bg-white rounded-lg border border-[#D8CDBE] p-5 shadow-md">
+                <div className="flex justify-between items-center mb-6">
+                  <h3 className="text-xl font-bold text-[#4A3820] font-sans!">
+                    Summer Programs
+                  </h3>
+                  <button
+                    onClick={addProgram}
+                    className="px-4 py-2 rounded-lg border-2 border-[#805C2C] text-[#805C2C] font-medium hover:bg-[#F0E8DB] transition-colors font-sans!"
+                  >
+                    + Add Program
+                  </button>
+                </div>
+
+                <div className="mt-6 space-y-6">
+                  {content.summerPrograms.map((program, index) => (
+                    <div key={index} className="border-2 border-[#D8CDBE] rounded-lg p-5 bg-[#F9F5F0]">
+                      <div className="flex justify-between items-start mb-4">
+                        <h4 className="font-bold text-[#4A3820] font-sans!">
+                          Program #{index + 1}
+                        </h4>
+                        <button
+                          onClick={() => removeProgram(index)}
+                          className="px-3 py-1 rounded-lg border-2 border-red-500 text-red-500 text-sm hover:bg-red-50 transition-colors font-sans!"
+                        >
+                          Remove
+                        </button>
+                      </div>
+
+                      <div className="space-y-4">
+                        <div>
+                          <label className="block text-sm font-medium text-[#4A3820] mb-2">
+                            Title
+                          </label>
+                          <input
+                            type="text"
+                            value={program.title}
+                            onChange={(e) => handleProgramChange(index, "title", e.target.value)}
+                            className="w-full px-4 py-2 rounded-lg border-2 border-[#805C2C] bg-white text-[#4A3820] placeholder-[#4A3820]/60 focus:outline-none focus:ring-2 focus:ring-[#805C2C]/50"
+                            placeholder="Program title"
+                          />
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-sm font-medium text-[#4A3820] mb-2">
+                              Duration
+                            </label>
+                            <input
+                              type="text"
+                              value={program.duration}
+                              onChange={(e) => handleProgramChange(index, "duration", e.target.value)}
+                              className="w-full px-4 py-2 rounded-lg border-2 border-[#805C2C] bg-white text-[#4A3820] placeholder-[#4A3820]/60 focus:outline-none focus:ring-2 focus:ring-[#805C2C]/50"
+                              placeholder="e.g., 4-6 Weeks"
+                            />
+                          </div>
+
+                          <div>
+                            <label className="block text-sm font-medium text-[#4A3820] mb-2">
+                              Location
+                            </label>
+                            <input
+                              type="text"
+                              value={program.location}
+                              onChange={(e) => handleProgramChange(index, "location", e.target.value)}
+                              className="w-full px-4 py-2 rounded-lg border-2 border-[#805C2C] bg-white text-[#4A3820] placeholder-[#4A3820]/60 focus:outline-none focus:ring-2 focus:ring-[#805C2C]/50"
+                              placeholder="Program location"
+                            />
+                          </div>
+                        </div>
 
                         <div>
                           <label className="block text-sm font-medium text-[#4A3820] mb-2">
                             Short Description
                           </label>
                           <textarea
-                            value={event.description}
-                            onChange={(e) => handleEventChange(index, "description", e.target.value)}
+                            value={program.shortDescription}
+                            onChange={(e) => handleProgramChange(index, "shortDescription", e.target.value)}
                             className="w-full px-4 py-2 rounded-lg border-2 border-[#805C2C] bg-white text-[#4A3820] placeholder-[#4A3820]/60 focus:outline-none focus:ring-2 focus:ring-[#805C2C]/50 min-h-20"
-                            placeholder="Brief description of the workshop"
+                            placeholder="Brief description of the program"
                           />
                         </div>
 
@@ -832,24 +1521,39 @@ export default function AdminWorkshopsPage() {
                             Full Description
                           </label>
                           <textarea
-                            value={event.fullDescription}
-                            onChange={(e) => handleEventChange(index, "fullDescription", e.target.value)}
+                            value={program.fullDescription}
+                            onChange={(e) => handleProgramChange(index, "fullDescription", e.target.value)}
                             className="w-full px-4 py-2 rounded-lg border-2 border-[#805C2C] bg-white text-[#4A3820] placeholder-[#4A3820]/60 focus:outline-none focus:ring-2 focus:ring-[#805C2C]/50 min-h-40"
-                            placeholder="Detailed description of the workshop"
+                            placeholder="Detailed description of the program"
                           />
                         </div>
 
-                        <div>
-                          <label className="block text-sm font-medium text-[#4A3820] mb-2">
-                            Location
-                          </label>
-                          <input
-                            type="text"
-                            value={event.location}
-                            onChange={(e) => handleEventChange(index, "location", e.target.value)}
-                            className="w-full px-4 py-2 rounded-lg border-2 border-[#805C2C] bg-white text-[#4A3820] placeholder-[#4A3820]/60 focus:outline-none focus:ring-2 focus:ring-[#805C2C]/50"
-                            placeholder="Workshop location"
-                          />
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-sm font-medium text-[#4A3820] mb-2">
+                              Best For
+                            </label>
+                            <input
+                              type="text"
+                              value={program.bestFor}
+                              onChange={(e) => handleProgramChange(index, "bestFor", e.target.value)}
+                              className="w-full px-4 py-2 rounded-lg border-2 border-[#805C2C] bg-white text-[#4A3820] placeholder-[#4A3820]/60 focus:outline-none focus:ring-2 focus:ring-[#805C2C]/50"
+                              placeholder="Who is this program best for?"
+                            />
+                          </div>
+
+                          <div>
+                            <label className="block text-sm font-medium text-[#4A3820] mb-2">
+                              Outcome
+                            </label>
+                            <input
+                              type="text"
+                              value={program.outcome}
+                              onChange={(e) => handleProgramChange(index, "outcome", e.target.value)}
+                              className="w-full px-4 py-2 rounded-lg border-2 border-[#805C2C] bg-white text-[#4A3820] placeholder-[#4A3820]/60 focus:outline-none focus:ring-2 focus:ring-[#805C2C]/50"
+                              placeholder="What will participants achieve?"
+                            />
+                          </div>
                         </div>
 
                         <div>
@@ -858,10 +1562,10 @@ export default function AdminWorkshopsPage() {
                           </label>
                           <input
                             type="text"
-                            value={event.category}
-                            onChange={(e) => handleEventChange(index, "category", e.target.value)}
+                            value={program.category}
+                            onChange={(e) => handleProgramChange(index, "category", e.target.value)}
                             className="w-full px-4 py-2 rounded-lg border-2 border-[#805C2C] bg-white text-[#4A3820] placeholder-[#4A3820]/60 focus:outline-none focus:ring-2 focus:ring-[#805C2C]/50"
-                            placeholder="Workshop category"
+                            placeholder="Program category"
                           />
                         </div>
 
@@ -871,54 +1575,10 @@ export default function AdminWorkshopsPage() {
                           </label>
                           <input
                             type="url"
-                            value={event.registrationLink}
-                            onChange={(e) => handleEventChange(index, "registrationLink", e.target.value)}
+                            value={program.registrationLink}
+                            onChange={(e) => handleProgramChange(index, "registrationLink", e.target.value)}
                             className="w-full px-4 py-2 rounded-lg border-2 border-[#805C2C] bg-white text-[#4A3820] placeholder-[#4A3820]/60 focus:outline-none focus:ring-2 focus:ring-[#805C2C]/50"
                             placeholder="https://example.com/register"
-                          />
-                        </div>
-
-                        {/* Event Image Upload */}
-                        {renderImageUpload(
-                          `Workshop ${index + 1} Image`,
-                          event.image.src,
-                          async (file) => {
-                            setUploading(true);
-                            try {
-                              setEventImageUploadProgress((prev) => ({ ...prev, [index]: 0 }));
-                              const url = await uploadAsset(
-                                file,
-                                "workshops/events",
-                                (p) => setEventImageUploadProgress((prev) => ({ ...prev, [index]: p }))
-                              );
-                              handleEventChange(index, "image", {
-                                ...event.image,
-                                src: url,
-                              });
-                            } catch (err) {
-                              console.error("Upload error:", err);
-                            } finally {
-                              setEventImageUploadProgress((prev) => ({ ...prev, [index]: null }));
-                              setUploading(false);
-                            }
-                          },
-                          eventImageUploadProgress[index] || null,
-                          event.image.alt
-                        )}
-
-                        <div>
-                          <label className="block text-sm font-medium text-[#4A3820] mb-2">
-                            Image Alt Text
-                          </label>
-                          <input
-                            type="text"
-                            value={event.image.alt}
-                            onChange={(e) => handleEventChange(index, "image", {
-                              ...event.image,
-                              alt: e.target.value,
-                            })}
-                            className="w-full px-4 py-2 rounded-lg border-2 border-[#805C2C] bg-white text-[#4A3820] placeholder-[#4A3820]/60 focus:outline-none focus:ring-2 focus:ring-[#805C2C]/50"
-                            placeholder="Describe the workshop image"
                           />
                         </div>
 
@@ -930,25 +1590,25 @@ export default function AdminWorkshopsPage() {
                             </label>
                             <button
                               type="button"
-                              onClick={() => addAdditionalInfo(index)}
+                              onClick={() => addProgramAdditionalInfo(index)}
                               className="px-3 py-1 text-sm rounded-lg border border-[#805C2C] text-[#805C2C] hover:bg-[#F0E8DB] transition-colors font-sans!"
                             >
                               + Add Point
                             </button>
                           </div>
-                          {event.additionalInfo.map((info, infoIndex) => (
+                          {program.additionalInfo.map((info, infoIndex) => (
                             <div key={infoIndex} className="flex items-start gap-2 mb-2">
                               <span className="mt-2 text-[#4A3820]">•</span>
                               <div className="flex-1 flex items-center gap-2">
                                 <textarea
                                   value={info}
-                                  onChange={(e) => handleAdditionalInfoChange(index, infoIndex, e.target.value)}
+                                  onChange={(e) => handleProgramAdditionalInfoChange(index, infoIndex, e.target.value)}
                                   className="flex-1 px-4 py-2 rounded-lg border-2 border-[#805C2C] bg-white text-[#4A3820] placeholder-[#4A3820]/60 focus:outline-none focus:ring-2 focus:ring-[#805C2C]/50 min-h-15"
                                   placeholder={`Information point ${infoIndex + 1}`}
                                 />
                                 <button
                                   type="button"
-                                  onClick={() => removeAdditionalInfo(index, infoIndex)}
+                                  onClick={() => removeProgramAdditionalInfo(index, infoIndex)}
                                   className="px-2 py-1 text-sm rounded-lg border border-red-500 text-red-500 hover:bg-red-50 transition-colors font-sans!"
                                 >
                                   Remove
