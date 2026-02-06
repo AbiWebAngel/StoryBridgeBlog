@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef } from "react";
+import { compressImageClient } from "@/lib/compressImage";
 
 interface CoverUploadProps {
   value: string | null;
@@ -72,8 +73,10 @@ export default function CoverUpload({
   };
 
   const uploadFile = async (file: File) => {
+    const compressedFile = await compressImageClient(file);
+
     const formData = new FormData();
-    formData.append("file", file);
+    formData.append("file", compressedFile);
     formData.append("articleId", articleId);
     formData.append("assetType", "cover");
 

@@ -28,6 +28,9 @@ import { TableCell } from "@tiptap/extension-table-cell";
 import { TableHeader } from "@tiptap/extension-table-header";
 import type { JSONContent } from "@tiptap/core";
 import { BubbleMenu } from '@tiptap/react/menus';
+import { compressImageClient } from "@/lib/compressImage";
+
+
 
 interface ArticleEditorProps {
   value: JSONContent | null;
@@ -276,7 +279,8 @@ const DisableImagePaste = Extension.create({
     editorInstance.chain().insertContentAt(position, { type: "imageLoading", attrs: { id: tempId } }).run();
 
     try {
-      const url = await uploadImageToR2(file);
+      const compressedFile = await compressImageClient(file);
+      const url = await uploadImageToR2(compressedFile);
       const tr = editorInstance.state.tr;
       const defaultAlt =
         file.name?.replace(/\.[^/.]+$/, "").replace(/[-_]/g, " ") || "";
