@@ -47,7 +47,7 @@ export default async function ResourcesPage() {
       {/* Magazine component */}
       <MagazineGrid 
         magazines={resourcesContent.magazines}
-        viewAllLink="/apply"
+        viewAllLink={resourcesContent.viewAllLink || "/apply"}
       />
 
       {/* Writing Competitions Section */}

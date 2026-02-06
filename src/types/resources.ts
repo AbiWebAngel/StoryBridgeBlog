@@ -47,4 +47,5 @@ export interface ResourceContent {
   magazines: MagazineItem[];
   summerPrograms: SummerProgram[];
   writingCompetitions: WritingCompetition[]; // This will now have Date objects for deadlines
+  viewAllLink?: string;
 }

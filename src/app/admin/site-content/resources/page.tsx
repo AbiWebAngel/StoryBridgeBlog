@@ -197,7 +197,7 @@ writingCompetitions: [
     image: {
       src: "",
       alt: "Short Story Contest Banner"
-    }
+    },
   },
   {
     id: 2,
@@ -241,7 +241,8 @@ writingCompetitions: [
       alt: "Flash Fiction Challenge Banner"
     }
   }
-]
+],
+ viewAllLink: "/apply",
   });
 
   // Load Firestore data
@@ -380,7 +381,8 @@ writingCompetitions: [
                   alt: "Flash Fiction Challenge Banner"
                 }
               }
-            ]
+            ],
+            viewAllLink: data.viewAllLink || "/apply",
           };
 
           setContent(loaded);
@@ -448,6 +450,10 @@ writingCompetitions: [
     for (let i = 0; i < content.magazines.length; i++) {
       const magazine = content.magazines[i];
       
+        if (!isNonEmptyString(content.viewAllLink)) {
+          return "View All Link must be filled.";
+        }
+
       if (!isNonEmptyString(magazine.title)) {
         return `Magazine #${i + 1}: Title must be filled.`;
       }
@@ -690,6 +696,7 @@ writingCompetitions: [
               alt: competition.image.alt.trim(),
             },
           })),
+          viewAllLink: finalContent.viewAllLink?.trim() || "/apply",
           updatedAt: new Date(),
         },
         { merge: true }
@@ -724,6 +731,14 @@ writingCompetitions: [
       setSaving(false);
     }
   }
+
+  // Add handler for viewAllLink changes
+  const handleViewAllLinkChange = (value: string) => {
+    setContent((prev) => ({
+      ...prev,
+      viewAllLink: value,
+    }));
+  };
 
   // Handle magazine changes
   const handleMagazineChange = (index: number, field: keyof MagazineItem, value: any) => {
@@ -1124,6 +1139,27 @@ const addCompetition = () => {
             <p className="text-center text-[#4A3820] py-8">Loading content...</p>
           ) : (
             <div className="space-y-8">
+
+               {/* View All Link Section - Add this new section */}
+              <div className="bg-white rounded-lg border border-[#D8CDBE] p-5 shadow-md">
+                <h3 className="text-xl font-bold text-[#4A3820] mb-4 font-sans!">
+                  Magazine Section Settings
+                </h3>
+                
+                <div>
+                  <label className="block text-sm font-medium text-[#4A3820] mb-2">
+                    View All Link
+                  </label>
+                  <input
+                    type="url"
+                    value={content.viewAllLink || ""}
+                    onChange={(e) => handleViewAllLinkChange(e.target.value)}
+                    className="w-full px-4 py-2 rounded-lg border-2 border-[#805C2C] bg-white text-[#4A3820] placeholder-[#4A3820]/60 focus:outline-none focus:ring-2 focus:ring-[#805C2C]/50"
+                    placeholder="https://example.com/magazines"
+                  />
+                </div>
+              </div>
+
               {/* Literacy Magazines Section */}
               <div className="bg-white rounded-lg border border-[#D8CDBE] p-5 shadow-md">
                 <div className="flex justify-between items-center mb-6">

@@ -59,6 +59,7 @@ export async function getResourcesContent(): Promise<ResourceContent | null> {
       magazines,
       summerPrograms,
       writingCompetitions,
+      viewAllLink: data.viewAllLink || "/apply", 
     };
   } catch (error) {
     console.error("Error fetching resources content:", error);
