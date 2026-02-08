@@ -30,7 +30,6 @@ const readerItems: NavItem[] = [
   { label: "My Profile", href: "/dashboard/profile", icon: FiUser },
   { label: "My Favourites", href: "/dashboard/favourites", icon: FiHeart },
   { label: "Change Email", href: "/dashboard/email", icon: FiMail },
-  { label: "Change Password", href: "/dashboard/reset", icon: FiLock },
 ];
 
 const authorItems: NavItem[] = [
