@@ -670,20 +670,20 @@ export default function AdminMentorshipPage() {
                     <label className="block text-sm font-medium text-[#4A3820] mb-2">
                       Description Text
                     </label>
-                    <textarea
-                      value={content.whatIsMentorship.text}
-                      onChange={(e) =>
-                        setContent((prev) => ({
-                          ...prev,
-                          whatIsMentorship: {
-                            ...prev.whatIsMentorship,
-                            text: e.target.value,
-                          },
-                        }))
-                      }
-                      className="w-full px-4 py-2 rounded-lg border-2 border-[#805C2C] bg-white text-[#4A3820] placeholder-[#4A3820]/60 focus:outline-none focus:ring-2 focus:ring-[#805C2C]/50 min-h-25"
-                      placeholder="Enter description text..."
-                    />
+                   <textarea
+                    value={content.whatIsMentorship.text}
+                    onChange={(e) =>
+                      setContent((prev) => ({
+                        ...prev,
+                        whatIsMentorship: {
+                          ...prev.whatIsMentorship,
+                          text: e.target.value,
+                        },
+                      }))
+                    }
+                    className="w-full px-4 py-2 rounded-lg border-2 border-[#805C2C] bg-white text-[#4A3820] placeholder-[#4A3820]/60 focus:outline-none focus:ring-2 focus:ring-[#805C2C]/50 min-h-25 scrollable-description"
+                    placeholder="Enter description text..."
+                  />
                   </div>
                 </div>
               </div>
@@ -701,12 +701,12 @@ export default function AdminMentorshipPage() {
                     {content.howItWorks.text.map((step, index) => (
                       <div key={index} className="flex items-start gap-2 mb-2">
                         <span className="mt-2 text-[#4A3820]">{index + 1}.</span>
-                        <textarea
-                          value={step}
-                          onChange={(e) => handleHowItWorksTextChange(index, e.target.value)}
-                          className="flex-1 px-4 py-2 rounded-lg border-2 border-[#805C2C] bg-white text-[#4A3820] placeholder-[#4A3820]/60 focus:outline-none focus:ring-2 focus:ring-[#805C2C]/50 min-h-15"
-                          placeholder={`Step ${index + 1}`}
-                        />
+                       <textarea
+                        value={step}
+                        onChange={(e) => handleHowItWorksTextChange(index, e.target.value)}
+                        className="flex-1 px-4 py-2 rounded-lg border-2 border-[#805C2C] bg-white text-[#4A3820] placeholder-[#4A3820]/60 focus:outline-none focus:ring-2 focus:ring-[#805C2C]/50 min-h-15 scrollable-description"
+                        placeholder={`Step ${index + 1}`}
+                      />
                       </div>
                     ))}
                   </div>
@@ -814,22 +814,22 @@ export default function AdminMentorshipPage() {
                         Description
                       </label>
                       <textarea
-                        value={content.signUpNow.menteeSection.description}
-                        onChange={(e) =>
-                          setContent((prev) => ({
-                            ...prev,
-                            signUpNow: {
-                              ...prev.signUpNow,
-                              menteeSection: {
-                                ...prev.signUpNow.menteeSection,
-                                description: e.target.value,
+                          value={content.signUpNow.menteeSection.description}
+                          onChange={(e) =>
+                            setContent((prev) => ({
+                              ...prev,
+                              signUpNow: {
+                                ...prev.signUpNow,
+                                menteeSection: {
+                                  ...prev.signUpNow.menteeSection,
+                                  description: e.target.value,
+                                },
                               },
-                            },
-                          }))
-                        }
-                        className="w-full px-4 py-2 rounded-lg border-2 border-[#805C2C] bg-white text-[#4A3820] placeholder-[#4A3820]/60 focus:outline-none focus:ring-2 focus:ring-[#805C2C]/50 min-h-25"
-                        placeholder="Enter mentee section description..."
-                      />
+                            }))
+                          }
+                          className="w-full px-4 py-2 rounded-lg border-2 border-[#805C2C] bg-white text-[#4A3820] placeholder-[#4A3820]/60 focus:outline-none focus:ring-2 focus:ring-[#805C2C]/50 min-h-25 scrollable-description"
+                          placeholder="Enter mentee section description..."
+                        />
                     </div>
 
                     <div>
@@ -981,23 +981,23 @@ export default function AdminMentorshipPage() {
                       <label className="block text-sm font-medium text-[#4A3820] mb-2">
                         Description
                       </label>
-                      <textarea
-                        value={content.signUpNow.mentorSection.description}
-                        onChange={(e) =>
-                          setContent((prev) => ({
-                            ...prev,
-                            signUpNow: {
-                              ...prev.signUpNow,
-                              mentorSection: {
-                                ...prev.signUpNow.mentorSection,
-                                description: e.target.value,
-                              },
-                            },
-                          }))
-                        }
-                        className="w-full px-4 py-2 rounded-lg border-2 border-[#805C2C] bg-white text-[#4A3820] placeholder-[#4A3820]/60 focus:outline-none focus:ring-2 focus:ring-[#805C2C]/50 min-h-25"
-                        placeholder="Enter mentor section description..."
-                      />
+                 <textarea
+                    value={content.signUpNow.mentorSection.description}
+                    onChange={(e) =>
+                      setContent((prev) => ({
+                        ...prev,
+                        signUpNow: {
+                          ...prev.signUpNow,
+                          mentorSection: {
+                            ...prev.signUpNow.mentorSection,
+                            description: e.target.value,
+                          },
+                        },
+                      }))
+                    }
+                    className="w-full px-4 py-2 rounded-lg border-2 border-[#805C2C] bg-white text-[#4A3820] placeholder-[#4A3820]/60 focus:outline-none focus:ring-2 focus:ring-[#805C2C]/50 min-h-25 scrollable-description"
+                    placeholder="Enter mentor section description..."
+                  />
                     </div>
 
                     <div>
@@ -1151,10 +1151,10 @@ export default function AdminMentorshipPage() {
                           <label className="block text-sm font-medium text-[#4A3820] mb-2">
                             Testimonial Text
                           </label>
-                          <textarea
+                         <textarea
                             value={testimonial.text}
                             onChange={(e) => handleTestimonialChange(index, "text", e.target.value)}
-                            className="w-full px-4 py-2 rounded-lg border-2 border-[#805C2C] bg-white text-[#4A3820] placeholder-[#4A3820]/60 focus:outline-none focus:ring-2 focus:ring-[#805C2C]/50 min-h-20"
+                            className="w-full px-4 py-2 rounded-lg border-2 border-[#805C2C] bg-white text-[#4A3820] placeholder-[#4A3820]/60 focus:outline-none focus:ring-2 focus:ring-[#805C2C]/50 min-h-20 scrollable-description"
                             placeholder="Enter testimonial text..."
                           />
                         </div>

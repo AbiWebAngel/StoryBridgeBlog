@@ -510,11 +510,11 @@ export default function AdminTeamPage() {
                 <div className="space-y-6">
                   {content.teamMembers.map((member, index) => (
                     <div key={index} className="border-2 border-[#D8CDBE] rounded-lg p-5 bg-[#F9F5F0]">
-                      <div className="flex justify-between items-start mb-4">
+                     <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-4 gap-2 sm:gap-0">
                         <h4 className="font-bold text-[#4A3820] font-sans!">
                           Team Member #{index + 1}
                         </h4>
-                        <div className="flex space-x-2">
+                        <div className="flex flex-wrap gap-2 justify-end">
                           <button
                             onClick={() => moveTeamMemberUp(index)}
                             disabled={index === 0}

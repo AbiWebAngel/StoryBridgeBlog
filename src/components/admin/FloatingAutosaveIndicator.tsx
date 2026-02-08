@@ -18,7 +18,10 @@ export default function FloatingAutosaveIndicator({
   docked,
 }: FloatingAutosaveIndicatorProps) {
   return (
-    <div className="flex items-center">
+   <div
+      className={`flex items-center`}
+    >
+
       <AutosaveBubble
         autosaving={autosaving}
         lastLocalSave={lastLocalSave}
@@ -50,6 +53,7 @@ const shouldOpen = forceOpen;
   return (
     <div
       className="
+        autosave-bubble-sm
         group relative
         h-10 w-10
         rounded-full
@@ -59,8 +63,10 @@ const shouldOpen = forceOpen;
       "
       aria-hidden
     >
-  <div
+
+<div
   className={`
+    autosave-expanded
     absolute left-0 top-1/2
     -translate-y-1/2
     h-10
@@ -79,7 +85,9 @@ const shouldOpen = forceOpen;
   `}
 >
 
-<span className="text-xs text-[#4A3820] flex items-center gap-1">
+
+<span className="autosave-bubble-text-sm text-xs text-[#4A3820] flex items-center gap-1">
+
   {autosaving && "Autosaving…"}
 
   {!autosaving &&

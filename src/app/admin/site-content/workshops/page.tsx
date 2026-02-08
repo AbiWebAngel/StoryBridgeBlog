@@ -725,52 +725,51 @@ export default function AdminWorkshopsPage() {
                     <label className="block text-sm font-medium text-[#4A3820] mb-2">
                       Description Text
                     </label>
-                    <textarea
-                      value={content.whatAreWorkshops.text}
-                      onChange={(e) =>
-                        setContent((prev) => ({
-                          ...prev,
-                          whatAreWorkshops: {
-                            ...prev.whatAreWorkshops,
-                            text: e.target.value,
-                          },
-                        }))
-                      }
-                      className="w-full px-4 py-2 rounded-lg border-2 border-[#805C2C] bg-white text-[#4A3820] placeholder-[#4A3820]/60 focus:outline-none focus:ring-2 focus:ring-[#805C2C]/50 min-h-50"
-                      placeholder="Enter description text about workshops..."
-                    />
+                  <textarea
+                    value={content.whatAreWorkshops.text}
+                    onChange={(e) =>
+                      setContent((prev) => ({
+                        ...prev,
+                        whatAreWorkshops: {
+                          ...prev.whatAreWorkshops,
+                          text: e.target.value,
+                        },
+                      }))
+                    }
+                    className="w-full px-4 py-2 rounded-lg border-2 border-[#805C2C] bg-white text-[#4A3820] placeholder-[#4A3820]/60 focus:outline-none focus:ring-2 focus:ring-[#805C2C]/50 min-h-50 scrollable-description"
+                    placeholder="Enter description text about workshops..."
+                  />
                   </div>
                 </div>
               </div>
 
               {/* Events Section */}
-              <div className="bg-white rounded-lg border border-[#D8CDBE] p-5 shadow-md">
-                <div className="flex justify-between items-center mb-6">
-                  <h3 className="text-xl font-bold text-[#4A3820] font-sans!">
-                    Upcoming Workshops
-                  </h3>
-                  <button
-                    onClick={addEvent}
-                    className="px-4 py-2 rounded-lg border-2 border-[#805C2C] text-[#805C2C] font-medium hover:bg-[#F0E8DB] transition-colors font-sans!"
-                  >
-                    + Add Workshop
-                  </button>
-                </div>
+              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6 gap-4 sm:gap-0">
+                <h3 className="text-xl font-bold text-[#4A3820] font-sans!">
+                  Upcoming Workshops
+                </h3>
+                <button
+                  onClick={addEvent}
+                  className="px-4 py-2 rounded-lg border-2 border-[#805C2C] text-[#805C2C] font-medium hover:bg-[#F0E8DB] transition-colors font-sans! w-full sm:w-auto"
+                >
+                  + Add Workshop
+                </button>
+              </div>
 
                 <div className="mt-6 space-y-6">
                   {content.events.map((event, index) => (
                     <div key={index} className="border-2 border-[#D8CDBE] rounded-lg p-5 bg-[#F9F5F0]">
-                      <div className="flex justify-between items-start mb-4">
-                        <h4 className="font-bold text-[#4A3820] font-sans!">
-                          Workshop #{index + 1}
-                        </h4>
-                        <button
-                          onClick={() => removeEvent(index)}
-                          className="px-3 py-1 rounded-lg border-2 border-red-500 text-red-500 text-sm hover:bg-red-50 transition-colors font-sans!"
-                        >
-                          Remove
-                        </button>
-                      </div>
+                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-4 gap-2 sm:gap-0">
+                      <h4 className="font-bold text-[#4A3820] font-sans!">
+                        Workshop #{index + 1}
+                      </h4>
+                      <button
+                        onClick={() => removeEvent(index)}
+                        className="px-3 py-1 rounded-lg border-2 border-red-500 text-red-500 text-sm hover:bg-red-50 transition-colors font-sans! w-full sm:w-auto"
+                      >
+                        Remove
+                      </button>
+                    </div>
 
                       <div className="space-y-4">
                         <div>
@@ -821,21 +820,21 @@ export default function AdminWorkshopsPage() {
                             Short Description
                           </label>
                           <textarea
-                            value={event.description}
-                            onChange={(e) => handleEventChange(index, "description", e.target.value)}
-                            className="w-full px-4 py-2 rounded-lg border-2 border-[#805C2C] bg-white text-[#4A3820] placeholder-[#4A3820]/60 focus:outline-none focus:ring-2 focus:ring-[#805C2C]/50 min-h-20"
-                            placeholder="Brief description of the workshop"
-                          />
+                              value={event.description}
+                              onChange={(e) => handleEventChange(index, "description", e.target.value)}
+                              className="w-full px-4 py-2 rounded-lg border-2 border-[#805C2C] bg-white text-[#4A3820] placeholder-[#4A3820]/60 focus:outline-none focus:ring-2 focus:ring-[#805C2C]/50 min-h-20 scrollable-description"
+                              placeholder="Brief description of the workshop"
+                            />
                         </div>
 
                         <div>
                           <label className="block text-sm font-medium text-[#4A3820] mb-2">
                             Full Description
                           </label>
-                          <textarea
+                         <textarea
                             value={event.fullDescription}
                             onChange={(e) => handleEventChange(index, "fullDescription", e.target.value)}
-                            className="w-full px-4 py-2 rounded-lg border-2 border-[#805C2C] bg-white text-[#4A3820] placeholder-[#4A3820]/60 focus:outline-none focus:ring-2 focus:ring-[#805C2C]/50 min-h-40"
+                            className="w-full px-4 py-2 rounded-lg border-2 border-[#805C2C] bg-white text-[#4A3820] placeholder-[#4A3820]/60 focus:outline-none focus:ring-2 focus:ring-[#805C2C]/50 min-h-40 scrollable-description"
                             placeholder="Detailed description of the workshop"
                           />
                         </div>
@@ -925,37 +924,37 @@ export default function AdminWorkshopsPage() {
 
                         {/* Additional Info */}
                         <div>
-                          <div className="flex justify-between items-center mb-2">
+                          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-2 gap-2 sm:gap-0">
                             <label className="block text-sm font-medium text-[#4A3820]">
                               Additional Information
                             </label>
                             <button
                               type="button"
                               onClick={() => addAdditionalInfo(index)}
-                              className="px-3 py-1 text-sm rounded-lg border border-[#805C2C] text-[#805C2C] hover:bg-[#F0E8DB] transition-colors font-sans!"
+                              className="px-3 py-1 text-sm rounded-lg border border-[#805C2C] text-[#805C2C] hover:bg-[#F0E8DB] transition-colors font-sans! w-full sm:w-auto"
                             >
                               + Add Point
                             </button>
                           </div>
                           {event.additionalInfo.map((info, infoIndex) => (
-                            <div key={infoIndex} className="flex items-start gap-2 mb-2">
+                            <div key={infoIndex} className="flex flex-col sm:flex-row sm:items-start gap-2 mb-2">
+                            <div className="flex items-start gap-2 w-full">
                               <span className="mt-2 text-[#4A3820]">•</span>
-                              <div className="flex-1 flex items-center gap-2">
-                                <textarea
-                                  value={info}
-                                  onChange={(e) => handleAdditionalInfoChange(index, infoIndex, e.target.value)}
-                                  className="flex-1 px-4 py-2 rounded-lg border-2 border-[#805C2C] bg-white text-[#4A3820] placeholder-[#4A3820]/60 focus:outline-none focus:ring-2 focus:ring-[#805C2C]/50 min-h-15"
-                                  placeholder={`Information point ${infoIndex + 1}`}
-                                />
-                                <button
-                                  type="button"
-                                  onClick={() => removeAdditionalInfo(index, infoIndex)}
-                                  className="px-2 py-1 text-sm rounded-lg border border-red-500 text-red-500 hover:bg-red-50 transition-colors font-sans!"
-                                >
-                                  Remove
-                                </button>
-                              </div>
+                              <textarea
+                                value={info}
+                                onChange={(e) => handleAdditionalInfoChange(index, infoIndex, e.target.value)}
+                                className="flex-1 px-4 py-2 rounded-lg border-2 border-[#805C2C] bg-white text-[#4A3820] placeholder-[#4A3820]/60 focus:outline-none focus:ring-2 focus:ring-[#805C2C]/50 min-h-15 scrollable-description"
+                                placeholder={`Information point ${infoIndex + 1}`}
+                              />
                             </div>
+                            <button
+                              type="button"
+                              onClick={() => removeAdditionalInfo(index, infoIndex)}
+                              className="px-3 py-2 text-sm rounded-lg border border-red-500 text-red-500 hover:bg-red-50 transition-colors font-sans! w-full sm:w-auto sm:mt-2"
+                            >
+                              Remove
+                            </button>
+                          </div>
                           ))}
                         </div>
                       </div>
@@ -963,7 +962,6 @@ export default function AdminWorkshopsPage() {
                   ))}
                 </div>
               </div>
-            </div>
           )}
         </div>
 

@@ -30,6 +30,24 @@ p, ul, li, span, a {
   font-size: 18px;
 }
 
+@media (max-width: 400px) {
+.autosave-bubble-shift {
+    margin-right: 12px; /* pulls it left so it never clips */
+  }
+  .autosave-bubble-sm {
+    transform: scale(0.75);
+    transform-origin: bottom right;
+  }
+
+   .autosave-bubble-sm .autosave-expanded {
+    height: 2.25rem; /* instead of 2.5rem */
+  }
+
+  .autosave-bubble-text-sm {
+    font-size: 0.65rem; /* ~10px */
+  }
+}
+
 /* Responsive text sizes */
 @media (min-width: 640px) { p { font-size: 18.5px; } }
 @media (min-width: 768px) { p { font-size: 19px; } }

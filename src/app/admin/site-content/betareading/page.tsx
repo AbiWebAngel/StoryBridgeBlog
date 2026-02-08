@@ -667,7 +667,7 @@ export default function AdminBetareadingPage() {
                     <label className="block text-sm font-medium text-[#4A3820] mb-2">
                       Description Text
                     </label>
-                    <textarea
+                   <textarea
                       value={content.whatIsBetareading.text}
                       onChange={(e) =>
                         setContent((prev) => ({
@@ -678,7 +678,7 @@ export default function AdminBetareadingPage() {
                           },
                         }))
                       }
-                      className="w-full px-4 py-2 rounded-lg border-2 border-[#805C2C] bg-white text-[#4A3820] placeholder-[#4A3820]/60 focus:outline-none focus:ring-2 focus:ring-[#805C2C]/50 min-h-50"
+                      className="w-full px-4 py-2 rounded-lg border-2 border-[#805C2C] bg-white text-[#4A3820] placeholder-[#4A3820]/60 focus:outline-none focus:ring-2 focus:ring-[#805C2C]/50 min-h-50 scrollable-description"
                       placeholder="Enter description text..."
                     />
                   </div>
@@ -698,10 +698,10 @@ export default function AdminBetareadingPage() {
                     {content.whatWeOffer.text.map((point, index) => (
                       <div key={index} className="flex items-start gap-2 mb-2">
                         <span className="mt-2 text-[#4A3820]">•</span>
-                        <textarea
+                      <textarea
                           value={point}
                           onChange={(e) => handleWhatWeOfferTextChange(index, e.target.value)}
-                          className="flex-1 px-4 py-2 rounded-lg border-2 border-[#805C2C] bg-white text-[#4A3820] placeholder-[#4A3820]/60 focus:outline-none focus:ring-2 focus:ring-[#805C2C]/50 min-h-15"
+                          className="flex-1 px-4 py-2 rounded-lg border-2 border-[#805C2C] bg-white text-[#4A3820] placeholder-[#4A3820]/60 focus:outline-none focus:ring-2 focus:ring-[#805C2C]/50 min-h-15 scrollable-description"
                           placeholder={`Point ${index + 1}`}
                         />
                       </div>
@@ -823,7 +823,7 @@ export default function AdminBetareadingPage() {
                             },
                           }))
                         }
-                        className="w-full px-4 py-2 rounded-lg border-2 border-[#805C2C] bg-white text-[#4A3820] placeholder-[#4A3820]/60 focus:outline-none focus:ring-2 focus:ring-[#805C2C]/50 min-h-50"
+                        className="w-full px-4 py-2 rounded-lg border-2 border-[#805C2C] bg-white text-[#4A3820] placeholder-[#4A3820]/60 focus:outline-none focus:ring-2 focus:ring-[#805C2C]/50 min-h-50 scrollable-description"
                         placeholder="Enter finding beta readers section description..."
                       />
                     </div>
@@ -977,22 +977,22 @@ export default function AdminBetareadingPage() {
                         Description
                       </label>
                       <textarea
-                        value={content.signUpNow.becomingBetaReaderSection.description}
-                        onChange={(e) =>
-                          setContent((prev) => ({
-                            ...prev,
-                            signUpNow: {
-                              ...prev.signUpNow,
-                              becomingBetaReaderSection: {
-                                ...prev.signUpNow.becomingBetaReaderSection,
-                                description: e.target.value,
+                          value={content.signUpNow.becomingBetaReaderSection.description}
+                          onChange={(e) =>
+                            setContent((prev) => ({
+                              ...prev,
+                              signUpNow: {
+                                ...prev.signUpNow,
+                                becomingBetaReaderSection: {
+                                  ...prev.signUpNow.becomingBetaReaderSection,
+                                  description: e.target.value,
+                                },
                               },
-                            },
-                          }))
-                        }
-                        className="w-full px-4 py-2 rounded-lg border-2 border-[#805C2C] bg-white text-[#4A3820] placeholder-[#4A3820]/60 focus:outline-none focus:ring-2 focus:ring-[#805C2C]/50 min-h-50"
-                        placeholder="Enter becoming beta reader section description..."
-                      />
+                            }))
+                          }
+                          className="w-full px-4 py-2 rounded-lg border-2 border-[#805C2C] bg-white text-[#4A3820] placeholder-[#4A3820]/60 focus:outline-none focus:ring-2 focus:ring-[#805C2C]/50 min-h-50 scrollable-description"
+                          placeholder="Enter becoming beta reader section description..."
+                        />
                     </div>
 
                     <div>
@@ -1145,11 +1145,11 @@ export default function AdminBetareadingPage() {
                             Testimonial Text
                           </label>
                           <textarea
-                            value={testimonial.text}
-                            onChange={(e) => handleTestimonialChange(index, "text", e.target.value)}
-                            className="w-full px-4 py-2 rounded-lg border-2 border-[#805C2C] bg-white text-[#4A3820] placeholder-[#4A3820]/60 focus:outline-none focus:ring-2 focus:ring-[#805C2C]/50 min-h-20"
-                            placeholder="Enter testimonial text..."
-                          />
+                              value={testimonial.text}
+                              onChange={(e) => handleTestimonialChange(index, "text", e.target.value)}
+                              className="w-full px-4 py-2 rounded-lg border-2 border-[#805C2C] bg-white text-[#4A3820] placeholder-[#4A3820]/60 focus:outline-none focus:ring-2 focus:ring-[#805C2C]/50 min-h-20 scrollable-description"
+                              placeholder="Enter testimonial text..."
+                            />
                         </div>
 
                         <div>

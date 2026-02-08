@@ -887,7 +887,7 @@ useEffect(() => {
           </div>
         )}
 
-        <div className="bg-[#F0E8DB] border border-[#D8CDBE] rounded-lg shadow-md p-6 sm:p-8">
+        <div className="bg-[#F0E8DB] border border-[#D8CDBE] rounded-lg shadow-md p-6 sm:p-8 mb-4">
           <h2 className="text-2xl font-medium text-[#4A3820] mb-4 font-sans!">
             Article Details
           </h2>

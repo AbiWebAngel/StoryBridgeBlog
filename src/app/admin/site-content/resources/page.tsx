@@ -1160,15 +1160,15 @@ const addCompetition = () => {
                 </div>
               </div>
 
-              {/* Literacy Magazines Section */}
+             {/* Literacy Magazines Section */}
               <div className="bg-white rounded-lg border border-[#D8CDBE] p-5 shadow-md">
-                <div className="flex justify-between items-center mb-6">
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6 gap-4 sm:gap-0">
                   <h3 className="text-xl font-bold text-[#4A3820] font-sans!">
                     Literacy Magazines
                   </h3>
                   <button
                     onClick={addMagazine}
-                    className="px-4 py-2 rounded-lg border-2 border-[#805C2C] text-[#805C2C] font-medium hover:bg-[#F0E8DB] transition-colors font-sans!"
+                    className="px-4 py-2 rounded-lg border-2 border-[#805C2C] text-[#805C2C] font-medium hover:bg-[#F0E8DB] transition-colors font-sans! w-full sm:w-auto"
                   >
                     + Add Magazine
                   </button>
@@ -1177,13 +1177,13 @@ const addCompetition = () => {
                 <div className="mt-6 space-y-6">
                   {content.magazines.map((magazine, index) => (
                     <div key={index} className="border-2 border-[#D8CDBE] rounded-lg p-5 bg-[#F9F5F0]">
-                      <div className="flex justify-between items-start mb-4">
+                      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-4 gap-2 sm:gap-0">
                         <h4 className="font-bold text-[#4A3820] font-sans!">
                           Magazine #{index + 1}
                         </h4>
                         <button
                           onClick={() => removeMagazine(index)}
-                          className="px-3 py-1 rounded-lg border-2 border-red-500 text-red-500 text-sm hover:bg-red-50 transition-colors font-sans!"
+                          className="px-3 py-1 rounded-lg border-2 border-red-500 text-red-500 text-sm hover:bg-red-50 transition-colors font-sans! w-full sm:w-auto"
                         >
                           Remove
                         </button>
@@ -1210,7 +1210,7 @@ const addCompetition = () => {
                           <textarea
                             value={magazine.description}
                             onChange={(e) => handleMagazineChange(index, "description", e.target.value)}
-                            className="w-full px-4 py-2 rounded-lg border-2 border-[#805C2C] bg-white text-[#4A3820] placeholder-[#4A3820]/60 focus:outline-none focus:ring-2 focus:ring-[#805C2C]/50 min-h-20"
+                            className="w-full px-4 py-2 rounded-lg border-2 border-[#805C2C] bg-white text-[#4A3820] placeholder-[#4A3820]/60 focus:outline-none focus:ring-2 focus:ring-[#805C2C]/50 min-h-20 scrollable-description"
                             placeholder="Magazine description"
                           />
                         </div>
@@ -1258,60 +1258,60 @@ const addCompetition = () => {
                 </div>
               </div>
 
-              {/* Writing Competitions Section */}
-              <div className="bg-white rounded-lg border border-[#D8CDBE] p-5 shadow-md">
-                <div className="flex justify-between items-center mb-6">
-                  <h3 className="text-xl font-bold text-[#4A3820] font-sans!">
-                    Writing Competitions
-                  </h3>
-                  <button
-                    onClick={addCompetition}
-                    className="px-4 py-2 rounded-lg border-2 border-[#805C2C] text-[#805C2C] font-medium hover:bg-[#F0E8DB] transition-colors font-sans!"
-                  >
-                    + Add Competition
-                  </button>
-                </div>
+            {/* Writing Competitions Section */}
+            <div className="bg-white rounded-lg border border-[#D8CDBE] p-5 shadow-md">
+              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6 gap-4 sm:gap-0">
+                <h3 className="text-xl font-bold text-[#4A3820] font-sans!">
+                  Writing Competitions
+                </h3>
+                <button
+                  onClick={addCompetition}
+                  className="px-4 py-2 rounded-lg border-2 border-[#805C2C] text-[#805C2C] font-medium hover:bg-[#F0E8DB] transition-colors font-sans! w-full sm:w-auto"
+                >
+                  + Add Competition
+                </button>
+              </div>
 
-                <div className="mt-6 space-y-6">
-                  {content.writingCompetitions.map((competition, index) => (
-                    <div key={index} className="border-2 border-[#D8CDBE] rounded-lg p-5 bg-[#F9F5F0]">
-                      <div className="flex justify-between items-start mb-4">
-                        <h4 className="font-bold text-[#4A3820] font-sans!">
-                          Competition #{index + 1}
-                        </h4>
-                        <button
-                          onClick={() => removeCompetition(index)}
-                          className="px-3 py-1 rounded-lg border-2 border-red-500 text-red-500 text-sm hover:bg-red-50 transition-colors font-sans!"
-                        >
-                          Remove
-                        </button>
+              <div className="mt-6 space-y-6">
+                {content.writingCompetitions.map((competition, index) => (
+                  <div key={index} className="border-2 border-[#D8CDBE] rounded-lg p-5 bg-[#F9F5F0]">
+                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-4 gap-2 sm:gap-0">
+                      <h4 className="font-bold text-[#4A3820] font-sans!">
+                        Competition #{index + 1}
+                      </h4>
+                      <button
+                        onClick={() => removeCompetition(index)}
+                        className="px-3 py-1 rounded-lg border-2 border-red-500 text-red-500 text-sm hover:bg-red-50 transition-colors font-sans! w-full sm:w-auto"
+                      >
+                        Remove
+                      </button>
+                    </div>
+
+                    <div className="space-y-4">
+                      <div>
+                        <label className="block text-sm font-medium text-[#4A3820] mb-2">
+                          Title
+                        </label>
+                        <input
+                          type="text"
+                          value={competition.title}
+                          onChange={(e) => handleCompetitionChange(index, "title", e.target.value)}
+                          className="w-full px-4 py-2 rounded-lg border-2 border-[#805C2C] bg-white text-[#4A3820] placeholder-[#4A3820]/60 focus:outline-none focus:ring-2 focus:ring-[#805C2C]/50"
+                          placeholder="Competition title"
+                        />
                       </div>
 
-                      <div className="space-y-4">
-                        <div>
-                          <label className="block text-sm font-medium text-[#4A3820] mb-2">
-                            Title
-                          </label>
-                          <input
-                            type="text"
-                            value={competition.title}
-                            onChange={(e) => handleCompetitionChange(index, "title", e.target.value)}
-                            className="w-full px-4 py-2 rounded-lg border-2 border-[#805C2C] bg-white text-[#4A3820] placeholder-[#4A3820]/60 focus:outline-none focus:ring-2 focus:ring-[#805C2C]/50"
-                            placeholder="Competition title"
-                          />
-                        </div>
-
-                        <div>
-                          <label className="block text-sm font-medium text-[#4A3820] mb-2">
-                            Description
-                          </label>
-                          <textarea
-                            value={competition.description}
-                            onChange={(e) => handleCompetitionChange(index, "description", e.target.value)}
-                            className="w-full px-4 py-2 rounded-lg border-2 border-[#805C2C] bg-white text-[#4A3820] placeholder-[#4A3820]/60 focus:outline-none focus:ring-2 focus:ring-[#805C2C]/50 min-h-20"
-                            placeholder="Brief description of the competition"
-                          />
-                        </div>
+                      <div>
+                        <label className="block text-sm font-medium text-[#4A3820] mb-2">
+                          Description
+                        </label>
+                        <textarea
+                          value={competition.description}
+                          onChange={(e) => handleCompetitionChange(index, "description", e.target.value)}
+                          className="w-full px-4 py-2 rounded-lg border-2 border-[#805C2C] bg-white text-[#4A3820] placeholder-[#4A3820]/60 focus:outline-none focus:ring-2 focus:ring-[#805C2C]/50 min-h-20 scrollable-description"
+                          placeholder="Brief description of the competition"
+                        />
+                      </div>
 
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
@@ -1349,315 +1349,315 @@ const addCompetition = () => {
                         </div>
                       </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <div>
-                            <label className="block text-sm font-medium text-[#4A3820] mb-2">
-                              Entry Fee
-                            </label>
-                            <input
-                              type="text"
-                              value={competition.entryFee}
-                              onChange={(e) => handleCompetitionChange(index, "entryFee", e.target.value)}
-                              className="w-full px-4 py-2 rounded-lg border-2 border-[#805C2C] bg-white text-[#4A3820] placeholder-[#4A3820]/60 focus:outline-none focus:ring-2 focus:ring-[#805C2C]/50"
-                              placeholder="e.g., $15 per entry"
-                            />
-                          </div>
-
-                          <div>
-                            <label className="block text-sm font-medium text-[#4A3820] mb-2">
-                              Eligibility
-                            </label>
-                            <input
-                              type="text"
-                              value={competition.eligibility}
-                              onChange={(e) => handleCompetitionChange(index, "eligibility", e.target.value)}
-                              className="w-full px-4 py-2 rounded-lg border-2 border-[#805C2C] bg-white text-[#4A3820] placeholder-[#4A3820]/60 focus:outline-none focus:ring-2 focus:ring-[#805C2C]/50"
-                              placeholder="e.g., Open to all writers 18+, worldwide"
-                            />
-                          </div>
-                        </div>
-
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                           <label className="block text-sm font-medium text-[#4A3820] mb-2">
-                            Registration Link
-                          </label>
-                          <input
-                            type="url"
-                            value={competition.registrationLink}
-                            onChange={(e) => handleCompetitionChange(index, "registrationLink", e.target.value)}
-                            className="w-full px-4 py-2 rounded-lg border-2 border-[#805C2C] bg-white text-[#4A3820] placeholder-[#4A3820]/60 focus:outline-none focus:ring-2 focus:ring-[#805C2C]/50"
-                            placeholder="https://example.com/register"
-                          />
-                        </div>
-
-                        {/* Competition Image Upload */}
-                        {renderImageUpload(
-                          `Competition ${index + 1} Image`,
-                          competition.image.src,
-                          async (file) => {
-                            setUploading(true);
-                            try {
-                              setCompetitionImageUploadProgress((prev) => ({ ...prev, [index]: 0 }));
-                              const url = await uploadAsset(
-                                file,
-                                "resources/competitions",
-                                (p) => setCompetitionImageUploadProgress((prev) => ({ ...prev, [index]: p }))
-                              );
-                              handleCompetitionChange(index, "image", { src: url });
-                            } catch (err) {
-                              console.error("Upload error:", err);
-                            } finally {
-                              setCompetitionImageUploadProgress((prev) => ({ ...prev, [index]: null }));
-                              setUploading(false);
-                            }
-                          },
-                          competitionImageUploadProgress[index] || null,
-                          competition.image.alt
-                        )}
-
-                        <div>
-                          <label className="block text-sm font-medium text-[#4A3820] mb-2">
-                            Image Alt Text
+                            Entry Fee
                           </label>
                           <input
                             type="text"
-                            value={competition.image.alt}
-                            onChange={(e) => handleCompetitionChange(index, "image", { alt: e.target.value })}
+                            value={competition.entryFee}
+                            onChange={(e) => handleCompetitionChange(index, "entryFee", e.target.value)}
                             className="w-full px-4 py-2 rounded-lg border-2 border-[#805C2C] bg-white text-[#4A3820] placeholder-[#4A3820]/60 focus:outline-none focus:ring-2 focus:ring-[#805C2C]/50"
-                            placeholder="Describe the competition image"
+                            placeholder="e.g., $15 per entry"
                           />
                         </div>
 
-                        {/* Rules */}
                         <div>
-                          <div className="flex justify-between items-center mb-2">
-                            <label className="block text-sm font-medium text-[#4A3820]">
-                              Competition Rules
-                            </label>
-                            <button
-                              type="button"
-                              onClick={() => addCompetitionRule(index)}
-                              className="px-3 py-1 text-sm rounded-lg border border-[#805C2C] text-[#805C2C] hover:bg-[#F0E8DB] transition-colors font-sans!"
-                            >
-                              + Add Rule
-                            </button>
-                          </div>
-                          {competition.rules.map((rule, ruleIndex) => (
-                            <div key={ruleIndex} className="flex items-start gap-2 mb-2">
-                              <span className="mt-2 text-[#4A3820]">•</span>
-                              <div className="flex-1 flex items-center gap-2">
-                                <textarea
-                                  value={rule}
-                                  onChange={(e) => handleCompetitionRuleChange(index, ruleIndex, e.target.value)}
-                                  className="flex-1 px-4 py-2 rounded-lg border-2 border-[#805C2C] bg-white text-[#4A3820] placeholder-[#4A3820]/60 focus:outline-none focus:ring-2 focus:ring-[#805C2C]/50 min-h-15"
-                                  placeholder={`Rule ${ruleIndex + 1}`}
-                                />
-                                <button
-                                  type="button"
-                                  onClick={() => removeCompetitionRule(index, ruleIndex)}
-                                  className="px-2 py-1 text-sm rounded-lg border border-red-500 text-red-500 hover:bg-red-50 transition-colors font-sans!"
-                                >
-                                  Remove
-                                </button>
-                              </div>
-                            </div>
-                          ))}
+                          <label className="block text-sm font-medium text-[#4A3820] mb-2">
+                            Eligibility
+                          </label>
+                          <input
+                            type="text"
+                            value={competition.eligibility}
+                            onChange={(e) => handleCompetitionChange(index, "eligibility", e.target.value)}
+                            className="w-full px-4 py-2 rounded-lg border-2 border-[#805C2C] bg-white text-[#4A3820] placeholder-[#4A3820]/60 focus:outline-none focus:ring-2 focus:ring-[#805C2C]/50"
+                            placeholder="e.g., Open to all writers 18+, worldwide"
+                          />
                         </div>
                       </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-[#4A3820] mb-2">
+                          Registration Link
+                        </label>
+                        <input
+                          type="url"
+                          value={competition.registrationLink}
+                          onChange={(e) => handleCompetitionChange(index, "registrationLink", e.target.value)}
+                          className="w-full px-4 py-2 rounded-lg border-2 border-[#805C2C] bg-white text-[#4A3820] placeholder-[#4A3820]/60 focus:outline-none focus:ring-2 focus:ring-[#805C2C]/50"
+                          placeholder="https://example.com/register"
+                        />
+                      </div>
+
+                      {/* Competition Image Upload */}
+                      {renderImageUpload(
+                        `Competition ${index + 1} Image`,
+                        competition.image.src,
+                        async (file) => {
+                          setUploading(true);
+                          try {
+                            setCompetitionImageUploadProgress((prev) => ({ ...prev, [index]: 0 }));
+                            const url = await uploadAsset(
+                              file,
+                              "resources/competitions",
+                              (p) => setCompetitionImageUploadProgress((prev) => ({ ...prev, [index]: p }))
+                            );
+                            handleCompetitionChange(index, "image", { src: url });
+                          } catch (err) {
+                            console.error("Upload error:", err);
+                          } finally {
+                            setCompetitionImageUploadProgress((prev) => ({ ...prev, [index]: null }));
+                            setUploading(false);
+                          }
+                        },
+                        competitionImageUploadProgress[index] || null,
+                        competition.image.alt
+                      )}
+
+                      <div>
+                        <label className="block text-sm font-medium text-[#4A3820] mb-2">
+                          Image Alt Text
+                        </label>
+                        <input
+                          type="text"
+                          value={competition.image.alt}
+                          onChange={(e) => handleCompetitionChange(index, "image", { alt: e.target.value })}
+                          className="w-full px-4 py-2 rounded-lg border-2 border-[#805C2C] bg-white text-[#4A3820] placeholder-[#4A3820]/60 focus:outline-none focus:ring-2 focus:ring-[#805C2C]/50"
+                          placeholder="Describe the competition image"
+                        />
+                      </div>
+
+                      {/* Rules - Fixed responsive layout */}
+                      <div>
+                        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-2 gap-2 sm:gap-0">
+                          <label className="block text-sm font-medium text-[#4A3820]">
+                            Competition Rules
+                          </label>
+                          <button
+                            type="button"
+                            onClick={() => addCompetitionRule(index)}
+                            className="px-3 py-1 text-sm rounded-lg border border-[#805C2C] text-[#805C2C] hover:bg-[#F0E8DB] transition-colors font-sans! w-full sm:w-auto whitespace-nowrap"
+                          >
+                            + Add Rule
+                          </button>
+                        </div>
+                        {competition.rules.map((rule, ruleIndex) => (
+                          <div key={ruleIndex} className="flex flex-col sm:flex-row sm:items-start gap-2 mb-2">
+                            <div className="flex items-start gap-2 w-full">
+                              <span className="mt-2 text-[#4A3820]">•</span>
+                              <textarea
+                                value={rule}
+                                onChange={(e) => handleCompetitionRuleChange(index, ruleIndex, e.target.value)}
+                                className="flex-1 px-4 py-2 rounded-lg border-2 border-[#805C2C] bg-white text-[#4A3820] placeholder-[#4A3820]/60 focus:outline-none focus:ring-2 focus:ring-[#805C2C]/50 min-h-15 scrollable-description"
+                                placeholder={`Rule ${ruleIndex + 1}`}
+                              />
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => removeCompetitionRule(index, ruleIndex)}
+                              className="px-3 py-2 text-sm rounded-lg border border-red-500 text-red-500 hover:bg-red-50 transition-colors font-sans! w-full sm:w-auto sm:mt-2"
+                            >
+                              Remove
+                            </button>
+                          </div>
+                        ))}
+                      </div>
                     </div>
-                  ))}
-                </div>
+                  </div>
+                ))}
               </div>
+            </div>
 
-              {/* Summer Programs Section */}
-              <div className="bg-white rounded-lg border border-[#D8CDBE] p-5 shadow-md">
-                <div className="flex justify-between items-center mb-6">
-                  <h3 className="text-xl font-bold text-[#4A3820] font-sans!">
-                    Summer Programs
-                  </h3>
-                  <button
-                    onClick={addProgram}
-                    className="px-4 py-2 rounded-lg border-2 border-[#805C2C] text-[#805C2C] font-medium hover:bg-[#F0E8DB] transition-colors font-sans!"
-                  >
-                    + Add Program
-                  </button>
-                </div>
+         {/* Summer Programs Section */}
+          <div className="bg-white rounded-lg border border-[#D8CDBE] p-5 shadow-md">
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6 gap-4 sm:gap-0">
+              <h3 className="text-xl font-bold text-[#4A3820] font-sans!">
+                Summer Programs
+              </h3>
+              <button
+                onClick={addProgram}
+                className="px-4 py-2 rounded-lg border-2 border-[#805C2C] text-[#805C2C] font-medium hover:bg-[#F0E8DB] transition-colors font-sans! w-full sm:w-auto"
+              >
+                + Add Program
+              </button>
+            </div>
 
-                <div className="mt-6 space-y-6">
-                  {content.summerPrograms.map((program, index) => (
-                    <div key={index} className="border-2 border-[#D8CDBE] rounded-lg p-5 bg-[#F9F5F0]">
-                      <div className="flex justify-between items-start mb-4">
-                        <h4 className="font-bold text-[#4A3820] font-sans!">
-                          Program #{index + 1}
-                        </h4>
+            <div className="mt-6 space-y-6">
+              {content.summerPrograms.map((program, index) => (
+                <div key={index} className="border-2 border-[#D8CDBE] rounded-lg p-5 bg-[#F9F5F0]">
+                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-4 gap-2 sm:gap-0">
+                    <h4 className="font-bold text-[#4A3820] font-sans!">
+                      Program #{index + 1}
+                    </h4>
+                    <button
+                      onClick={() => removeProgram(index)}
+                      className="px-3 py-1 rounded-lg border-2 border-red-500 text-red-500 text-sm hover:bg-red-50 transition-colors font-sans! w-full sm:w-auto"
+                    >
+                      Remove
+                    </button>
+                  </div>
+
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-[#4A3820] mb-2">
+                        Title
+                      </label>
+                      <input
+                        type="text"
+                        value={program.title}
+                        onChange={(e) => handleProgramChange(index, "title", e.target.value)}
+                        className="w-full px-4 py-2 rounded-lg border-2 border-[#805C2C] bg-white text-[#4A3820] placeholder-[#4A3820]/60 focus:outline-none focus:ring-2 focus:ring-[#805C2C]/50"
+                        placeholder="Program title"
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-[#4A3820] mb-2">
+                          Duration
+                        </label>
+                        <input
+                          type="text"
+                          value={program.duration}
+                          onChange={(e) => handleProgramChange(index, "duration", e.target.value)}
+                          className="w-full px-4 py-2 rounded-lg border-2 border-[#805C2C] bg-white text-[#4A3820] placeholder-[#4A3820]/60 focus:outline-none focus:ring-2 focus:ring-[#805C2C]/50"
+                          placeholder="e.g., 4-6 Weeks"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-[#4A3820] mb-2">
+                          Location
+                        </label>
+                        <input
+                          type="text"
+                          value={program.location}
+                          onChange={(e) => handleProgramChange(index, "location", e.target.value)}
+                          className="w-full px-4 py-2 rounded-lg border-2 border-[#805C2C] bg-white text-[#4A3820] placeholder-[#4A3820]/60 focus:outline-none focus:ring-2 focus:ring-[#805C2C]/50"
+                          placeholder="Program location"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-[#4A3820] mb-2">
+                        Short Description
+                      </label>
+                      <textarea
+                        value={program.shortDescription}
+                        onChange={(e) => handleProgramChange(index, "shortDescription", e.target.value)}
+                        className="w-full px-4 py-2 rounded-lg border-2 border-[#805C2C] bg-white text-[#4A3820] placeholder-[#4A3820]/60 focus:outline-none focus:ring-2 focus:ring-[#805C2C]/50 min-h-20 scrollable-description"
+                        placeholder="Brief description of the program"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-[#4A3820] mb-2">
+                        Full Description
+                      </label>
+                      <textarea
+                        value={program.fullDescription}
+                        onChange={(e) => handleProgramChange(index, "fullDescription", e.target.value)}
+                        className="w-full px-4 py-2 rounded-lg border-2 border-[#805C2C] bg-white text-[#4A3820] placeholder-[#4A3820]/60 focus:outline-none focus:ring-2 focus:ring-[#805C2C]/50 min-h-40 scrollable-description"
+                        placeholder="Detailed description of the program"
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-[#4A3820] mb-2">
+                          Best For
+                        </label>
+                        <input
+                          type="text"
+                          value={program.bestFor}
+                          onChange={(e) => handleProgramChange(index, "bestFor", e.target.value)}
+                          className="w-full px-4 py-2 rounded-lg border-2 border-[#805C2C] bg-white text-[#4A3820] placeholder-[#4A3820]/60 focus:outline-none focus:ring-2 focus:ring-[#805C2C]/50"
+                          placeholder="Who is this program best for?"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-[#4A3820] mb-2">
+                          Outcome
+                        </label>
+                        <input
+                          type="text"
+                          value={program.outcome}
+                          onChange={(e) => handleProgramChange(index, "outcome", e.target.value)}
+                          className="w-full px-4 py-2 rounded-lg border-2 border-[#805C2C] bg-white text-[#4A3820] placeholder-[#4A3820]/60 focus:outline-none focus:ring-2 focus:ring-[#805C2C]/50"
+                          placeholder="What will participants achieve?"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-[#4A3820] mb-2">
+                        Category
+                      </label>
+                      <input
+                        type="text"
+                        value={program.category}
+                        onChange={(e) => handleProgramChange(index, "category", e.target.value)}
+                        className="w-full px-4 py-2 rounded-lg border-2 border-[#805C2C] bg-white text-[#4A3820] placeholder-[#4A3820]/60 focus:outline-none focus:ring-2 focus:ring-[#805C2C]/50"
+                        placeholder="Program category"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-[#4A3820] mb-2">
+                        Registration Link
+                      </label>
+                      <input
+                        type="url"
+                        value={program.registrationLink}
+                        onChange={(e) => handleProgramChange(index, "registrationLink", e.target.value)}
+                        className="w-full px-4 py-2 rounded-lg border-2 border-[#805C2C] bg-white text-[#4A3820] placeholder-[#4A3820]/60 focus:outline-none focus:ring-2 focus:ring-[#805C2C]/50"
+                        placeholder="https://example.com/register"
+                      />
+                    </div>
+
+                    {/* Additional Info - Fixed responsive layout */}
+                    <div>
+                      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-2 gap-2 sm:gap-0">
+                        <label className="block text-sm font-medium text-[#4A3820]">
+                          Additional Information
+                        </label>
                         <button
-                          onClick={() => removeProgram(index)}
-                          className="px-3 py-1 rounded-lg border-2 border-red-500 text-red-500 text-sm hover:bg-red-50 transition-colors font-sans!"
+                          type="button"
+                          onClick={() => addProgramAdditionalInfo(index)}
+                          className="px-3 py-1 text-sm rounded-lg border border-[#805C2C] text-[#805C2C] hover:bg-[#F0E8DB] transition-colors font-sans! w-full sm:w-auto whitespace-nowrap"
                         >
-                          Remove
+                          + Add Point
                         </button>
                       </div>
-
-                      <div className="space-y-4">
-                        <div>
-                          <label className="block text-sm font-medium text-[#4A3820] mb-2">
-                            Title
-                          </label>
-                          <input
-                            type="text"
-                            value={program.title}
-                            onChange={(e) => handleProgramChange(index, "title", e.target.value)}
-                            className="w-full px-4 py-2 rounded-lg border-2 border-[#805C2C] bg-white text-[#4A3820] placeholder-[#4A3820]/60 focus:outline-none focus:ring-2 focus:ring-[#805C2C]/50"
-                            placeholder="Program title"
-                          />
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <div>
-                            <label className="block text-sm font-medium text-[#4A3820] mb-2">
-                              Duration
-                            </label>
-                            <input
-                              type="text"
-                              value={program.duration}
-                              onChange={(e) => handleProgramChange(index, "duration", e.target.value)}
-                              className="w-full px-4 py-2 rounded-lg border-2 border-[#805C2C] bg-white text-[#4A3820] placeholder-[#4A3820]/60 focus:outline-none focus:ring-2 focus:ring-[#805C2C]/50"
-                              placeholder="e.g., 4-6 Weeks"
+                      {program.additionalInfo.map((info, infoIndex) => (
+                        <div key={infoIndex} className="flex flex-col sm:flex-row sm:items-start gap-2 mb-2">
+                          <div className="flex items-start gap-2 w-full">
+                            <span className="mt-2 text-[#4A3820]">•</span>
+                            <textarea
+                              value={info}
+                              onChange={(e) => handleProgramAdditionalInfoChange(index, infoIndex, e.target.value)}
+                              className="flex-1 px-4 py-2 rounded-lg border-2 border-[#805C2C] bg-white text-[#4A3820] placeholder-[#4A3820]/60 focus:outline-none focus:ring-2 focus:ring-[#805C2C]/50 min-h-15 scrollable-description"
+                              placeholder={`Information point ${infoIndex + 1}`}
                             />
                           </div>
-
-                          <div>
-                            <label className="block text-sm font-medium text-[#4A3820] mb-2">
-                              Location
-                            </label>
-                            <input
-                              type="text"
-                              value={program.location}
-                              onChange={(e) => handleProgramChange(index, "location", e.target.value)}
-                              className="w-full px-4 py-2 rounded-lg border-2 border-[#805C2C] bg-white text-[#4A3820] placeholder-[#4A3820]/60 focus:outline-none focus:ring-2 focus:ring-[#805C2C]/50"
-                              placeholder="Program location"
-                            />
-                          </div>
+                          <button
+                            type="button"
+                            onClick={() => removeProgramAdditionalInfo(index, infoIndex)}
+                            className="px-3 py-2 text-sm rounded-lg border border-red-500 text-red-500 hover:bg-red-50 transition-colors font-sans! w-full sm:w-auto sm:mt-2"
+                          >
+                            Remove
+                          </button>
                         </div>
-
-                        <div>
-                          <label className="block text-sm font-medium text-[#4A3820] mb-2">
-                            Short Description
-                          </label>
-                          <textarea
-                            value={program.shortDescription}
-                            onChange={(e) => handleProgramChange(index, "shortDescription", e.target.value)}
-                            className="w-full px-4 py-2 rounded-lg border-2 border-[#805C2C] bg-white text-[#4A3820] placeholder-[#4A3820]/60 focus:outline-none focus:ring-2 focus:ring-[#805C2C]/50 min-h-20"
-                            placeholder="Brief description of the program"
-                          />
-                        </div>
-
-                        <div>
-                          <label className="block text-sm font-medium text-[#4A3820] mb-2">
-                            Full Description
-                          </label>
-                          <textarea
-                            value={program.fullDescription}
-                            onChange={(e) => handleProgramChange(index, "fullDescription", e.target.value)}
-                            className="w-full px-4 py-2 rounded-lg border-2 border-[#805C2C] bg-white text-[#4A3820] placeholder-[#4A3820]/60 focus:outline-none focus:ring-2 focus:ring-[#805C2C]/50 min-h-40"
-                            placeholder="Detailed description of the program"
-                          />
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <div>
-                            <label className="block text-sm font-medium text-[#4A3820] mb-2">
-                              Best For
-                            </label>
-                            <input
-                              type="text"
-                              value={program.bestFor}
-                              onChange={(e) => handleProgramChange(index, "bestFor", e.target.value)}
-                              className="w-full px-4 py-2 rounded-lg border-2 border-[#805C2C] bg-white text-[#4A3820] placeholder-[#4A3820]/60 focus:outline-none focus:ring-2 focus:ring-[#805C2C]/50"
-                              placeholder="Who is this program best for?"
-                            />
-                          </div>
-
-                          <div>
-                            <label className="block text-sm font-medium text-[#4A3820] mb-2">
-                              Outcome
-                            </label>
-                            <input
-                              type="text"
-                              value={program.outcome}
-                              onChange={(e) => handleProgramChange(index, "outcome", e.target.value)}
-                              className="w-full px-4 py-2 rounded-lg border-2 border-[#805C2C] bg-white text-[#4A3820] placeholder-[#4A3820]/60 focus:outline-none focus:ring-2 focus:ring-[#805C2C]/50"
-                              placeholder="What will participants achieve?"
-                            />
-                          </div>
-                        </div>
-
-                        <div>
-                          <label className="block text-sm font-medium text-[#4A3820] mb-2">
-                            Category
-                          </label>
-                          <input
-                            type="text"
-                            value={program.category}
-                            onChange={(e) => handleProgramChange(index, "category", e.target.value)}
-                            className="w-full px-4 py-2 rounded-lg border-2 border-[#805C2C] bg-white text-[#4A3820] placeholder-[#4A3820]/60 focus:outline-none focus:ring-2 focus:ring-[#805C2C]/50"
-                            placeholder="Program category"
-                          />
-                        </div>
-
-                        <div>
-                          <label className="block text-sm font-medium text-[#4A3820] mb-2">
-                            Registration Link
-                          </label>
-                          <input
-                            type="url"
-                            value={program.registrationLink}
-                            onChange={(e) => handleProgramChange(index, "registrationLink", e.target.value)}
-                            className="w-full px-4 py-2 rounded-lg border-2 border-[#805C2C] bg-white text-[#4A3820] placeholder-[#4A3820]/60 focus:outline-none focus:ring-2 focus:ring-[#805C2C]/50"
-                            placeholder="https://example.com/register"
-                          />
-                        </div>
-
-                        {/* Additional Info */}
-                        <div>
-                          <div className="flex justify-between items-center mb-2">
-                            <label className="block text-sm font-medium text-[#4A3820]">
-                              Additional Information
-                            </label>
-                            <button
-                              type="button"
-                              onClick={() => addProgramAdditionalInfo(index)}
-                              className="px-3 py-1 text-sm rounded-lg border border-[#805C2C] text-[#805C2C] hover:bg-[#F0E8DB] transition-colors font-sans!"
-                            >
-                              + Add Point
-                            </button>
-                          </div>
-                          {program.additionalInfo.map((info, infoIndex) => (
-                            <div key={infoIndex} className="flex items-start gap-2 mb-2">
-                              <span className="mt-2 text-[#4A3820]">•</span>
-                              <div className="flex-1 flex items-center gap-2">
-                                <textarea
-                                  value={info}
-                                  onChange={(e) => handleProgramAdditionalInfoChange(index, infoIndex, e.target.value)}
-                                  className="flex-1 px-4 py-2 rounded-lg border-2 border-[#805C2C] bg-white text-[#4A3820] placeholder-[#4A3820]/60 focus:outline-none focus:ring-2 focus:ring-[#805C2C]/50 min-h-15"
-                                  placeholder={`Information point ${infoIndex + 1}`}
-                                />
-                                <button
-                                  type="button"
-                                  onClick={() => removeProgramAdditionalInfo(index, infoIndex)}
-                                  className="px-2 py-1 text-sm rounded-lg border border-red-500 text-red-500 hover:bg-red-50 transition-colors font-sans!"
-                                >
-                                  Remove
-                                </button>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
+                      ))}
                     </div>
-                  ))}
+                  </div>
                 </div>
-              </div>
+              ))}
+            </div>
+          </div>
             </div>
           )}
         </div>
