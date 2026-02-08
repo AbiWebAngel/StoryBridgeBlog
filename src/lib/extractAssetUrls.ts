@@ -139,5 +139,12 @@ export function extractAssetUrlsFromResources(content: ResourceContent): string[
     }
   });
 
+  // Extract competition image URLs
+  content.writingCompetitions.forEach((competition) => {
+    if (competition.image.src) {
+      urls.push(competition.image.src);
+    }
+  });
+
   return urls;
 }
