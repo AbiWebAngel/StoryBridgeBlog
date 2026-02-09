@@ -16,7 +16,13 @@ export default function MobileNav({ role }: { role: UserRole }) {
       {/* Floating drawer trigger */}
       <button
         onClick={() => setOpen(true)}
-        className="lg:hidden fixed left-3 bottom-4 z-40 bg-[#4A3820] text-white p-3 rounded-full shadow-md"
+        className="
+          lg:hidden
+          fixed top-20 left-4
+          z-40
+          bg-[#4A3820] text-white
+          p-3 rounded-full shadow-md
+        "
         aria-label="Open dashboard navigation"
       >
         <FiMenu size={20} />

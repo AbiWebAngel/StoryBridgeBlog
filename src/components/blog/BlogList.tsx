@@ -1,26 +1,26 @@
-// components/home/LatestBlogs.tsx
+"use client";
 
 import Image from "next/image";
 import FavouriteHeart from "./FavouriteHeart";
 import LoadingLink from "./LoadingLink";
 
-interface Article {
+export interface Article {
   id: string;
   title: string;
   excerpt: string;
   coverImage: string;
-  slug?: string; // optional now
+  slug?: string;
 }
 
-interface LatestBlogsProps {
+interface BlogListProps {
   articles: Article[];
   onRemoveFavourite?: (id: string) => void;
 }
 
-export default function LatestBlogs({
+export default function BlogList({
   articles,
   onRemoveFavourite,
-}: LatestBlogsProps) {
+}: BlogListProps) {
   if (!articles || articles.length === 0) {
     return (
       <p className="text-center text-gray-600">
@@ -34,7 +34,6 @@ export default function LatestBlogs({
       {articles.map((item) => {
         if (!item.id || !item.title) return null;
 
-        // ✅ ID-based routing only
         const href = `/blog/${item.id}`;
 
         return (
@@ -48,7 +47,7 @@ export default function LatestBlogs({
             {/* Heading */}
             <div className="flex justify-between items-start gap-4 pt-4 pb-2 px-4 sm:px-6 md:px-8">
               <LoadingLink href={href} className="flex-1 min-w-0">
-                <h3 className="font-cinzel text-[22px] font-bold break-words hover:underline">
+               <h3 className="font-cinzel text-[22px] font-bold break-words hover:underline text-center sm:text-left">
                   {item.title}
                 </h3>
               </LoadingLink>
@@ -57,7 +56,7 @@ export default function LatestBlogs({
                 <FavouriteHeart
                   articleId={item.id}
                   title={item.title}
-                  slug={item.slug} // still allowed, but not required
+                  slug={item.slug}
                   coverImage={item.coverImage}
                   excerpt={item.excerpt}
                   onUnfavourite={onRemoveFavourite}

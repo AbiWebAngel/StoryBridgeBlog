@@ -940,8 +940,10 @@ useEffect(() => {
                 maxLength={160}
                 rows={3}
                 placeholder="Short summary shown in search results (150–160 chars)"
-                className="w-full px-4 py-3 rounded-lg border-2 border-[#805C2C]"
+                className="w-full px-4 py-3 rounded-lg border-2 border-[#805C2C] scrollable-description"
+                style={{ resize: "none" }} // optional but recommended
               />
+
               <p className="mt-1 text-sm! text-gray-600 font-sans!">
                 {metaDescription.length}/160 characters
               </p>

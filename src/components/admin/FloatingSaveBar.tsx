@@ -82,11 +82,14 @@ export default function FloatingSaveBar({
       </div>
 
       {/* Floating bar */}
-      <div
-        className={`fixed bottom-0 left-0 w-full z-50 transition-all duration-300 ${
-          isFloating ? "opacity-100" : "opacity-0 pointer-events-none"
-        }`}
+     <div
+        className={`fixed bottom-0 z-50 transition-all duration-300
+          left-0 w-full
+          lg:left-64 lg:w-[calc(100%-16rem)]
+          ${isFloating ? "opacity-100" : "opacity-0 pointer-events-none"}
+        `}
       >
+
         <div className="max-w-6xl mx-auto p-4 flex items-center justify-between">
           {/* LEFT: Autosave (children) */}
           <div className="flex items-center">{children}</div>

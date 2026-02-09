@@ -2,17 +2,19 @@ import React, { Suspense } from "react";
 import SearchComponent from "../components/SearchComponent";
 import NewsletterForm from "../components/NewsletterForm";
 import SectionHeading from "../components/SectionHeading";
-import LatestBlogs from "../components/blog/LatestBlogs";
 import JoinOurPrograms from "../components/home/JoinOurPrograms";
 import MessageFromDirector from "../components/home/MessageFromDirector";
 import { getHomeContent } from "@/lib/getHomeContent";
 import { getLatestArticles } from "@/lib/articles/getLatestArticles";
+import { getPopularArticles } from "@/lib/articles/getPopularArticles";
+import BlogList from "@/components/blog/BlogList";
 
 
 export default async function HomePage() {
   // Fetch home content from Firestore
   const homeContent = await getHomeContent();
-  const latestArticles = await getLatestArticles(6);
+  const latestArticles = await getLatestArticles(5);
+  const popularArticles = await getPopularArticles(5);
 
   return (
     <main>
@@ -35,12 +37,28 @@ export default async function HomePage() {
           centerAll={true}
         />
       </div>
-      <LatestBlogs articles={latestArticles} />
+      <BlogList articles={latestArticles} />
+
+     {/* Popular Blogs Section */}
+      <div className="mb-10 mt-20">
+        <SectionHeading
+          title="Most popular blog posts"
+          src="/assets/headings/home/MostPopularBlogPosts.png"
+          alt="Most Popular Blog Posts Heading"
+          width={400}
+          height={50}
+          maxWidth="400"
+          mobileWidth={200}
+          mobileHeight={40}
+          centerAll={true}
+        />
+      </div>
+      <BlogList articles={popularArticles} />
         
       {/* Only show Join Our Programs section if there are program links */}
       {homeContent?.programLinks && homeContent.programLinks.length > 0 && (
         <>
-          <div className="mb-2 mt-12">
+          <div className="mb-2 mt-20">
             <SectionHeading
               title="Join our programs"
               src="/assets/headings/home/JoinOurPrograms.png"
@@ -58,7 +76,7 @@ export default async function HomePage() {
       {/* Only show Message From Director section if there's director data */}
       {homeContent?.director && (
         <>
-          <div className="mb-12 mt-12">
+          <div className="mb-12 mt-20">
             <SectionHeading
               title="Message from director"
               src="/assets/headings/home/MessageFromDirector.png"

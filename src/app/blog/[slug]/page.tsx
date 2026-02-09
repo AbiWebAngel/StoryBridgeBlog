@@ -111,7 +111,7 @@ export default async function BlogArticlePage({
 
 
           {/* Article Header */}
-          <h1 className="font-cinzel text-[22px] sm:text-[26px] lg:text-[30px] font-bold min-w-0 wrap-break-word text-center mb-4">
+          <h1 className="font-cinzel text-[22px] sm:text-[26px] lg:text-[30px] font-bold min-w-0 break-words text-center mb-4 pr-12 sm:pr-0">
             {post.title}
           </h1>
           

@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { db } from "@/lib/firebase";
 import { collection, getDocs, doc, deleteDoc } from "firebase/firestore";
-import LatestBlogs from "@/components/blog/LatestBlogs";
+import LatestBlogs from "@/components/blog/BlogList";
 
 interface FavouriteItem {
   id: string;
