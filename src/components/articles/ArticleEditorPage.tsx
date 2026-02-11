@@ -982,7 +982,6 @@ useEffect(() => {
             />
           )}
 
-
               <div className="mt-4">
                 <label className="block text-sm font-semibold text-[#4A3820] mb-1">
                   Cover Image Alt Text
