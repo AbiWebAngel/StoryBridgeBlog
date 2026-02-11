@@ -73,7 +73,6 @@ export default function ArticleEditorPage({ articleId, mode }: ArticleEditorPage
   const [resetEditorToken, setResetEditorToken] = useState(0);
   const [pageReady, setPageReady] = useState(false);
   const [articleReady, setArticleReady] = useState(false);
-  // after const [articleReady, setArticleReady] = useState(false);
   const [articleIdState, setArticleIdState] = useState<string | null>(null);
 
   // Autosave UI State
@@ -302,7 +301,7 @@ useEffect(() => {
 }, [articleData, uploadedAssets, articleReady, pageReady, currentAuthUser]);
 
 
-  // Local restore - FIXED VERSION WITH DEBUG LOGS
+  // Local restore
   useEffect(() => {
     if (!currentAuthUser || !articleReady || !articleIdRef.current) {
       return;
@@ -718,32 +717,41 @@ useEffect(() => {
         const usedAssets = extractArticleAssets({ coverImage, body });
         unusedAssets = findUnusedAssets(uploadedAssets, usedAssets);
       }
+      
       const articleRef = doc(db, "articles", articleIdRef.current);
       const snap = await getDoc(articleRef);
-      const alreadyPublishedAt = snap.exists() ? snap.data().publishedAt : null;
+      const existing = snap.exists() ? snap.data() : null;
+
+      // 🛡️ PRESERVE readCount exactly like the old version
+      const preservedReadCount = existing?.readCount ?? 0;
 
       await setDoc(
-        doc(db, "articles", articleIdRef.current),
+        articleRef,
         {
-          ...articleData,
+          title: articleData.title,
+          slug: sanitizeSlug(articleData.slug),
+          metaDescription: articleData.metaDescription,
+          coverImage: articleData.coverImage,
+          coverImageAlt: articleData.coverImageAlt,
+          coverImagePosition: articleData.coverImagePosition,
+          body: articleData.body,
+          tags: articleData.tags,
+          status: articleData.status,
+          
           authorId: resolveAuthorId(),
           ...getAuthorPayload(),
           updatedAt: serverTimestamp(),
+          
+          // 🛡️ Always preserve the existing readCount
+          readCount: preservedReadCount,
 
-          // ✅ initialize once, never overwrite
-          ...(mode === "new" && {
-            readCount: 0,
-          }),
-
-            ...(articleData.status === "published" &&
-        !alreadyPublishedAt && {
-          publishedAt: serverTimestamp(),
-        }),
-
+          ...(articleData.status === "published" &&
+            !existing?.publishedAt && {
+              publishedAt: serverTimestamp(),
+            }),
         },
         { merge: true }
       );
-
 
       await setDoc(
         doc(db, "users", currentAuthUser.uid),
