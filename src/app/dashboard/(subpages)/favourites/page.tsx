@@ -67,8 +67,8 @@ export default function FavouritesPage() {
   }
 
   return (
-    <div className="min-h-screen px-4 sm:px-6 md:px-8 py-10">
-      <h1 className="text-4xl font-cinzel text-[#4A3820] text-center mb-10">
+    <div className="min-h-screen px-6 font-sans!">
+      <h1 className="text-4xl font-cinzel text-[#4A3820] text-center mb-10 font-sans!">
         My Favourites
       </h1>
 
