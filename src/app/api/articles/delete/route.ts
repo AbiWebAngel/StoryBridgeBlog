@@ -65,7 +65,11 @@ export async function POST(req: Request) {
     );
 
     // 🧹 Delete Firestore doc LAST
-    await ref.delete();
+    // 🔥 Delete subcollections first
+    await adminDb.recursiveDelete(ref);
+
+    // (recursiveDelete already deletes the doc itself)
+
 
     return NextResponse.json({ success: true });
   } catch (err: any) {

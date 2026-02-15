@@ -315,14 +315,12 @@ useEffect(() => {
     const restore = async () => {
       const skipLocal = shouldSkipLocalDrafts.current;
 
-
       // NEW mode - only check localStorage
       if (mode === "new") {
         const raw = localStorage.getItem(localKey);
         if (skipLocal) {
         } else {
           // allow existing NEW logic to check local
-        
 
         if (raw) {
           try {
@@ -358,8 +356,6 @@ useEffect(() => {
 
           if (isForeignArticle && isAdmin) {
           }
-
-
 
     const remoteHasContent =
       Boolean(data?.title) ||
@@ -449,7 +445,6 @@ if (isForeignArticle && !isAdmin) {
 if (isForeignArticle && isAdmin) {
 }
 
-
           // Decide whether remote doc actually contains real content
           const remoteHasContent =
             Boolean(data.title) ||
@@ -518,7 +513,12 @@ const getAuthorPayload = () => {
 
       const cleanSlug = sanitizeSlug(articleData.slug);
 
-  
+      // 🔒 Prevent resurrection
+      const existingSnap = await getDoc(articleRef);
+      if (!existingSnap.exists()) {
+        return;
+      }
+        
       try {
         await setDoc(
         articleRef,
@@ -542,25 +542,8 @@ const getAuthorPayload = () => {
 
         setLastServerSave(Date.now());
       } catch (err: any) {
-      console.group("🔥 AUTOSAVE ERROR");
-      console.error("Message:", err?.message);
-      console.error("Code:", err?.code);
-      console.error("Full error:", err);
-      console.log("Auth UID:", currentAuthUser?.uid);
-      console.log("Resolved authorId:", resolveAuthorId());
-      console.log("Role:", role);
-      console.log("Payload being written:", {
-        ...data,
-        authorId: resolveAuthorId(),
-        ...getAuthorPayload(),
-        updatedAt: "Date",
-        autosaved: true,
-      });
-      console.groupEnd();
-
       throw err;
-    }
- finally {
+    } finally {
         setAutosaving(false);
       }
     },
@@ -573,8 +556,18 @@ const getAuthorPayload = () => {
 
     setNextServerSaveAt(Date.now() + BACKUP_AUTOSAVE_INTERVAL);
 
-    backupIntervalRef.current = setInterval(() => {
-      autosaveToServer();
+    backupIntervalRef.current = setInterval(async () => {
+    const articleId = articleIdRef.current;
+    if (!articleId) return;
+
+    const snap = await getDoc(doc(db, "articles", articleId));
+    if (!snap.exists()) {
+      clearInterval(backupIntervalRef.current!);
+      return;
+    }
+
+    autosaveToServer();
+
       setNextServerSaveAt(Date.now() + BACKUP_AUTOSAVE_INTERVAL);
     }, BACKUP_AUTOSAVE_INTERVAL);
 
@@ -739,7 +732,6 @@ try {
     try {
       await currentAuthUser.reload();
     } catch (e) {
-      console.warn("User reload failed (non-fatal):", e);
     }
 
     const idResult = await currentAuthUser.getIdTokenResult(true);
@@ -796,7 +788,6 @@ try {
     await writePayload();
   } catch (err: any) {
     if (err?.code === "permission-denied") {
-      console.warn("Permission denied — refreshing token and retrying...");
       await currentAuthUser.reload();
       await ensureFreshRoleClaim();
       await writePayload(); // retry once
@@ -863,21 +854,8 @@ try {
   setTimeout(() => setSuccessMessage(""), 2500);
 
 } catch (err: any) {
-  console.group("🔥 MANUAL SAVE ERROR");
-  console.error("Message:", err?.message);
-  console.error("Code:", err?.code);
-  console.error("Full error:", err);
-  console.log("Auth UID:", currentAuthUser?.uid);
-  console.log("Resolved authorId:", resolveAuthorId());
-  console.log("Role:", role);
-  console.log("Article ID:", articleIdRef.current);
-  console.log("Data being saved:", articleData);
-  console.groupEnd();
-
   setErrors({ general: err.message || "Failed to save article." });
-}
-
- finally {
+} finally {
       setSaving(false);
     }
   };
