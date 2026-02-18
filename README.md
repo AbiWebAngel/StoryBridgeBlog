@@ -51,7 +51,7 @@ NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=your_storage_bucket
 NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
 NEXT_PUBLIC_FIREBASE_APP_ID=your_app_id
 NEXT_PUBLIC_HCAPTCHA_SITEKEY=your_sitekey
-FIREBASE_SERVICE_ACCOUNT='{"type":"service_account","project_id":"{your_project_name}","private_key":"-----BEGIN PRIVATE KEY-----"{your_key}"=\n-----END PRIVATE KEY-----\n","client_email":"{your_client_key}","client_id":"{your_client_id}","auth_uri":"{your_auth_uri}","token_uri":"{your_token_uri}","auth_provider_x509_cert_url":"{your-auth-provider}"}'
+FIREBASE_SERVICE_ACCOUNT='{"type":"service_account","project_id":"{your_project_name}","private_key":"-----BEGIN PRIVATE KEY-----"{your_key}"=\n-----END PRIVATE KEY-----\n","client_email":"{your_client_key}","client_id":"{your_client_id}","auth_uri":"{your_auth_uri}","token_uri":"{your_token_uri}","auth_provider_x509_cert_url":"{your_auth_provider}"}'
 CLOUDFLARE_ACCOUNT_ID=your_account_id
 CLOUDFLARE_R2_ACCESS_KEY=your_access_key
 CLOUDFLARE_R2_SECRET_KEY=your_secret_key
